@@ -681,7 +681,7 @@
   </div>
   <div class="nav-search">
     <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-    <input type="text" id="global-search-input" placeholder="Search 158 Million books, authors, categories..." oninput="handleSearch(this.value)" />
+    <input type="text" id="global-search-input" placeholder="Search titles, authors, categories, or book story keywords..." oninput="handleSearch(this.value)" />
   </div>
   <div class="nav-links">
     <button class="nav-btn active" id="nav-home" onclick="navigate('home')">Discover</button>
@@ -2042,13 +2042,20 @@ function renderSearchPage() {
   }
 
   if (activeSearchQuery) {
-    const q = activeSearchQuery.toLowerCase();
-    filtered = filtered.filter(b => 
-      b.title.toLowerCase().includes(q) || 
-      b.author.toLowerCase().includes(q) || 
-      b.summary.toLowerCase().includes(q) ||
-      (b.keywords && b.keywords.some(k => k.includes(q)))
-    );
+    const queryWords = activeSearchQuery.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+    if (queryWords.length > 0) {
+      filtered = filtered.filter(b => {
+        return queryWords.every(word => {
+          const inTitle = b.title.toLowerCase().includes(word);
+          const inAuthor = b.author.toLowerCase().includes(word);
+          const inSummary = b.summary.toLowerCase().includes(word);
+          const inExcerpt = b.excerpt ? b.excerpt.toLowerCase().includes(word) : false;
+          const inKeywords = b.keywords && b.keywords.some(k => k.toLowerCase().includes(word));
+          const inTopic = b.topic ? b.topic.toLowerCase().includes(word) : false;
+          return inTitle || inAuthor || inSummary || inExcerpt || inKeywords || inTopic;
+        });
+      });
+    }
   }
 
   // Cap visible matches on Browse catalog to prevent browser thread freeze (extremely important!)
