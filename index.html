@@ -1459,7 +1459,7 @@ function seedProceduralCatalog() {
       rating: (4.0 + (index % 10) / 10).toFixed(1),
       emoji: emoji,
       color: color,
-      cover: null,
+      cover: cover,
       summary: `A scholarly edition compiled to explore the intellectual themes of ${topic.toLowerCase()} within the geographic context of ${contName}, authored by the celebrated writer ${author}.`,
       _baseTitle: baseTitle,
       excerpt: `Thus we begin our inquiry into ${topic.toLowerCase()} within the region of ${contName}. Writers like ${author} have long pointed out that the structural traditions of this literature reflect deeper historical realities. We invite the reader to review these arguments with care.`,
@@ -1514,13 +1514,13 @@ const state = {
 // ── CACHE BUST v2: Clear all old 'none' cover entries so new dual-source
 //    fetch (Open Library + Wikipedia) runs fresh for every previously-failed book
 (function bustStaleCoverCache() {
-  const COVER_VERSION = '5';
+  const COVER_VERSION = '6';
   const storedVersion = safeStore.getItem('h_cover_version');
   if (storedVersion !== COVER_VERSION) {
     // Full wipe — removes bad Unsplash URLs, fake OL IDs, and stale 'none' entries
     state.covers = {};
     safeStore.setItem('h_cover_version', COVER_VERSION);
-    console.log('[Helix] Cover cache fully reset to v5.');
+    console.log('[Helix] Cover cache fully reset to v6.');
   }
   // Always pre-seed verified cover URLs for MASTER_BOOKS
   // so they show instantly without needing the IntersectionObserver fetch
@@ -1613,8 +1613,7 @@ function fetchBookCover(book) {
   
   // Use pre-set cover only if it's a trusted URL (Wikimedia or Open Library)
   if (book.cover && book.cover !== 'none' && (book.cover.includes('wikimedia') || book.cover.includes('openlibrary.org'))) {
-    state.covers[cacheKey] = book.cover;
-    saveState();
+    // Return directly without modifying cache or saving state to avoid heavy scroll write-overhead
     return Promise.resolve(book.cover);
   }
   
@@ -1730,6 +1729,7 @@ function updateCoversOnScreen() {
   coverElements.forEach(el => {
     const bookId = el.getAttribute('data-book-id');
     const book = allBooks.find(b => b.id === bookId);
+    if (!book) return;
     
     // Fast render from localStorage cache instantly
     if (state.covers[bookId]) {
@@ -1744,6 +1744,17 @@ function updateCoversOnScreen() {
         // Previously fetched and failed — show emoji
         ensureEmojiFallback(el, book);
       }
+      return;
+    }
+
+    // Fast render from pre-assigned verified book cover directly
+    if (book.cover && book.cover !== 'none' && (book.cover.includes('wikimedia') || book.cover.includes('openlibrary.org'))) {
+      el.style.backgroundImage = `url('${book.cover}')`;
+      el.style.backgroundSize = 'cover';
+      el.style.backgroundPosition = 'center';
+      el.classList.add('has-cover-image');
+      const emoji = el.querySelector('.book-cover-emoji');
+      if (emoji) emoji.remove();
       return;
     }
     
@@ -1854,12 +1865,21 @@ window.addEventListener('keydown', (e) => {
 // ════════════════════════════════════════
 // RENDERERS: BOOK CARDS
 // ════════════════════════════════════════
+function hasBookCover(book) {
+  if (!book) return false;
+  const cached = state.covers[book.id];
+  if (cached) {
+    return cached !== 'none';
+  }
+  return !!(book.cover && book.cover !== 'none' && (book.cover.includes('wikimedia') || book.cover.includes('openlibrary.org')));
+}
+
 function makeCoverStyle(book) {
   const cachedCover = state.covers[book.id];
   if (cachedCover && cachedCover !== 'none') {
     return `background-image: url('${cachedCover}'); background-size: cover; background-position: center;`;
   }
-  // Use book.cover ONLY for MASTER_BOOKS with known-good Wikimedia or Open Library URLs
+  // Use book.cover ONLY for MASTER_BOOKS / procedural books with known-good Wikimedia or Open Library URLs
   if (book.cover && book.cover !== 'none' && (book.cover.includes('wikimedia') || book.cover.includes('openlibrary.org'))) {
     return `background-image: url('${book.cover}'); background-size: cover; background-position: center;`;
   }
@@ -1868,7 +1888,7 @@ function makeCoverStyle(book) {
 }
 
 function renderBookCard(book) {
-  const hasCover = state.covers[book.id] && state.covers[book.id] !== 'none';
+  const hasCover = hasBookCover(book);
   return `
     <div class="book-card" onclick="openBookDetails('${book.id}')">
       <div class="book-cover ${hasCover ? 'has-cover-image' : ''}" data-book-id="${book.id}" style="${makeCoverStyle(book)}">
@@ -1940,7 +1960,7 @@ function renderDiscoverPage() {
   // Featured book
   const featured = allBooks[0];
   const featTarget = document.getElementById('featured-card-target');
-  const hasCover = state.covers[featured.id] && state.covers[featured.id] !== 'none';
+  const hasCover = hasBookCover(featured);
   
   featTarget.innerHTML = `
     <div class="detail-card">
@@ -2198,7 +2218,7 @@ function openBookDetails(bookId) {
   const isFav = state.favorites.includes(bookId);
   const isDone = state.completed.includes(bookId);
 
-  const hasCover = state.covers[book.id] && state.covers[book.id] !== 'none';
+  const hasCover = hasBookCover(book);
   
   // Set detail layout (Primary "Read Book" redirects to choices redirect panel)
   target.innerHTML = `
