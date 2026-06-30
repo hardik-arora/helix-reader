@@ -825,10 +825,7 @@
     </div>
     <div class="results-grid" id="search-results-grid"></div>
     
-    <div id="global-results-divider" style="display:none;margin:2.5rem 0 1.5rem;border-top:1px solid var(--border);padding-top:1.5rem">
-      <h3 style="font-family:var(--heading-font);font-size:1.4rem;font-weight:900;margin-bottom:1rem">🌐 Global Library Matches (158 Million Catalog)</h3>
-      <div class="results-grid" id="global-results-grid"></div>
-    </div>
+
   </div>
 </div>
 
@@ -2029,7 +2026,7 @@ function renderSearchPage() {
     <button class="filter-chip ${activeSearchContinent === cont ? 'active' : ''}" onclick="selectSearchContinent('${cont}')">${cont}</button>
   `).join('');
 
-  // Filtering books
+  // Filtering local books
   const allBooks = [...MASTER_BOOKS, ...state.customBooks];
   let filtered = allBooks;
 
@@ -2058,22 +2055,31 @@ function renderSearchPage() {
     }
   }
 
-  // Cap visible matches on Browse catalog to prevent browser thread freeze (extremely important!)
   const limit = 80;
-  const sliced = filtered.slice(0, limit);
+  const slicedLocal = filtered.slice(0, limit);
+
+  // Merge local matches with loaded global cache
+  let mergedBooks = [...slicedLocal];
+  if (activeSearchQuery && DYNAMIC_SEARCH_CACHE.length > 0) {
+    // Exclude duplicates
+    const uniqueGlobal = DYNAMIC_SEARCH_CACHE.filter(gb => 
+      !slicedLocal.some(lb => lb.title.toLowerCase().trim() === gb.title.toLowerCase().trim())
+    );
+    mergedBooks = [...slicedLocal, ...uniqueGlobal];
+  }
 
   let headingText = `Browse Library: ${activeSearchCategory} / ${activeSearchContinent} (${filtered.length} matches)`;
   if (activeSearchQuery) {
-    headingText = `Matches for "${activeSearchQuery}" (${filtered.length} matches)`;
+    headingText = `Search Results for "${activeSearchQuery}"`;
   }
   document.getElementById('search-heading-text').textContent = headingText;
 
   const grid = document.getElementById('search-results-grid');
-  grid.innerHTML = sliced.length
-    ? sliced.map(renderBookCard).join('') + 
+  grid.innerHTML = mergedBooks.length
+    ? mergedBooks.map(renderBookCard).join('') + 
       (filtered.length > limit 
         ? `<div style="grid-column: 1/-1;text-align:center;padding:2.5rem 0;color:var(--text3);font-size:0.85rem">
-             Showing first ${limit} of ${filtered.length} books. Use the search field above to find exact matches.
+             Showing first ${limit} of ${filtered.length} catalog matches. Use a more specific query for other matches.
            </div>`
         : '')
     : `<div style="grid-column: 1/-1;text-align:center;padding:4rem 0;color:var(--text3)">
@@ -2084,36 +2090,29 @@ function renderSearchPage() {
   // Load covers for current visible page slice
   updateCoversOnScreen();
   
-  // Fetch global matches from the 158 Million Open Library catalog
-  fetchGlobalSearch(activeSearchQuery);
+  // Fetch global matches from the 158 Million Open Library catalog if query is active
+  if (activeSearchQuery) {
+    fetchGlobalSearch(activeSearchQuery);
+  }
 }
 
 let currentSearchRequest = null;
 
 function fetchGlobalSearch(query) {
   const indicator = document.getElementById('global-search-indicator');
-  const divider = document.getElementById('global-results-divider');
-  const globalGrid = document.getElementById('global-results-grid');
-  
   if (!query) {
     if (indicator) indicator.style.display = 'none';
-    if (divider) divider.style.display = 'none';
-    if (globalGrid) globalGrid.innerHTML = '';
     return;
   }
   
   if (indicator) {
-    indicator.textContent = '🔍 Querying 158 Million Book Registry...';
-    indicator.style.display = 'block';
-  }
-  if (divider) divider.style.display = 'block';
-  if (globalGrid) {
-    globalGrid.innerHTML = `
-      <div style="grid-column: 1/-1; text-align: center; padding: 2rem 0; color: var(--text3)">
-        <div style="border: 3px solid var(--border); border-top: 3px solid var(--accent); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 0 auto 0.5rem;"></div>
-        Fetching live matches from Open Library...
+    indicator.innerHTML = `
+      <div style="display:inline-flex; align-items:center; gap:0.4rem; color:var(--teal)">
+        <div style="border: 2px solid var(--border); border-top: 2px solid var(--accent); border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite;"></div>
+        Searching 158 Million books...
       </div>
     `;
+    indicator.style.display = 'block';
   }
   
   if (currentSearchRequest) {
@@ -2173,29 +2172,49 @@ function fetchGlobalSearch(query) {
       
       if (indicator) indicator.style.display = 'none';
       
-      if (globalGrid) {
-        if (DYNAMIC_SEARCH_CACHE.length === 0) {
-          globalGrid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 2rem 0; color: var(--text3)">
-              No matching books found in the 158M global registry.
-            </div>
-          `;
-        } else {
-          globalGrid.innerHTML = DYNAMIC_SEARCH_CACHE.map(renderBookCard).join('');
-          updateCoversOnScreen();
+      // Force a redraw of search results with combined items
+      // Stop recursion by only rendering if results are different
+      const grid = document.getElementById('search-results-grid');
+      const allBooks = [...MASTER_BOOKS, ...state.customBooks];
+      let filtered = allBooks;
+      
+      // Compute matching sliced local matches
+      if (activeSearchCategory !== 'All') filtered = filtered.filter(b => b.topic === activeSearchCategory);
+      if (activeSearchContinent !== 'All') filtered = filtered.filter(b => b.continent === activeSearchContinent);
+      
+      if (activeSearchQuery) {
+        const queryWords = activeSearchQuery.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+        if (queryWords.length > 0) {
+          filtered = filtered.filter(b => {
+            return queryWords.every(word => {
+              const inTitle = b.title.toLowerCase().includes(word);
+              const inAuthor = b.author.toLowerCase().includes(word);
+              const inSummary = b.summary.toLowerCase().includes(word);
+              const inExcerpt = b.excerpt ? b.excerpt.toLowerCase().includes(word) : false;
+              const inKeywords = b.keywords && b.keywords.some(k => k.toLowerCase().includes(word));
+              const inTopic = b.topic ? b.topic.toLowerCase().includes(word) : false;
+              return inTitle || inAuthor || inSummary || inExcerpt || inKeywords || inTopic;
+            });
+          });
         }
+      }
+      
+      const slicedLocal = filtered.slice(0, 80);
+      const uniqueGlobal = DYNAMIC_SEARCH_CACHE.filter(gb => 
+        !slicedLocal.some(lb => lb.title.toLowerCase().trim() === gb.title.toLowerCase().trim())
+      );
+      const finalMerged = [...slicedLocal, ...uniqueGlobal];
+      
+      if (grid) {
+        grid.innerHTML = finalMerged.map(renderBookCard).join('');
+        updateCoversOnScreen();
       }
     })
     .catch(err => {
       if (err.name === 'AbortError') return;
       console.error('Global search fetch error:', err);
-      if (indicator) indicator.style.display = 'none';
-      if (globalGrid) {
-        globalGrid.innerHTML = `
-          <div style="grid-column: 1/-1; text-align: center; padding: 2rem 0; color: var(--accent)">
-            ⚠️ Failed to reach the 158M global library service. Showing local matches only.
-          </div>
-        `;
+      if (indicator) {
+        indicator.innerHTML = `<span style="color:var(--accent)">⚠️ Open Library connection slow (showing local matches only)</span>`;
       }
     });
 }
@@ -2206,17 +2225,20 @@ function handleSearch(val) {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     activeSearchQuery = val.trim();
+    DYNAMIC_SEARCH_CACHE = []; // Reset cache to prevent previous query matches from showing
     navigate('search');
   }, 350); // 350ms debounce window
 }
 
 function selectSearchCategory(cat) {
   activeSearchCategory = cat;
+  DYNAMIC_SEARCH_CACHE = [];
   renderSearchPage();
 }
 
 function selectSearchContinent(cont) {
   activeSearchContinent = cont;
+  DYNAMIC_SEARCH_CACHE = [];
   renderSearchPage();
 }
 
