@@ -2123,7 +2123,7 @@ function fetchGlobalSearch(query) {
   const controller = new AbortController();
   currentSearchRequest = controller;
   
-  const searchUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=15`;
+  const searchUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=15&fields=key,title,author_name,subject,cover_i,first_publish_year,language,number_of_pages_median,first_sentence`;
   
   fetch(searchUrl, { signal: controller.signal })
     .then(res => res.json())
@@ -2136,20 +2136,36 @@ function fetchGlobalSearch(query) {
         const id = `ol-${key}`;
         const coverUrl = doc.cover_i ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg` : 'none';
         
+        // Bulletproof parsing parameters
+        const title = doc.title || 'Unknown Title';
+        const author = Array.isArray(doc.author_name) ? doc.author_name.join(', ') : (doc.author_name || 'Unknown Author');
+        const topic = (doc.subject && doc.subject.length > 0) ? doc.subject[0] : 'General';
+        const year = doc.first_publish_year || 1990;
+        const lang = (doc.language && doc.language.length > 0 && doc.language[0]) ? String(doc.language[0]).toUpperCase() : 'EN';
+        const pages = doc.number_of_pages_median || 240;
+        const rating = doc.ratings_average ? doc.ratings_average.toFixed(1) : '4.5';
+        
+        let summary = `Preserved digital catalog volume from the 158M library registry. Key: ${doc.key || ''}`;
+        if (doc.first_sentence) {
+          summary = Array.isArray(doc.first_sentence) ? doc.first_sentence.join(' ') : String(doc.first_sentence);
+        }
+        
+        const keywords = Array.isArray(doc.subject) ? doc.subject.slice(0, 4).map(s => String(s).toLowerCase()) : ['global', 'archive'];
+        
         return {
           id: id,
-          title: doc.title,
-          author: doc.author_name ? doc.author_name.join(', ') : 'Unknown Author',
-          topic: doc.subject ? doc.subject[0] : 'General',
+          title: title,
+          author: author,
+          topic: topic,
           cover: coverUrl,
-          year: doc.first_publish_year || 1990,
-          lang: doc.language ? doc.language[0].toUpperCase() : 'EN',
-          pages: doc.number_of_pages_median || 240,
-          rating: doc.ratings_average ? doc.ratings_average.toFixed(1) : '4.5',
+          year: year,
+          lang: lang,
+          pages: pages,
+          rating: rating,
           emoji: '📖',
-          summary: doc.first_sentence ? doc.first_sentence.join(' ') : `Preserved digital catalog volume from the 158M library registry. Key: ${doc.key || ''}`,
-          excerpt: doc.first_sentence ? doc.first_sentence.join(' ') : 'Excerpt not available from archive preview.',
-          keywords: doc.subject ? doc.subject.slice(0, 4).map(s => s.toLowerCase()) : ['global', 'archive'],
+          summary: summary,
+          excerpt: summary,
+          keywords: keywords,
           dictionary: { archive: 'A collection of historical records.' },
           quotes: []
         };
