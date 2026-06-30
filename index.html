@@ -816,10 +816,17 @@
   <div class="container">
     <div class="search-page-header">
       <h2 id="search-heading-text" style="font-family:var(--heading-font);font-size:1.8rem;font-weight:800">Browse Library Catalog</h2>
-      <div style="font-size:0.8rem;color:var(--text3);margin-top:-0.4rem;font-weight:600;display:flex;align-items:center;gap:0.4rem">
+      <div style="font-size:0.85rem;color:var(--text3);margin-top:-0.4rem;font-weight:600;display:flex;align-items:center;gap:0.4rem">
         <span>🌐 Combined global registry indexing 158,000,000+ digitized books</span>
       </div>
-      <div class="filters-row" id="categories-filter-row" style="margin-top:0.8rem"></div>
+      
+      <!-- Inline search input bar synchronized with navbar search -->
+      <div style="position:relative; margin-top:1.2rem; max-width:600px">
+        <input type="text" id="page-search-input" placeholder="Search titles, authors, categories, or book story keywords in 158M books..." style="width:100%; padding:0.8rem 1rem 0.8rem 2.8rem; background:var(--bg3); border:1px solid var(--border); border-radius:10px; color:var(--text); font-size:0.95rem; font-family:var(--body-font); font-weight:500; outline:none; transition:var(--transition)" oninput="handleSearch(this.value); const otherInput = document.getElementById('global-search-input'); if(otherInput) otherInput.value = this.value;" />
+        <svg viewBox="0 0 24 24" style="position:absolute; left:1rem; top:50%; transform:translateY(-50%); width:1.2rem; height:1.2rem; fill:var(--text3); pointer-events:none"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      </div>
+      
+      <div class="filters-row" id="categories-filter-row" style="margin-top:1.2rem"></div>
       <div class="filters-row" id="continents-filter-row" style="margin-top:0.6rem"></div>
       <div id="global-search-indicator" style="display:none;font-size:0.85rem;color:var(--teal);margin-top:0.6rem;font-weight:600"></div>
     </div>
@@ -1563,13 +1570,19 @@ function navigate(pageId) {
     navBtn.classList.add('active');
   }
   
+  const targetChanged = state.currentPage !== pageId;
+  state.currentPage = pageId;
+  saveState();
+  
   // Execute page loaders
   if (pageId === 'library') renderLibraryPage();
   if (pageId === 'search') renderSearchPage();
   if (pageId === 'home') renderDiscoverPage();
   if (pageId === 'tools') renderToolsPage();
   
-  window.scrollTo({top:0, behavior:'smooth'});
+  if (targetChanged) {
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
   hideDictPopup();
   hideFontConfig();
 }
@@ -2012,6 +2025,16 @@ let activeSearchQuery = '';
 let DYNAMIC_SEARCH_CACHE = [];
 
 function renderSearchPage() {
+  // Synchronize input fields values so they display identical query terms
+  const pageInput = document.getElementById('page-search-input');
+  if (pageInput && document.activeElement !== pageInput) {
+    pageInput.value = activeSearchQuery;
+  }
+  const globalInput = document.getElementById('global-search-input');
+  if (globalInput && document.activeElement !== globalInput) {
+    globalInput.value = activeSearchQuery;
+  }
+
   // Render Categories Filter
   const categories = ['All', 'Fiction', 'Science', 'Philosophy', 'Biography', 'History'];
   const catTarget = document.getElementById('categories-filter-row');
