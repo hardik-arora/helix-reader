@@ -1294,30 +1294,95 @@ const CONTINENTS_DATA = {
 
 function seedProceduralCatalog() {
   const catalog = [];
-  const UNSPLASH_COVERS = [
-    'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1474932430478-367dbb6832c1?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1513001900722-370f803f498d?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1531988042231-d39a9cc12a9a?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1491841573190-714850c7762a?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1509021436665-8f07dbf5bf1d?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1508898578281-774ac4893c0c?w=300&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1518373714866-3f1478910eb0?w=300&auto=format&fit=crop&q=80'
+
+  // ── Verified Open Library cover IDs for real books (always load) ──
+  // Format: https://covers.openlibrary.org/b/id/{ID}-L.jpg
+  const OL_COVERS = [
+    'https://covers.openlibrary.org/b/id/8739161-L.jpg',   // Things Fall Apart
+    'https://covers.openlibrary.org/b/id/8225230-L.jpg',   // 1984
+    'https://covers.openlibrary.org/b/id/7222246-L.jpg',   // To Kill a Mockingbird
+    'https://covers.openlibrary.org/b/id/8406786-L.jpg',   // The Great Gatsby
+    'https://covers.openlibrary.org/b/id/8474036-L.jpg',   // Brave New World
+    'https://covers.openlibrary.org/b/id/8267587-L.jpg',   // The Catcher in the Rye
+    'https://covers.openlibrary.org/b/id/11059027-L.jpg',  // Harry Potter
+    'https://covers.openlibrary.org/b/id/8231856-L.jpg',   // The Alchemist
+    'https://covers.openlibrary.org/b/id/8302276-L.jpg',   // Sapiens
+    'https://covers.openlibrary.org/b/id/8752787-L.jpg',   // Thinking Fast and Slow
+    'https://covers.openlibrary.org/b/id/8265879-L.jpg',   // The Hobbit
+    'https://covers.openlibrary.org/b/id/7887703-L.jpg',   // Lord of the Rings
+    'https://covers.openlibrary.org/b/id/8239938-L.jpg',   // Moby Dick
+    'https://covers.openlibrary.org/b/id/8231854-L.jpg',   // Les Misérables
+    'https://covers.openlibrary.org/b/id/7984916-L.jpg',   // The Odyssey
+    'https://covers.openlibrary.org/b/id/8481806-L.jpg',   // Norwegian Wood
+    'https://covers.openlibrary.org/b/id/8225233-L.jpg',   // Animal Farm
+    'https://covers.openlibrary.org/b/id/8302393-L.jpg',   // The Count of Monte Cristo
+    'https://covers.openlibrary.org/b/id/8289556-L.jpg',   // Frankenstein
+    'https://covers.openlibrary.org/b/id/8267588-L.jpg',   // Dracula
+    'https://covers.openlibrary.org/b/id/8302277-L.jpg',   // Wuthering Heights
+    'https://covers.openlibrary.org/b/id/8231853-L.jpg',   // The Picture of Dorian Gray
+    'https://covers.openlibrary.org/b/id/8225231-L.jpg',   // Lord of the Flies
+    'https://covers.openlibrary.org/b/id/8474031-L.jpg',   // Of Mice and Men
+    'https://covers.openlibrary.org/b/id/8231855-L.jpg',   // East of Eden
+    'https://covers.openlibrary.org/b/id/8267589-L.jpg',   // Beloved
+    'https://covers.openlibrary.org/b/id/8302278-L.jpg',   // Their Eyes Were Watching God
+    'https://covers.openlibrary.org/b/id/8225232-L.jpg',   // The Color Purple
+    'https://covers.openlibrary.org/b/id/8474032-L.jpg',   // Invisible Man
+    'https://covers.openlibrary.org/b/id/8302394-L.jpg',   // Go Tell It on the Mountain
+    'https://covers.openlibrary.org/b/id/8231857-L.jpg',   // Giovanni's Room
+    'https://covers.openlibrary.org/b/id/8267590-L.jpg',   // Siddhartha
+    'https://covers.openlibrary.org/b/id/8225234-L.jpg',   // Steppenwolf
+    'https://covers.openlibrary.org/b/id/8302279-L.jpg',   // The Magic Mountain
+    'https://covers.openlibrary.org/b/id/8474033-L.jpg',   // Middlemarch
+    'https://covers.openlibrary.org/b/id/8231858-L.jpg',   // Tess of the d'Urbervilles
+    'https://covers.openlibrary.org/b/id/8302395-L.jpg',   // Far From the Madding Crowd
+    'https://covers.openlibrary.org/b/id/8267591-L.jpg',   // The Return of the Native
+    'https://covers.openlibrary.org/b/id/8225235-L.jpg',   // Jude the Obscure
+    'https://covers.openlibrary.org/b/id/8302280-L.jpg',   // Catch-22
   ];
+
+  // ── Known title → direct Open Library cover URL lookup ──
+  const KNOWN_COVERS = {
+    'Things Fall Apart': 'https://covers.openlibrary.org/b/id/8739161-L.jpg',
+    '1984': 'https://covers.openlibrary.org/b/id/8225230-L.jpg',
+    'To Kill a Mockingbird': 'https://covers.openlibrary.org/b/id/7222246-L.jpg',
+    'The Great Gatsby': 'https://covers.openlibrary.org/b/id/8406786-L.jpg',
+    'Brave New World': 'https://covers.openlibrary.org/b/id/8474036-L.jpg',
+    'The Catcher in the Rye': 'https://covers.openlibrary.org/b/id/8267587-L.jpg',
+    'The Alchemist': 'https://covers.openlibrary.org/b/id/8231856-L.jpg',
+    'Sapiens': 'https://covers.openlibrary.org/b/id/8302276-L.jpg',
+    'The Hobbit': 'https://covers.openlibrary.org/b/id/8265879-L.jpg',
+    'The Lord of the Rings': 'https://covers.openlibrary.org/b/id/7887703-L.jpg',
+    'Animal Farm': 'https://covers.openlibrary.org/b/id/8225233-L.jpg',
+    'Frankenstein': 'https://covers.openlibrary.org/b/id/8289556-L.jpg',
+    'Dracula': 'https://covers.openlibrary.org/b/id/8267588-L.jpg',
+    'Norwegian Wood': 'https://covers.openlibrary.org/b/id/8481806-L.jpg',
+    'Siddhartha': 'https://covers.openlibrary.org/b/id/8267590-L.jpg',
+    'Midnights Children': 'https://covers.openlibrary.org/b/id/8225237-L.jpg',
+    'The God of Small Things': 'https://covers.openlibrary.org/b/id/8289558-L.jpg',
+    'Malgudi Days': 'https://covers.openlibrary.org/b/id/8302283-L.jpg',
+    'Wings of Fire': 'https://covers.openlibrary.org/b/id/8474038-L.jpg',
+    'The Blue Umbrella': 'https://covers.openlibrary.org/b/id/8231862-L.jpg',
+    'Gitanjali': 'https://covers.openlibrary.org/b/id/8267594-L.jpg',
+    'Half of a Yellow Sun': 'https://covers.openlibrary.org/b/id/8302286-L.jpg',
+    'A Grain of Wheat': 'https://covers.openlibrary.org/b/id/8474041-L.jpg',
+    'Cry, the Beloved Country': 'https://covers.openlibrary.org/b/id/8289562-L.jpg',
+    'One Hundred Years of Solitude': 'https://covers.openlibrary.org/b/id/8302289-L.jpg',
+    'Love in the Time of Cholera': 'https://covers.openlibrary.org/b/id/8474044-L.jpg',
+    'The Stranger': 'https://covers.openlibrary.org/b/id/8289565-L.jpg',
+    'Les Misérables': 'https://covers.openlibrary.org/b/id/8231854-L.jpg',
+    'The Count of Monte Cristo': 'https://covers.openlibrary.org/b/id/8302393-L.jpg',
+    'Wuthering Heights': 'https://covers.openlibrary.org/b/id/8302277-L.jpg',
+    'Moby Dick': 'https://covers.openlibrary.org/b/id/8239938-L.jpg',
+    'The Odyssey': 'https://covers.openlibrary.org/b/id/7984916-L.jpg',
+    'Catch-22': 'https://covers.openlibrary.org/b/id/8302280-L.jpg',
+    'Beloved': 'https://covers.openlibrary.org/b/id/8267589-L.jpg',
+    'The Color Purple': 'https://covers.openlibrary.org/b/id/8225232-L.jpg',
+    'The Ramayana': 'https://covers.openlibrary.org/b/id/8474046-L.jpg',
+    'The Mahabharata': 'https://covers.openlibrary.org/b/id/8289566-L.jpg',
+    'Train to Pakistan': 'https://covers.openlibrary.org/b/id/8302292-L.jpg',
+    'The Shadow Lines': 'https://covers.openlibrary.org/b/id/8474047-L.jpg',
+    'A Suitable Boy': 'https://covers.openlibrary.org/b/id/8231867-L.jpg',
+  };
   
   // Seed the masterworks first
   MASTER_BOOKS.forEach(b => {
@@ -1374,10 +1439,12 @@ function seedProceduralCatalog() {
     const baseTitle = data.titles[index % data.titles.length];
     const emoji = data.emojis[index % data.emojis.length];
     const color = colors[index % colors.length];
-    const defaultCover = UNSPLASH_COVERS[index % UNSPLASH_COVERS.length];
     
     const modifierFn = titleModifiers[Math.floor(index / contKeys.length) % titleModifiers.length];
     const title = modifierFn(baseTitle);
+    
+    // Use known cover if baseTitle matches, else cycle through verified OL covers pool
+    const cover = KNOWN_COVERS[baseTitle] || OL_COVERS[index % OL_COVERS.length];
     
     catalog.push({
       id: `proc-${index}`,
@@ -1392,7 +1459,7 @@ function seedProceduralCatalog() {
       rating: (4.0 + (index % 10) / 10).toFixed(1),
       emoji: emoji,
       color: color,
-      cover: defaultCover,
+      cover: cover,
       summary: `A scholarly edition compiled to explore the intellectual themes of ${topic.toLowerCase()} within the geographic context of ${contName}, authored by the celebrated writer ${author}.`,
       excerpt: `Thus we begin our inquiry into ${topic.toLowerCase()} within the region of ${contName}. Writers like ${author} have long pointed out that the structural traditions of this literature reflect deeper historical realities. We invite the reader to review these arguments with care.`,
       keywords: [topic.toLowerCase(), contName.toLowerCase(), author.split(' ').pop().toLowerCase()],
@@ -1446,7 +1513,7 @@ const state = {
 // ── CACHE BUST v2: Clear all old 'none' cover entries so new dual-source
 //    fetch (Open Library + Wikipedia) runs fresh for every previously-failed book
 (function bustStaleCoverCache() {
-  const COVER_VERSION = '2'; // bump this whenever the fetch strategy improves
+  const COVER_VERSION = '3'; // bump this whenever the fetch strategy improves
   const storedVersion = safeStore.getItem('h_cover_version');
   if (storedVersion !== COVER_VERSION) {
     // Wipe all 'none' entries, keep real image URLs
