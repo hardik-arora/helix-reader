@@ -1521,7 +1521,7 @@ function fetchBookCover(book) {
     return Promise.resolve(state.covers[cacheKey]);
   }
   
-  if (book.cover) {
+  if (book.cover && book.cover !== 'none') {
     state.covers[cacheKey] = book.cover;
     saveState();
     return Promise.resolve(book.cover);
@@ -1534,32 +1534,41 @@ function fetchBookCover(book) {
     return Promise.resolve('none');
   }
   
-  // Standardised search string targeting Wikipedia pages
-  const query = `${book.title} ${book.author}`;
-  const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`;
+  // ── Source 1: Open Library Covers (fastest, highest accuracy for books) ──
+  const olSearchUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(book.title + ' ' + book.author)}&limit=1&fields=cover_i`;
   
-  return fetch(searchUrl)
+  return fetch(olSearchUrl)
     .then(res => res.json())
     .then(data => {
-      const results = data.query?.search;
-      if (results && results.length > 0) {
-        // Retrieve page summary for the highest matching wiki title
-        const pageTitle = results[0].title;
-        const summaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(pageTitle.replace(/ /g, '_'))}`;
-        return fetch(summaryUrl);
-      }
-      throw new Error("No page found");
-    })
-    .then(res => res.json())
-    .then(summary => {
-      // Prioritize High-Definition original images, fall back to default thumbnails
-      const imgUrl = summary.originalimage?.source || summary.thumbnail?.source;
-      if (imgUrl) {
+      const coverId = data.docs?.[0]?.cover_i;
+      if (coverId) {
+        const imgUrl = `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
         state.covers[cacheKey] = imgUrl;
         saveState();
         return imgUrl;
       }
-      throw new Error("No image sources in summary page");
+      // ── Source 2: Wikipedia page image fallback ──
+      const query = `${book.title} ${book.author}`;
+      const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`;
+      return fetch(searchUrl)
+        .then(res => res.json())
+        .then(wdata => {
+          const results = wdata.query?.search;
+          if (results && results.length > 0) {
+            const pageTitle = results[0].title;
+            const summaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(pageTitle.replace(/ /g, '_'))}`;
+            return fetch(summaryUrl).then(r => r.json()).then(summary => {
+              const imgUrl = summary.originalimage?.source || summary.thumbnail?.source;
+              if (imgUrl) {
+                state.covers[cacheKey] = imgUrl;
+                saveState();
+                return imgUrl;
+              }
+              throw new Error('No wiki image');
+            });
+          }
+          throw new Error('No wiki page');
+        });
     })
     .catch(err => {
       console.warn(`Cover query failed for: ${book.title}`, err);
@@ -1570,6 +1579,18 @@ function fetchBookCover(book) {
 }
 
 let coverObserver = null;
+
+function ensureEmojiFallback(el, book) {
+  // If no cover image on element, make sure the emoji placeholder is present
+  if (!el.classList.contains('has-cover-image')) {
+    if (!el.querySelector('.book-cover-emoji')) {
+      const emojiEl = document.createElement('div');
+      emojiEl.className = 'book-cover-emoji';
+      emojiEl.textContent = book?.emoji || '📖';
+      el.insertBefore(emojiEl, el.firstChild);
+    }
+  }
+}
 
 function initCoverObserver() {
   if (coverObserver) return;
@@ -1586,35 +1607,49 @@ function initCoverObserver() {
         
         fetchBookCover(book).then(url => {
           if (url && url !== 'none') {
+            // Cover found — show it and remove emoji
             el.style.backgroundImage = `url('${url}')`;
+            el.style.backgroundSize = 'cover';
+            el.style.backgroundPosition = 'center';
             el.classList.add('has-cover-image');
             const emoji = el.querySelector('.book-cover-emoji');
             if (emoji) emoji.remove();
+          } else {
+            // No cover found — ensure emoji placeholder is shown
+            ensureEmojiFallback(el, book);
           }
         });
       }
     });
-  }, { rootMargin: '120px' });
+  }, { rootMargin: '200px' });
 }
 
 function updateCoversOnScreen() {
   initCoverObserver();
   const coverElements = document.querySelectorAll('.book-cover[data-book-id], .detail-cover-img[data-book-id]');
+  const allBooks = [...MASTER_BOOKS, ...DYNAMIC_SEARCH_CACHE, ...state.customBooks];
+  
   coverElements.forEach(el => {
     const bookId = el.getAttribute('data-book-id');
+    const book = allBooks.find(b => b.id === bookId);
     
     // Fast render from localStorage cache instantly
     if (state.covers[bookId]) {
       if (state.covers[bookId] !== 'none') {
         el.style.backgroundImage = `url('${state.covers[bookId]}')`;
+        el.style.backgroundSize = 'cover';
+        el.style.backgroundPosition = 'center';
         el.classList.add('has-cover-image');
         const emoji = el.querySelector('.book-cover-emoji');
         if (emoji) emoji.remove();
+      } else {
+        // Previously fetched and failed — show emoji
+        ensureEmojiFallback(el, book);
       }
       return;
     }
     
-    // Observe for lazy loading if not cached
+    // Observe for lazy loading if not cached yet
     coverObserver.observe(el);
   });
 }
