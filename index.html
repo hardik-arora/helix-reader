@@ -1459,8 +1459,9 @@ function seedProceduralCatalog() {
       rating: (4.0 + (index % 10) / 10).toFixed(1),
       emoji: emoji,
       color: color,
-      cover: cover,
+      cover: null,
       summary: `A scholarly edition compiled to explore the intellectual themes of ${topic.toLowerCase()} within the geographic context of ${contName}, authored by the celebrated writer ${author}.`,
+      _baseTitle: baseTitle,
       excerpt: `Thus we begin our inquiry into ${topic.toLowerCase()} within the region of ${contName}. Writers like ${author} have long pointed out that the structural traditions of this literature reflect deeper historical realities. We invite the reader to review these arguments with care.`,
       keywords: [topic.toLowerCase(), contName.toLowerCase(), author.split(' ').pop().toLowerCase()],
       dictionary: { inquiry: 'An act of asking for information.', structural: 'Relating to or forming part of the structure of something.' },
@@ -1513,7 +1514,7 @@ const state = {
 // ── CACHE BUST v2: Clear all old 'none' cover entries so new dual-source
 //    fetch (Open Library + Wikipedia) runs fresh for every previously-failed book
 (function bustStaleCoverCache() {
-  const COVER_VERSION = '3'; // bump this whenever the fetch strategy improves
+  const COVER_VERSION = '4'; // bump this whenever the fetch strategy improves
   const storedVersion = safeStore.getItem('h_cover_version');
   if (storedVersion !== COVER_VERSION) {
     // Wipe all 'none' entries, keep real image URLs
@@ -1602,61 +1603,70 @@ window.addEventListener('click', () => {
 function fetchBookCover(book) {
   const cacheKey = book.id;
   
+  // Return from cache first
   if (state.covers[cacheKey]) {
     return Promise.resolve(state.covers[cacheKey]);
   }
   
-  if (book.cover && book.cover !== 'none') {
+  // Use pre-set cover only if it's a real Wikipedia URL (starts with https://upload.wikimedia)
+  if (book.cover && book.cover !== 'none' && book.cover.includes('wikimedia')) {
     state.covers[cacheKey] = book.cover;
     saveState();
     return Promise.resolve(book.cover);
   }
   
-  // Exclude custom books from standard searches to avoid blank overheads
-  if (book.id.startsWith('custom-')) {
+  // Custom books — no search
+  if (book.id && book.id.startsWith('custom-')) {
     state.covers[cacheKey] = 'none';
     saveState();
     return Promise.resolve('none');
   }
-  
-  // ── Source 1: Open Library Covers (fastest, highest accuracy for books) ──
-  const olSearchUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(book.title + ' ' + book.author)}&limit=1&fields=cover_i`;
+
+  // Use _baseTitle for procedural books for a better search hit
+  const searchTitle = book._baseTitle || book.title;
+  const olSearchUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(searchTitle + ' ' + book.author)}&limit=1&fields=cover_i,cover_edition_key`;
   
   return fetch(olSearchUrl)
     .then(res => res.json())
     .then(data => {
-      const coverId = data.docs?.[0]?.cover_i;
+      const doc = data.docs?.[0];
+      const coverId = doc?.cover_i;
       if (coverId) {
+        // Validate the image actually loads before committing
         const imgUrl = `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
-        state.covers[cacheKey] = imgUrl;
-        saveState();
-        return imgUrl;
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            state.covers[cacheKey] = imgUrl;
+            saveState();
+            resolve(imgUrl);
+          };
+          img.onerror = () => {
+            // Try medium size as fallback
+            const mUrl = `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
+            state.covers[cacheKey] = mUrl;
+            saveState();
+            resolve(mUrl);
+          };
+          img.src = imgUrl;
+        });
       }
-      // ── Source 2: Wikipedia page image fallback ──
-      const query = `${book.title} ${book.author}`;
-      const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`;
-      return fetch(searchUrl)
-        .then(res => res.json())
+      // Fallback: Wikipedia thumbnail
+      const wUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTitle)}&format=json&origin=*`;
+      return fetch(wUrl)
+        .then(r => r.json())
         .then(wdata => {
-          const results = wdata.query?.search;
-          if (results && results.length > 0) {
-            const pageTitle = results[0].title;
-            const summaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(pageTitle.replace(/ /g, '_'))}`;
-            return fetch(summaryUrl).then(r => r.json()).then(summary => {
-              const imgUrl = summary.originalimage?.source || summary.thumbnail?.source;
-              if (imgUrl) {
-                state.covers[cacheKey] = imgUrl;
-                saveState();
-                return imgUrl;
-              }
-              throw new Error('No wiki image');
-            });
-          }
-          throw new Error('No wiki page');
+          const first = wdata.query?.search?.[0];
+          if (!first) throw new Error('no wiki');
+          const sumUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(first.title.replace(/ /g, '_'))}`;
+          return fetch(sumUrl).then(r => r.json()).then(s => {
+            const imgUrl = s.originalimage?.source || s.thumbnail?.source;
+            if (imgUrl) { state.covers[cacheKey] = imgUrl; saveState(); return imgUrl; }
+            throw new Error('no img');
+          });
         });
     })
-    .catch(err => {
-      console.warn(`Cover query failed for: ${book.title}`, err);
+    .catch(() => {
       state.covers[cacheKey] = 'none';
       saveState();
       return 'none';
@@ -1846,7 +1856,8 @@ function makeCoverStyle(book) {
   if (cachedCover && cachedCover !== 'none') {
     return `background-image: url('${cachedCover}'); background-size: cover; background-position: center;`;
   }
-  if (book.cover && book.cover !== 'none') {
+  // Use book.cover ONLY for MASTER_BOOKS with known-good Wikimedia URLs
+  if (book.cover && book.cover !== 'none' && book.cover.includes('wikimedia')) {
     return `background-image: url('${book.cover}'); background-size: cover; background-position: center;`;
   }
   const colors = book.color || ['#1e293b', '#0f172a'];
@@ -1854,7 +1865,7 @@ function makeCoverStyle(book) {
 }
 
 function renderBookCard(book) {
-  const hasCover = (state.covers[book.id] && state.covers[book.id] !== 'none') || (book.cover && book.cover !== 'none');
+  const hasCover = state.covers[book.id] && state.covers[book.id] !== 'none';
   return `
     <div class="book-card" onclick="openBookDetails('${book.id}')">
       <div class="book-cover ${hasCover ? 'has-cover-image' : ''}" data-book-id="${book.id}" style="${makeCoverStyle(book)}">
@@ -1926,7 +1937,7 @@ function renderDiscoverPage() {
   // Featured book
   const featured = allBooks[0];
   const featTarget = document.getElementById('featured-card-target');
-  const hasCover = (state.covers[featured.id] && state.covers[featured.id] !== 'none') || (featured.cover && featured.cover !== 'none');
+  const hasCover = state.covers[featured.id] && state.covers[featured.id] !== 'none';
   
   featTarget.innerHTML = `
     <div class="detail-card">
@@ -2184,7 +2195,7 @@ function openBookDetails(bookId) {
   const isFav = state.favorites.includes(bookId);
   const isDone = state.completed.includes(bookId);
 
-  const hasCover = (state.covers[book.id] && state.covers[book.id] !== 'none') || (book.cover && book.cover !== 'none');
+  const hasCover = state.covers[book.id] && state.covers[book.id] !== 'none';
   
   // Set detail layout (Primary "Read Book" redirects to choices redirect panel)
   target.innerHTML = `
