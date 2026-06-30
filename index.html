@@ -2090,13 +2090,14 @@ function renderSearchPage() {
   // Load covers for current visible page slice
   updateCoversOnScreen();
   
-  // Fetch global matches from the 158 Million Open Library catalog if query is active
-  if (activeSearchQuery) {
+  // Fetch global matches from the 158 Million Open Library catalog if query is active and changed
+  if (activeSearchQuery && activeSearchQuery !== lastFetchedQuery) {
     fetchGlobalSearch(activeSearchQuery);
   }
 }
 
 let currentSearchRequest = null;
+let lastFetchedQuery = '';
 
 function fetchGlobalSearch(query) {
   const indicator = document.getElementById('global-search-indicator');
@@ -2104,6 +2105,8 @@ function fetchGlobalSearch(query) {
     if (indicator) indicator.style.display = 'none';
     return;
   }
+  
+  lastFetchedQuery = query;
   
   if (indicator) {
     indicator.innerHTML = `
@@ -2172,43 +2175,8 @@ function fetchGlobalSearch(query) {
       
       if (indicator) indicator.style.display = 'none';
       
-      // Force a redraw of search results with combined items
-      // Stop recursion by only rendering if results are different
-      const grid = document.getElementById('search-results-grid');
-      const allBooks = [...MASTER_BOOKS, ...state.customBooks];
-      let filtered = allBooks;
-      
-      // Compute matching sliced local matches
-      if (activeSearchCategory !== 'All') filtered = filtered.filter(b => b.topic === activeSearchCategory);
-      if (activeSearchContinent !== 'All') filtered = filtered.filter(b => b.continent === activeSearchContinent);
-      
-      if (activeSearchQuery) {
-        const queryWords = activeSearchQuery.toLowerCase().split(/\s+/).filter(w => w.length > 0);
-        if (queryWords.length > 0) {
-          filtered = filtered.filter(b => {
-            return queryWords.every(word => {
-              const inTitle = b.title.toLowerCase().includes(word);
-              const inAuthor = b.author.toLowerCase().includes(word);
-              const inSummary = b.summary.toLowerCase().includes(word);
-              const inExcerpt = b.excerpt ? b.excerpt.toLowerCase().includes(word) : false;
-              const inKeywords = b.keywords && b.keywords.some(k => k.toLowerCase().includes(word));
-              const inTopic = b.topic ? b.topic.toLowerCase().includes(word) : false;
-              return inTitle || inAuthor || inSummary || inExcerpt || inKeywords || inTopic;
-            });
-          });
-        }
-      }
-      
-      const slicedLocal = filtered.slice(0, 80);
-      const uniqueGlobal = DYNAMIC_SEARCH_CACHE.filter(gb => 
-        !slicedLocal.some(lb => lb.title.toLowerCase().trim() === gb.title.toLowerCase().trim())
-      );
-      const finalMerged = [...slicedLocal, ...uniqueGlobal];
-      
-      if (grid) {
-        grid.innerHTML = finalMerged.map(renderBookCard).join('');
-        updateCoversOnScreen();
-      }
+      // Trigger redraw of unified results. Since query matches lastFetchedQuery, this won't restart fetchGlobalSearch.
+      renderSearchPage();
     })
     .catch(err => {
       if (err.name === 'AbortError') return;
@@ -2226,6 +2194,7 @@ function handleSearch(val) {
   searchTimeout = setTimeout(() => {
     activeSearchQuery = val.trim();
     DYNAMIC_SEARCH_CACHE = []; // Reset cache to prevent previous query matches from showing
+    lastFetchedQuery = ''; // Reset query tracking so new query triggers a fresh fetch
     navigate('search');
   }, 350); // 350ms debounce window
 }
@@ -2233,12 +2202,14 @@ function handleSearch(val) {
 function selectSearchCategory(cat) {
   activeSearchCategory = cat;
   DYNAMIC_SEARCH_CACHE = [];
+  lastFetchedQuery = ''; // Reset search query tracking on filter change
   renderSearchPage();
 }
 
 function selectSearchContinent(cont) {
   activeSearchContinent = cont;
   DYNAMIC_SEARCH_CACHE = [];
+  lastFetchedQuery = ''; // Reset search query tracking on filter change
   renderSearchPage();
 }
 
