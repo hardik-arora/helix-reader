@@ -2068,6 +2068,33 @@ function renderSearchPage() {
     mergedBooks = [...slicedLocal, ...uniqueGlobal];
   }
 
+  // Sort mergedBooks by search relevance so exact title matches bubble to the top of the unified results!
+  if (activeSearchQuery) {
+    const qLower = activeSearchQuery.toLowerCase().trim();
+    mergedBooks.sort((a, b) => {
+      const aTitle = a.title.toLowerCase();
+      const bTitle = b.title.toLowerCase();
+      
+      const aExact = aTitle === qLower;
+      const bExact = bTitle === qLower;
+      if (aExact && !bExact) return -1;
+      if (!aExact && bExact) return 1;
+      
+      const aStarts = aTitle.startsWith(qLower);
+      const bStarts = bTitle.startsWith(qLower);
+      if (aStarts && !bStarts) return -1;
+      if (!aStarts && bStarts) return 1;
+      
+      // Keep curated master books slightly above procedural/global matches
+      const aCurated = a.id && !a.id.startsWith('proc-') && !a.id.startsWith('ol-');
+      const bCurated = b.id && !b.id.startsWith('proc-') && !b.id.startsWith('ol-');
+      if (aCurated && !bCurated) return -1;
+      if (!aCurated && bCurated) return 1;
+      
+      return 0;
+    });
+  }
+
   let headingText = `Browse Library: ${activeSearchCategory} / ${activeSearchContinent} (${filtered.length} matches)`;
   if (activeSearchQuery) {
     headingText = `Search Results for "${activeSearchQuery}"`;
@@ -2125,7 +2152,7 @@ function fetchGlobalSearch(query) {
   const controller = new AbortController();
   currentSearchRequest = controller;
   
-  const searchUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=15&fields=key,title,author_name,subject,cover_i,first_publish_year,language,number_of_pages_median,first_sentence`;
+  const searchUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=15`;
   
   fetch(searchUrl, { signal: controller.signal })
     .then(res => res.json())
