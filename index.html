@@ -1439,9 +1439,27 @@ const state = {
   xp: parseInt(safeStore.getItem('h_xp') || '0'),
   customBooks: JSON.parse(safeStore.getItem('h_custom') || '[]'),
   badges: JSON.parse(safeStore.getItem('h_badges') || '[]'),
-  covers: JSON.parse(safeStore.getItem('h_covers') || '{}'), // Wikipedia cover image cache mapping (url or 'none')
+  covers: JSON.parse(safeStore.getItem('h_covers') || '{}'), // cover image cache mapping (url or 'none')
   olLinks: JSON.parse(safeStore.getItem('h_ol_links') || '{}') // Open Library readable link cache mapping
 };
+
+// ── CACHE BUST v2: Clear all old 'none' cover entries so new dual-source
+//    fetch (Open Library + Wikipedia) runs fresh for every previously-failed book
+(function bustStaleCoverCache() {
+  const COVER_VERSION = '2'; // bump this whenever the fetch strategy improves
+  const storedVersion = safeStore.getItem('h_cover_version');
+  if (storedVersion !== COVER_VERSION) {
+    // Wipe all 'none' entries, keep real image URLs
+    const freshCovers = {};
+    for (const [id, url] of Object.entries(state.covers)) {
+      if (url && url !== 'none') freshCovers[id] = url;
+    }
+    state.covers = freshCovers;
+    safeStore.setItem('h_covers', JSON.stringify(freshCovers));
+    safeStore.setItem('h_cover_version', COVER_VERSION);
+    console.log(`[Helix] Cover cache busted to v${COVER_VERSION}. Cleared stale 'none' entries.`);
+  }
+})();
 
 function saveState() {
   safeStore.setItem('h_theme', state.theme);
