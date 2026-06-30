@@ -1511,18 +1511,18 @@ const state = {
 // ── CACHE BUST v2: Clear all old 'none' cover entries so new dual-source
 //    fetch (Open Library + Wikipedia) runs fresh for every previously-failed book
 (function bustStaleCoverCache() {
-  const COVER_VERSION = '8';
+  const COVER_VERSION = 'v9';
   const storedVersion = safeStore.getItem('h_cover_version');
   if (storedVersion !== COVER_VERSION) {
-    // Full wipe — removes bad Unsplash URLs, fake OL IDs, stale ISBN URLs, and stale 'none' entries
+    // Full wipe — removes bad Unsplash URLs, fake OL IDs, stale Wikipedia references, and stale 'none' entries
     state.covers = {};
     safeStore.setItem('h_cover_version', COVER_VERSION);
-    console.log('[Helix] Cover cache fully reset to v8.');
+    console.log('[Helix] Cover cache fully reset to v9.');
   }
   // Always pre-seed verified cover URLs for MASTER_BOOKS
   // so they show instantly without needing the IntersectionObserver fetch
   MASTER_BOOKS.forEach(book => {
-    if (!state.covers[book.id] && book.cover && (book.cover.includes('wikimedia') || book.cover.includes('openlibrary.org'))) {
+    if (!state.covers[book.id] && book.cover && book.cover.startsWith('http')) {
       state.covers[book.id] = book.cover;
     }
   });
@@ -1608,8 +1608,8 @@ function fetchBookCover(book) {
     return Promise.resolve(state.covers[cacheKey]);
   }
   
-  // Use pre-set cover only if it's a trusted URL (Wikimedia or Open Library)
-  if (book.cover && book.cover !== 'none' && (book.cover.includes('wikimedia') || book.cover.includes('openlibrary.org'))) {
+  // Use pre-set cover only if it's a valid HTTP URL
+  if (book.cover && book.cover !== 'none' && book.cover.startsWith('http')) {
     // Return directly without modifying cache or saving state to avoid heavy scroll write-overhead
     return Promise.resolve(book.cover);
   }
@@ -1745,7 +1745,7 @@ function updateCoversOnScreen() {
     }
 
     // Fast render from pre-assigned verified book cover directly
-    if (book.cover && book.cover !== 'none' && (book.cover.includes('wikimedia') || book.cover.includes('openlibrary.org'))) {
+    if (book.cover && book.cover !== 'none' && book.cover.startsWith('http')) {
       el.style.backgroundImage = `url('${book.cover}')`;
       el.style.backgroundSize = 'cover';
       el.style.backgroundPosition = 'center';
@@ -1868,7 +1868,7 @@ function hasBookCover(book) {
   if (cached) {
     return cached !== 'none';
   }
-  return !!(book.cover && book.cover !== 'none' && (book.cover.includes('wikimedia') || book.cover.includes('openlibrary.org')));
+  return !!(book.cover && book.cover !== 'none' && book.cover.startsWith('http'));
 }
 
 function makeCoverStyle(book) {
@@ -1876,8 +1876,8 @@ function makeCoverStyle(book) {
   if (cachedCover && cachedCover !== 'none') {
     return `background-image: url('${cachedCover}'); background-size: cover; background-position: center;`;
   }
-  // Use book.cover ONLY for MASTER_BOOKS / procedural books with known-good Wikimedia or Open Library URLs
-  if (book.cover && book.cover !== 'none' && (book.cover.includes('wikimedia') || book.cover.includes('openlibrary.org'))) {
+  // Use book.cover ONLY for MASTER_BOOKS / procedural books with valid URLs
+  if (book.cover && book.cover !== 'none' && book.cover.startsWith('http')) {
     return `background-image: url('${book.cover}'); background-size: cover; background-position: center;`;
   }
   const colors = book.color || ['#1e293b', '#0f172a'];
@@ -2139,7 +2139,7 @@ function fetchGlobalSearch(query) {
     indicator.innerHTML = `
       <div style="display:inline-flex; align-items:center; gap:0.4rem; color:var(--teal)">
         <div style="border: 2px solid var(--border); border-top: 2px solid var(--accent); border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite;"></div>
-        Searching 158 Million books...
+        Searching global book registry...
       </div>
     `;
     indicator.style.display = 'block';
@@ -2152,34 +2152,38 @@ function fetchGlobalSearch(query) {
   const controller = new AbortController();
   currentSearchRequest = controller;
   
-  const searchUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=15`;
+  // Use public Google Books API which supports CORS natively, never rate-limits, and resolves in milliseconds
+  const searchUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=15`;
   
   fetch(searchUrl, { signal: controller.signal })
     .then(res => res.json())
     .then(data => {
       if (query !== activeSearchQuery) return; // ignore stale responses
       
-      const docs = data.docs || [];
-      DYNAMIC_SEARCH_CACHE = docs.map(doc => {
-        const key = doc.key ? doc.key.split('/').pop() : Date.now();
-        const id = `ol-${key}`;
-        const coverUrl = doc.cover_i ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg` : 'none';
+      const items = data.items || [];
+      DYNAMIC_SEARCH_CACHE = items.map(item => {
+        const info = item.volumeInfo || {};
+        const id = `gb-${item.id}`;
         
-        // Bulletproof parsing parameters
-        const title = doc.title || 'Unknown Title';
-        const author = Array.isArray(doc.author_name) ? doc.author_name.join(', ') : (doc.author_name || 'Unknown Author');
-        const topic = (doc.subject && doc.subject.length > 0) ? doc.subject[0] : 'General';
-        const year = doc.first_publish_year || 1990;
-        const lang = (doc.language && doc.language.length > 0 && doc.language[0]) ? String(doc.language[0]).toUpperCase() : 'EN';
-        const pages = doc.number_of_pages_median || 240;
-        const rating = doc.ratings_average ? doc.ratings_average.toFixed(1) : '4.5';
-        
-        let summary = `Preserved digital catalog volume from the 158M library registry. Key: ${doc.key || ''}`;
-        if (doc.first_sentence) {
-          summary = Array.isArray(doc.first_sentence) ? doc.first_sentence.join(' ') : String(doc.first_sentence);
+        // Upgrade HTTP cover links to HTTPS to prevent browser Mixed Content blocking
+        let coverUrl = 'none';
+        if (info.imageLinks) {
+          coverUrl = info.imageLinks.thumbnail || info.imageLinks.smallThumbnail || 'none';
+          if (coverUrl !== 'none' && coverUrl.startsWith('http:')) {
+            coverUrl = coverUrl.replace('http:', 'https:');
+          }
         }
         
-        const keywords = Array.isArray(doc.subject) ? doc.subject.slice(0, 4).map(s => String(s).toLowerCase()) : ['global', 'archive'];
+        const title = info.title || 'Unknown Title';
+        const author = Array.isArray(info.authors) ? info.authors.join(', ') : (info.authors || 'Unknown Author');
+        const topic = Array.isArray(info.categories) ? info.categories[0] : 'General';
+        const year = info.publishedDate ? parseInt(info.publishedDate.substring(0, 4)) : 2000;
+        const lang = info.language ? info.language.toUpperCase() : 'EN';
+        const pages = info.pageCount || 240;
+        const rating = info.averageRating ? info.averageRating : 4.5;
+        const summary = info.description || `Digital volume from the global library registry. ID: ${item.id}`;
+        
+        const keywords = Array.isArray(info.categories) ? info.categories.slice(0, 4).map(c => String(c).toLowerCase()) : ['global', 'archive'];
         
         return {
           id: id,
@@ -2190,7 +2194,7 @@ function fetchGlobalSearch(query) {
           year: year,
           lang: lang,
           pages: pages,
-          rating: rating,
+          rating: rating.toFixed(1),
           emoji: '📖',
           summary: summary,
           excerpt: summary,
@@ -2202,14 +2206,14 @@ function fetchGlobalSearch(query) {
       
       if (indicator) indicator.style.display = 'none';
       
-      // Trigger redraw of unified results. Since query matches lastFetchedQuery, this won't restart fetchGlobalSearch.
+      // Re-render search page with merged results!
       renderSearchPage();
     })
     .catch(err => {
       if (err.name === 'AbortError') return;
       console.error('Global search fetch error:', err);
       if (indicator) {
-        indicator.innerHTML = `<span style="color:var(--accent)">⚠️ Open Library connection slow (showing local matches only)</span>`;
+        indicator.innerHTML = `<span style="color:var(--accent)">⚠️ Connection slow (showing local matches only)</span>`;
       }
     });
 }
