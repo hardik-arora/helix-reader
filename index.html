@@ -2139,7 +2139,7 @@ function fetchGlobalSearch(query) {
     indicator.innerHTML = `
       <div style="display:inline-flex; align-items:center; gap:0.4rem; color:var(--teal)">
         <div style="border: 2px solid var(--border); border-top: 2px solid var(--accent); border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite;"></div>
-        Searching 158 Million books...
+        Searching global registry...
       </div>
     `;
     indicator.style.display = 'block';
@@ -2152,42 +2152,51 @@ function fetchGlobalSearch(query) {
   const controller = new AbortController();
   currentSearchRequest = controller;
   
-  const searchUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=15`;
+  // Strategy: Try high-speed Google Books API first. If it fails or is blocked by privacy shields, fall back to Open Library.
+  const googleBooksUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=15`;
   
-  fetch(searchUrl, { signal: controller.signal })
-    .then(res => res.json())
+  fetch(googleBooksUrl, { signal: controller.signal })
+    .then(res => {
+      if (!res.ok) throw new Error('Google Books response error');
+      return res.json();
+    })
     .then(data => {
-      if (query !== activeSearchQuery) return; // ignore stale responses
+      if (query !== activeSearchQuery) return;
       
-      const docs = data.docs || [];
-      DYNAMIC_SEARCH_CACHE = docs.map(doc => {
+      const items = data.items || [];
+      if (items.length === 0) {
+        throw new Error('Google Books returned zero results');
+      }
+      
+      DYNAMIC_SEARCH_CACHE = items.map(item => {
         try {
-          const key = doc.key ? doc.key.split('/').pop() : Date.now();
-          const id = `ol-${key}`;
-          const coverUrl = doc.cover_i ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg` : 'none';
+          const info = item.volumeInfo || {};
+          const id = `gb-${item.id}`;
           
-          const title = doc.title || 'Unknown Title';
-          const author = Array.isArray(doc.author_name) ? doc.author_name.join(', ') : (doc.author_name || 'Unknown Author');
-          const topic = (doc.subject && doc.subject.length > 0) ? doc.subject[0] : 'General';
+          let coverUrl = 'none';
+          if (info.imageLinks) {
+            coverUrl = info.imageLinks.thumbnail || info.imageLinks.smallThumbnail || 'none';
+            if (coverUrl !== 'none' && coverUrl.startsWith('http:')) {
+              coverUrl = coverUrl.replace('http:', 'https:');
+            }
+          }
           
-          let year = 1990;
-          if (doc.first_publish_year) {
-            const parsedYear = parseInt(doc.first_publish_year);
+          const title = info.title || 'Unknown Title';
+          const author = Array.isArray(info.authors) ? info.authors.join(', ') : (info.authors || 'Unknown Author');
+          const topic = Array.isArray(info.categories) ? info.categories[0] : 'General';
+          
+          let year = 2000;
+          if (info.publishedDate) {
+            const dateStr = String(info.publishedDate);
+            const parsedYear = parseInt(dateStr.substring(0, 4));
             if (!isNaN(parsedYear)) year = parsedYear;
           }
           
-          const lang = (doc.language && doc.language.length > 0 && doc.language[0]) ? String(doc.language[0]).toUpperCase() : 'EN';
-          const pages = doc.number_of_pages_median || doc.number_of_pages || 240;
-          
-          const rawRating = Number(doc.ratings_average) || 4.5;
-          const rating = rawRating.toFixed(1);
-          
-          let summary = `Preserved digital catalog volume from the 158M library registry. Key: ${doc.key || ''}`;
-          if (doc.first_sentence) {
-            summary = Array.isArray(doc.first_sentence) ? doc.first_sentence.join(' ') : String(doc.first_sentence);
-          }
-          
-          const keywords = Array.isArray(doc.subject) ? doc.subject.slice(0, 4).map(s => String(s).toLowerCase()) : ['global', 'archive'];
+          const lang = info.language ? String(info.language).toUpperCase() : 'EN';
+          const pages = info.pageCount || 240;
+          const rawRating = Number(info.averageRating) || 4.5;
+          const summary = info.description || `Digital volume from the global library registry. ID: ${item.id}`;
+          const keywords = Array.isArray(info.categories) ? info.categories.slice(0, 4).map(c => String(c).toLowerCase()) : ['global', 'archive'];
           
           return {
             id: id,
@@ -2198,7 +2207,7 @@ function fetchGlobalSearch(query) {
             year: year,
             lang: lang,
             pages: pages,
-            rating: rating,
+            rating: rawRating.toFixed(1),
             emoji: '📖',
             summary: summary,
             excerpt: summary,
@@ -2207,22 +2216,92 @@ function fetchGlobalSearch(query) {
             quotes: []
           };
         } catch (e) {
-          console.error('Error parsing Open Library doc:', e, doc);
+          console.error('Error parsing Google Book item:', e, item);
           return null;
         }
       }).filter(Boolean);
       
       if (indicator) indicator.style.display = 'none';
-      
-      // Re-render search page with merged results!
       renderSearchPage();
     })
     .catch(err => {
       if (err.name === 'AbortError') return;
-      console.error('Global search fetch error:', err);
-      if (indicator) {
-        indicator.innerHTML = `<span style="color:var(--accent)">⚠️ Connection slow (showing local matches only)</span>`;
-      }
+      console.warn('Google Books failed or blocked, falling back to Open Library API:', err);
+      
+      // Fallback: Open Library Search API
+      const openLibraryUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=15`;
+      
+      fetch(openLibraryUrl, { signal: controller.signal })
+        .then(res => {
+          if (!res.ok) throw new Error('Open Library response error');
+          return res.json();
+        })
+        .then(data => {
+          if (query !== activeSearchQuery) return;
+          
+          const docs = data.docs || [];
+          DYNAMIC_SEARCH_CACHE = docs.map(doc => {
+            try {
+              const key = doc.key ? doc.key.split('/').pop() : Date.now();
+              const id = `ol-${key}`;
+              const coverUrl = doc.cover_i ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg` : 'none';
+              
+              const title = doc.title || 'Unknown Title';
+              const author = Array.isArray(doc.author_name) ? doc.author_name.join(', ') : (doc.author_name || 'Unknown Author');
+              const topic = (doc.subject && doc.subject.length > 0) ? doc.subject[0] : 'General';
+              
+              let year = 1990;
+              if (doc.first_publish_year) {
+                const parsedYear = parseInt(doc.first_publish_year);
+                if (!isNaN(parsedYear)) year = parsedYear;
+              }
+              
+              const lang = (doc.language && doc.language.length > 0 && doc.language[0]) ? String(doc.language[0]).toUpperCase() : 'EN';
+              const pages = doc.number_of_pages_median || doc.number_of_pages || 240;
+              
+              const rawRating = Number(doc.ratings_average) || 4.5;
+              const rating = rawRating.toFixed(1);
+              
+              let summary = `Preserved digital catalog volume from the 158M library registry. Key: ${doc.key || ''}`;
+              if (doc.first_sentence) {
+                summary = Array.isArray(doc.first_sentence) ? doc.first_sentence.join(' ') : String(doc.first_sentence);
+              }
+              
+              const keywords = Array.isArray(doc.subject) ? doc.subject.slice(0, 4).map(s => String(s).toLowerCase()) : ['global', 'archive'];
+              
+              return {
+                id: id,
+                title: title,
+                author: author,
+                topic: topic,
+                cover: coverUrl,
+                year: year,
+                lang: lang,
+                pages: pages,
+                rating: rating,
+                emoji: '📖',
+                summary: summary,
+                excerpt: summary,
+                keywords: keywords,
+                dictionary: { archive: 'A collection of historical records.' },
+                quotes: []
+              };
+            } catch (e) {
+              console.error('Error parsing Open Library doc:', e, doc);
+              return null;
+            }
+          }).filter(Boolean);
+          
+          if (indicator) indicator.style.display = 'none';
+          renderSearchPage();
+        })
+        .catch(olErr => {
+          if (olErr.name === 'AbortError') return;
+          console.error('Both global book search APIs failed:', olErr);
+          if (indicator) {
+            indicator.innerHTML = `<span style="color:var(--accent)">⚠️ Registry offline (showing local matches only)</span>`;
+          }
+        });
     });
 }
 
