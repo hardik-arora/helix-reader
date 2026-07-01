@@ -364,6 +364,34 @@
       0%, 100% { transform: translateY(0px) rotate(0deg); }
       50%       { transform: translateY(-3px) rotate(8deg); }
     }
+    @keyframes cardEntrance {
+      from { opacity: 0; transform: translateY(24px) scale(0.96); }
+      to   { opacity: 1; transform: translateY(0)   scale(1); }
+    }
+    @keyframes chipRipple {
+      0%   { box-shadow: 0 0 0 0 var(--accent-glow); }
+      70%  { box-shadow: 0 0 0 10px rgba(0,0,0,0); }
+      100% { box-shadow: 0 0 0 0   rgba(0,0,0,0); }
+    }
+    @keyframes btnBounce {
+      0%   { transform: scale(1); }
+      35%  { transform: scale(0.92); }
+      65%  { transform: scale(1.04); }
+      100% { transform: scale(1); }
+    }
+    @keyframes pageFadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes underlineSlide {
+      from { transform: scaleX(0); }
+      to   { transform: scaleX(1); }
+    }
+    @keyframes statPop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.18); color: var(--accent); }
+      100% { transform: scale(1); }
+    }
 
     nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
@@ -421,6 +449,16 @@
       padding: 0.6rem 1.1rem; border-radius: 8px; font-size: 0.9rem; font-weight: 600;
       color: var(--text2); transition: all var(--transition);
       display: flex; align-items: center; gap: 0.4rem;
+      position: relative;
+    }
+    .nav-btn::after {
+      content: '';
+      position: absolute; bottom: 2px; left: 50%; right: 50%;
+      height: 2px; background: var(--accent); border-radius: 2px;
+      transition: left 0.3s ease, right 0.3s ease;
+    }
+    .nav-btn.active::after {
+      left: 10%; right: 10%;
     }
     .nav-btn:hover, .nav-btn.active { background: var(--surface); color: var(--text); }
     .nav-btn.active { color: var(--accent); }
@@ -487,6 +525,7 @@
       gap: 0.5rem;
     }
     .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--accent-glow); }
+    .btn-primary:active { animation: btnBounce 0.35s ease; }
     .btn-secondary {
       background: var(--surface); border: 1px solid var(--border);
       color: var(--text); border-radius: 10px;
@@ -660,6 +699,7 @@
     /* ─── PREMIUM BOOK COVER DESIGN ─────────────────── */
     .book-card {
       width: 170px; flex-shrink: 0; cursor: pointer; transition: transform var(--transition);
+      animation: cardEntrance 0.5s ease both;
     }
     .book-card:hover { transform: translateY(-8px); }
     .book-cover {
@@ -674,7 +714,10 @@
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 6px; pointer-events: none; z-index: 2;
     }
-    .book-card:hover .book-cover { box-shadow: var(--shadow-lg); }
+    .book-card:hover .book-cover {
+      box-shadow: var(--shadow-lg);
+      transform: perspective(600px) rotateY(-6deg) rotateX(3deg);
+    }
     
     /* Cover Art Layer Overrides */
     .book-cover.has-cover-image {
@@ -870,7 +913,8 @@
       background: var(--surface); color: var(--text2); font-size: 0.85rem; font-weight: 600;
       white-space: nowrap; transition: all var(--transition);
     }
-    .filter-chip:hover, .filter-chip.active { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+    .filter-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); transform: translateY(-1px); }
+    .filter-chip.active { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); animation: chipRipple 0.5s ease; }
 
     /* ─── BOOK DETAIL COMPONENT ─────────────────────── */
     .detail-card {
@@ -2090,10 +2134,14 @@ function navigate(pageId) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
   
-  // Show target page
+  // Show target page with fade-in animation
   const target = document.getElementById(`${pageId}-page`);
   if (target) {
     target.classList.add('active');
+    target.style.animation = 'none';
+    // Force reflow to restart the animation
+    void target.offsetHeight;
+    target.style.animation = 'pageFadeIn 0.4s ease both';
   }
   
   const navBtn = document.getElementById(`nav-${pageId}`);
@@ -2114,6 +2162,19 @@ function navigate(pageId) {
   if (targetChanged) {
     window.scrollTo({top:0, behavior:'smooth'});
   }
+
+  // Animate dashboard stat numbers when home page loads
+  if (pageId === 'home') {
+    setTimeout(() => {
+      document.querySelectorAll('.dash-stat-val').forEach((el, i) => {
+        el.style.animationDelay = `${i * 0.1}s`;
+        el.style.animation = 'none';
+        void el.offsetHeight;
+        el.style.animation = `statPop 0.5s ease ${i * 0.1}s both`;
+      });
+    }, 200);
+  }
+
   hideDictPopup();
   hideFontConfig();
 }
