@@ -364,9 +364,11 @@
       0%, 100% { transform: translateY(0px) rotate(0deg); }
       50%       { transform: translateY(-3px) rotate(8deg); }
     }
-    @keyframes cardEntrance {
-      from { opacity: 0; transform: translateY(24px) scale(0.96); }
-      to   { opacity: 1; transform: translateY(0)   scale(1); }
+    @keyframes bookMaterialise {
+      0%   { opacity: 0; filter: blur(12px) saturate(0);   transform: scale(0.9); }
+      50%  { opacity: 0.8; filter: blur(3px)  saturate(0.5); transform: scale(1.02); }
+      75%  { filter: blur(1px) saturate(0.9); transform: scale(0.99); }
+      100% { opacity: 1; filter: blur(0px)  saturate(1);   transform: scale(1); }
     }
     @keyframes chipRipple {
       0%   { box-shadow: 0 0 0 0 var(--accent-glow); }
@@ -414,9 +416,12 @@
       50%  { box-shadow: 0 0 0 20px rgba(0,0,0,0), 0 0 0 40px rgba(255,255,255,0); }
       100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); }
     }
-    @keyframes shelfCascade {
-      from { opacity: 0; transform: translateY(30px) scale(0.94); }
-      to   { opacity: 1; transform: translateY(0)    scale(1); }
+    @keyframes shelfSpringDrop {
+      0%   { opacity: 0; transform: translateY(-36px) scale(0.92); }
+      55%  { opacity: 1; transform: translateY(10px)  scale(1.03); }
+      75%  { transform: translateY(-5px) scale(0.98); }
+      90%  { transform: translateY(3px)  scale(1.01); }
+      100% { opacity: 1; transform: translateY(0)    scale(1); }
     }
 
     nav {
@@ -724,10 +729,11 @@
     
     /* ─── PREMIUM BOOK COVER DESIGN ─────────────────── */
     .book-card {
-      width: 170px; flex-shrink: 0; cursor: pointer; transition: transform var(--transition);
-      animation: cardEntrance 0.5s ease both;
+      width: 170px; flex-shrink: 0; cursor: pointer;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease;
+      animation: bookMaterialise 0.6s ease both;
     }
-    .book-card:hover { transform: translateY(-8px); }
+    .book-card:hover { transform: translateY(-10px); }
     .book-cover {
       width: 170px; height: 240px; border-radius: 10px;
       padding: 1.5rem 1.2rem; position: relative; overflow: hidden;
@@ -741,8 +747,10 @@
       border-radius: 6px; pointer-events: none; z-index: 2;
     }
     .book-card:hover .book-cover {
-      box-shadow: var(--shadow-lg);
-      transform: perspective(600px) rotateY(-6deg) rotateX(3deg);
+      box-shadow:
+        0 20px 50px rgba(0,0,0,0.7),
+        0 0 0 2px var(--accent),
+        0 0 30px 4px var(--accent-glow);
     }
     
     /* Cover Art Layer Overrides */
@@ -825,7 +833,7 @@
       box-shadow: none;
       background: transparent;
       overflow: visible;
-      animation: shelfCascade 0.55s cubic-bezier(0.2, 1, 0.3, 1) both;
+      animation: shelfSpringDrop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
     }
     /* Stagger each book card in a shelf row */
     .shelf .book-card:nth-child(1)  { animation-delay: 0.05s; }
