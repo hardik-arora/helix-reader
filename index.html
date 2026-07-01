@@ -392,6 +392,27 @@
       50%  { transform: scale(1.18); color: var(--accent); }
       100% { transform: scale(1); }
     }
+    @keyframes bookShine {
+      0%   { left: -80%; opacity: 0; }
+      20%  { opacity: 0.6; }
+      80%  { opacity: 0.6; }
+      100% { left: 130%; opacity: 0; }
+    }
+    @keyframes bookShadowPulse {
+      0%   { box-shadow: 0 6px 15px rgba(0,0,0,0.7); }
+      50%  { box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px var(--accent-glow); }
+      100% { box-shadow: 0 6px 15px rgba(0,0,0,0.7); }
+    }
+    @keyframes bookFlip {
+      0%   { transform: scale(1)          rotateY(0deg); }
+      40%  { transform: scale(0.92)       rotateY(-20deg); }
+      70%  { transform: scale(0.88)       rotateY(-30deg); opacity: 0.6; }
+      100% { transform: scale(0.85)       rotateY(-90deg); opacity: 0; }
+    }
+    @keyframes shelfCascade {
+      from { opacity: 0; transform: translateY(30px) scale(0.94); }
+      to   { opacity: 1; transform: translateY(0)    scale(1); }
+    }
 
     nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
@@ -799,7 +820,19 @@
       box-shadow: none;
       background: transparent;
       overflow: visible;
+      animation: shelfCascade 0.55s cubic-bezier(0.2, 1, 0.3, 1) both;
     }
+    /* Stagger each book card in a shelf row */
+    .shelf .book-card:nth-child(1)  { animation-delay: 0.05s; }
+    .shelf .book-card:nth-child(2)  { animation-delay: 0.12s; }
+    .shelf .book-card:nth-child(3)  { animation-delay: 0.19s; }
+    .shelf .book-card:nth-child(4)  { animation-delay: 0.26s; }
+    .shelf .book-card:nth-child(5)  { animation-delay: 0.33s; }
+    .shelf .book-card:nth-child(6)  { animation-delay: 0.40s; }
+    .shelf .book-card:nth-child(7)  { animation-delay: 0.47s; }
+    .shelf .book-card:nth-child(8)  { animation-delay: 0.54s; }
+    .shelf .book-card:nth-child(9)  { animation-delay: 0.61s; }
+    .shelf .book-card:nth-child(10) { animation-delay: 0.68s; }
     .shelf .book-card:hover {
       transform: scale(1.15);
       z-index: 10;
@@ -822,6 +855,32 @@
       background-size: cover !important;
       background-position: center !important;
       background-repeat: no-repeat !important;
+      transition: box-shadow 0.4s ease;
+    }
+    /* Gloss shine pseudo-element */
+    .shelf .book-cover::before {
+      content: '' !important;
+      display: block !important;
+      position: absolute !important;
+      top: -10% !important; left: -80% !important;
+      width: 50% !important; height: 120% !important;
+      background: linear-gradient(
+        100deg,
+        rgba(255,255,255,0)   0%,
+        rgba(255,255,255,0.18) 50%,
+        rgba(255,255,255,0)   100%
+      ) !important;
+      transform: skewX(-15deg) !important;
+      pointer-events: none !important;
+      z-index: 4 !important;
+      opacity: 0 !important;
+      transition: opacity 0.2s ease !important;
+    }
+    .shelf .book-card:hover .book-cover::before {
+      animation: bookShine 0.7s ease forwards !important;
+    }
+    .shelf .book-card:hover .book-cover {
+      animation: bookShadowPulse 1.2s ease infinite;
     }
     
     .shelf .book-cover::before {
@@ -2504,7 +2563,7 @@ function makeCoverStyle(book) {
 function renderBookCard(book) {
   const hasCover = hasBookCover(book);
   return `
-    <div class="book-card" onclick="openBookDetails('${book.id}')">
+    <div class="book-card" onclick="flipAndOpenBook(this, '${book.id}')">
       <div class="book-cover ${hasCover ? 'has-cover-image' : ''}" data-book-id="${book.id}" style="${makeCoverStyle(book)}">
         <div class="book-spine-line"></div>
         ${hasCover ? '' : `<div class="book-cover-emoji">${book.emoji || '📖'}</div>`}
@@ -3157,7 +3216,28 @@ let easyModeActive = false;
 let easySegments = [];
 let easyActiveIndex = 0;
 
-function openReader(bookId) {
+function flipAndOpenBook(el, bookId) {
+  if (el) {
+    el.style.transformOrigin = 'center top';
+    el.style.animation = 'none';
+    void el.offsetHeight;
+    el.style.animation = 'bookFlip 0.38s cubic-bezier(0.4, 0, 0.6, 1) forwards';
+    setTimeout(() => openBookDetails(bookId), 320);
+  } else {
+    openBookDetails(bookId);
+  }
+}
+
+function openReader(bookId, clickedEl) {
+  // Play page-flip animation on the clicked card if element is passed
+  if (clickedEl) {
+    const card = clickedEl.closest('.book-card') || clickedEl.closest('.shelf');
+    if (card) {
+      card.style.transformOrigin = 'left center';
+      card.style.animation = 'bookFlip 0.35s ease forwards';
+    }
+  }
+
   const allBooks = [...MASTER_BOOKS, ...DYNAMIC_SEARCH_CACHE, ...state.customBooks];
   readerBook = allBooks.find(b => b.id === bookId);
   if (!readerBook) return;
