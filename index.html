@@ -3077,7 +3077,40 @@ function filterByTopic(topic) {
 // ════════════════════════════════════════
 let activeBookId = null;
 
-function openBookDetails(bookId) {
+function openBookDetails(bookId, skipAnim = false) {
+  if (!skipAnim) {
+    const e = window.event;
+    const clickTarget = e ? e.target : null;
+    if (clickTarget) {
+      const card = clickTarget.closest('.book-card') || clickTarget.closest('.featured-slide') || clickTarget.closest('.record-card') || clickTarget.closest('.author-item');
+      if (card && !card.dataset.animating) {
+        card.dataset.animating = 'true';
+        card.style.transformOrigin = 'center center';
+        card.style.zIndex = '999';
+        card.style.animation = 'none';
+        void card.offsetHeight;
+        card.style.animation = 'bookZoomBurst 0.48s cubic-bezier(0.22, 1, 0.36, 1) forwards';
+        
+        const cover = card.querySelector('.book-cover') || card.querySelector('.author-portrait') || card;
+        if (cover) {
+          cover.style.animation = 'none';
+          void cover.offsetHeight;
+          cover.style.animation = 'clickRipple 0.4s ease forwards';
+        }
+        
+        setTimeout(() => {
+          card.dataset.animating = '';
+          card.style.animation = '';
+          card.style.transformOrigin = '';
+          card.style.zIndex = '';
+          if (cover) cover.style.animation = '';
+          openBookDetails(bookId, true);
+        }, 420);
+        return;
+      }
+    }
+  }
+
   activeBookId = bookId;
   const allBooks = [...MASTER_BOOKS, ...DYNAMIC_SEARCH_CACHE, ...state.customBooks];
   const book = allBooks.find(b => b.id === bookId);
@@ -3303,32 +3336,40 @@ let easySegments = [];
 let easyActiveIndex = 0;
 
 function flipAndOpenBook(el, bookId) {
-  if (el) {
-    el.style.transformOrigin = 'center center';
-    el.style.zIndex = '999';
-    el.style.animation = 'none';
-    void el.offsetHeight;
-    el.style.animation = 'bookZoomBurst 0.48s cubic-bezier(0.22, 1, 0.36, 1) forwards';
-    // Ripple on the cover inside the card
-    const cover = el.querySelector('.book-cover');
-    if (cover) {
-      cover.style.animation = 'none';
-      void cover.offsetHeight;
-      cover.style.animation = 'clickRipple 0.4s ease forwards';
-    }
-    setTimeout(() => openBookDetails(bookId), 420);
-  } else {
-    openBookDetails(bookId);
-  }
+  openBookDetails(bookId);
 }
 
-function openReader(bookId, clickedEl) {
-  // Play page-flip animation on the clicked card if element is passed
-  if (clickedEl) {
-    const card = clickedEl.closest('.book-card') || clickedEl.closest('.shelf');
-    if (card) {
-      card.style.transformOrigin = 'left center';
-      card.style.animation = 'bookZoomBurst 0.48s ease forwards';
+function openReader(bookId, skipAnim = false) {
+  if (!skipAnim) {
+    const e = window.event;
+    const clickTarget = e ? e.target : null;
+    if (clickTarget) {
+      const card = clickTarget.closest('.book-card') || clickTarget.closest('.featured-slide') || clickTarget.closest('.record-card');
+      if (card && !card.dataset.animating) {
+        card.dataset.animating = 'true';
+        card.style.transformOrigin = 'center center';
+        card.style.zIndex = '999';
+        card.style.animation = 'none';
+        void card.offsetHeight;
+        card.style.animation = 'bookZoomBurst 0.48s cubic-bezier(0.22, 1, 0.36, 1) forwards';
+        
+        const cover = card.querySelector('.book-cover') || card;
+        if (cover) {
+          cover.style.animation = 'none';
+          void cover.offsetHeight;
+          cover.style.animation = 'clickRipple 0.4s ease forwards';
+        }
+        
+        setTimeout(() => {
+          card.dataset.animating = '';
+          card.style.animation = '';
+          card.style.transformOrigin = '';
+          card.style.zIndex = '';
+          if (cover) cover.style.animation = '';
+          openReader(bookId, true);
+        }, 420);
+        return;
+      }
     }
   }
 
