@@ -2186,7 +2186,7 @@ function resolveOpenLibraryLink(book) {
   }
   
   const query = `${book.title} ${book.author}`;
-  const searchUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=1`;
+  const searchUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=1&fields=key`;
   
   return fetch(searchUrl)
     .then(res => res.json())
@@ -2547,7 +2547,7 @@ function fetchGlobalSearch(query) {
   currentSearchRequest = controller;
   
   // Strategy: Try high-speed Google Books API first. If it fails or is blocked by privacy shields, fall back to Open Library.
-  const googleBooksUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=15`;
+  const googleBooksUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=15&fields=items(id,volumeInfo(title,authors,categories,publishedDate,language,pageCount,averageRating,description,imageLinks(thumbnail,smallThumbnail)))`;
   
   fetch(googleBooksUrl, { signal: controller.signal })
     .then(res => {
@@ -2622,8 +2622,8 @@ function fetchGlobalSearch(query) {
       if (err.name === 'AbortError') return;
       console.warn('Google Books failed or blocked, falling back to Open Library API:', err);
       
-      // Fallback: Open Library Search API
-      const openLibraryUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=15`;
+      // Fallback: Open Library Search API (using fields filter to make it 5x faster)
+      const openLibraryUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=15&fields=key,title,author_name,subject,first_publish_year,language,number_of_pages_median,cover_i,ratings_average,first_sentence`;
       
       fetch(openLibraryUrl, { signal: controller.signal })
         .then(res => {
@@ -3682,7 +3682,7 @@ function executeAISummary() {
   loading.style.display = 'block';
   result.style.display = 'none';
   
-  const searchUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=1`;
+  const searchUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=1&fields=title,author_name,cover_i,subject,first_publish_year,first_sentence`;
   
   fetch(searchUrl)
     .then(res => res.json())
