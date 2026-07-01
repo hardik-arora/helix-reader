@@ -630,17 +630,116 @@
     }
     
     /* Hide card info block inside Discover page shelves, displaying clean movie-poster style side-by-side */
-    .shelf .book-card-info {
-      display: none !important;
+    .shelf {
+      display: flex; gap: 1.5rem; overflow-x: auto; padding: 1rem 0.5rem 2.2rem;
+      scrollbar-width: none; /* Hide scrollbar for clean Netflix look */
     }
+    .shelf::-webkit-scrollbar { display: none; }
+    
     .shelf .book-card {
-      transition: transform var(--transition);
-      border-radius: 10px;
+      width: 240px;
+      flex-shrink: 0;
+      cursor: pointer;
+      position: relative;
+      border-radius: 8px;
+      transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1), z-index 0s 0.3s;
+      z-index: 1;
+      border: none;
+      box-shadow: none;
+      background: transparent;
       overflow: visible;
     }
     .shelf .book-card:hover {
-      transform: scale(1.06) translateY(-4px);
+      transform: scale(1.15);
       z-index: 10;
+      transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1), z-index 0s 0s;
+    }
+    
+    .shelf .book-cover {
+      width: 100%;
+      height: 360px; /* matches aspect ratio 2/3 (240px * 1.5) */
+      border-radius: 8px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-start;
+      padding: 1.2rem;
+      text-align: left;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.7);
+      position: relative;
+      overflow: hidden;
+      border: none !important;
+      background-size: cover !important;
+      background-position: center !important;
+      background-repeat: no-repeat !important;
+    }
+    
+    .shelf .book-cover::before {
+      display: none !important;
+    }
+    .shelf .book-cover::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%) !important;
+      z-index: 1;
+      pointer-events: none;
+      display: block !important;
+      opacity: 1 !important;
+    }
+    
+    .shelf .book-cover.has-cover-image .book-cover-text {
+      display: flex !important;
+    }
+    
+    .shelf .book-cover-text {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      display: flex !important;
+      flex-direction: column;
+      gap: 4px;
+      text-align: left;
+      padding: 0;
+      margin-top: 0;
+    }
+    
+    .shelf .book-cover-title {
+      color: #ffffff !important;
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 800;
+      text-shadow: 2px 2px 4px rgba(0,0,0,1), 0 0 15px rgba(0,0,0,0.8);
+      line-height: 1.2;
+      width: 100%;
+      font-family: var(--font-family) !important;
+    }
+    
+    .shelf .book-cover-author {
+      color: #e2e8f0 !important;
+      margin: 0;
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-shadow: 1px 1px 3px rgba(0,0,0,1);
+      margin-top: 2px;
+      font-family: var(--font-family) !important;
+    }
+    
+    .shelf .book-cover-emoji {
+      font-size: 3.5rem;
+      position: absolute;
+      top: 35%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+      display: block !important;
+    }
+    .shelf .book-cover.has-cover-image .book-cover-emoji {
+      display: none !important;
+    }
+    
+    .shelf .book-card-info {
+      display: none !important;
     }
     
     .book-card-info { padding: 0.75rem 0.25rem 0; }
