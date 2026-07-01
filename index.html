@@ -7,7 +7,7 @@
   <meta name="description" content="A premium Kindle-inspired world digital library with 75+ books from every great author on Earth. Features immersive reading, text-to-speech, vocabulary builder, highlights, achievements, and quizzes." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&family=EB+Garamond:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet" />
   <style>
     /* ─── DESIGN TOKENS & SYSTEM themes ───────────────── */
     :root {
@@ -123,6 +123,48 @@
       --text: #faf5ff;
       --text2: #e9d5ff;
       --text3: #c084fc;
+    }
+
+    body.old-money-theme {
+      --bg: #fcfaf6;
+      --bg2: #f6f1e8;
+      --bg3: #ebdfd0;
+      --surface: #fbf6ec;
+      --surface2: #ebdcc8;
+      --border: #dfcfbc;
+      --border2: #cfbba3;
+      --accent: #b38e5d;
+      --accent2: #917145;
+      --accent-glow: rgba(179,142,93,0.15);
+      --text: #2c2520;
+      --text2: #5c5249;
+      --text3: #918579;
+      --shadow: 0 4px 15px rgba(145,133,121,0.06);
+      --shadow-lg: 0 10px 25px rgba(145,133,121,0.12);
+      
+      --heading-font: 'EB Garamond', Georgia, serif;
+      --reader-font: 'EB Garamond', Georgia, serif;
+    }
+
+    body.mahogany-theme {
+      --bg: #150f0c;
+      --bg2: #211713;
+      --bg3: #2d201a;
+      --surface: #2b1f1a;
+      --surface2: #3a2b25;
+      --border: #4a3830;
+      --border2: #5d473d;
+      --accent: #e5c192;
+      --accent2: #c5a172;
+      --accent-glow: rgba(229,193,146,0.15);
+      --text: #fdfaf7;
+      --text2: #d8cbbd;
+      --text3: #8a786e;
+      --shadow: 0 4px 15px rgba(0,0,0,0.4);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.6);
+      
+      --heading-font: 'EB Garamond', Georgia, serif;
+      --reader-font: 'EB Garamond', Georgia, serif;
     }
 
     /* Accessibility high contrast easy-mode overrides */
@@ -697,6 +739,8 @@
         <button class="theme-option-btn" onclick="applyTheme('dark')">🌙 Midnight Charcoal</button>
         <button class="theme-option-btn" onclick="applyTheme('light')">☀️ Pure Light</button>
         <button class="theme-option-btn" onclick="applyTheme('sepia')">☕ Classic Sepia</button>
+        <button class="theme-option-btn" onclick="applyTheme('old-money')">📜 Old Money Ivory</button>
+        <button class="theme-option-btn" onclick="applyTheme('mahogany')">🍷 Mahogany Gold</button>
         <button class="theme-option-btn" onclick="applyTheme('midnight')">🌌 Cosmic Navy</button>
         <button class="theme-option-btn" onclick="applyTheme('emerald')">🌲 Forest Emerald</button>
         <button class="theme-option-btn" onclick="applyTheme('amethyst')">🍇 Royal Amethyst</button>
@@ -1618,7 +1662,7 @@ function toggleThemeDropdown(e) {
 }
 
 function applyTheme(themeName) {
-  document.body.classList.remove('light-theme', 'sepia-theme', 'midnight-theme', 'emerald-theme', 'amethyst-theme');
+  document.body.classList.remove('light-theme', 'sepia-theme', 'midnight-theme', 'emerald-theme', 'amethyst-theme', 'old-money-theme', 'mahogany-theme');
   state.theme = themeName;
   if (themeName !== 'dark') {
     document.body.classList.add(`${themeName}-theme`);
