@@ -1099,8 +1099,23 @@
       .detail-quick-stats { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 768px) {
-      nav { padding: 0 1rem; }
+      nav { padding: 0 1rem; justify-content: space-between; gap: 1rem; }
+      .nav-logo { font-size: 1.3rem; margin-right: 0; flex-shrink: 0; }
       .nav-search { display: none; }
+      .nav-links {
+        flex-grow: 1;
+        justify-content: flex-start;
+        overflow-x: auto;
+        white-space: nowrap;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 0.2rem 0;
+      }
+      .nav-links::-webkit-scrollbar { display: none; }
+      .nav-btn { flex-shrink: 0; padding: 0.5rem 0.8rem; }
+      .theme-dropdown-wrap { flex-shrink: 0; }
+      
       .hero { padding: 3rem 1rem; }
       .dashboard-panel { grid-template-columns: 1fr 1fr; padding: 1rem; margin-top: -1.5rem; gap: 1rem; }
       .reader-nav-progress { display: none; }
