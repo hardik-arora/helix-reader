@@ -2129,6 +2129,18 @@ function hasBookCover(book) {
   return !!(book.cover && book.cover !== 'none' && book.cover.startsWith('http'));
 }
 
+function getCoverUrl(book) {
+  if (!book) return '';
+  const cachedCover = state.covers[book.id];
+  if (cachedCover && cachedCover !== 'none') {
+    return cachedCover;
+  }
+  if (book.cover && book.cover !== 'none' && book.cover.startsWith('http')) {
+    return book.cover;
+  }
+  return '';
+}
+
 function makeCoverStyle(book) {
   const cachedCover = state.covers[book.id];
   if (cachedCover && cachedCover !== 'none') {
