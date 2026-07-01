@@ -167,6 +167,70 @@
       --reader-font: 'EB Garamond', Georgia, serif;
     }
 
+    body.matcha-theme {
+      --bg: #f5f6f3;
+      --bg2: #eaece4;
+      --bg3: #dbe0d2;
+      --surface: #f3f5f0;
+      --surface2: #d6dbcd;
+      --border: #ccd3be;
+      --border2: #b8c1a6;
+      --accent: #6b824a;
+      --accent2: #536737;
+      --accent-glow: rgba(107,130,74,0.15);
+      --text: #2f3b25;
+      --text2: #526343;
+      --text3: #7b8f6c;
+    }
+
+    body.autumn-theme {
+      --bg: #1e252b;
+      --bg2: #272f37;
+      --bg3: #323d47;
+      --surface: #2d363f;
+      --surface2: #3f4c58;
+      --border: #4d5c6b;
+      --border2: #607386;
+      --accent: #e07a5f;
+      --accent2: #c35a3f;
+      --accent-glow: rgba(224,122,95,0.20);
+      --text: #f4f1de;
+      --text2: #e0dbcd;
+      --text3: #9ea7b0;
+    }
+
+    body.cyberpunk-theme {
+      --bg: #07020d;
+      --bg2: #0f051b;
+      --bg3: #18092a;
+      --surface: #1e0932;
+      --surface2: #2e0f4c;
+      --border: #4a1979;
+      --border2: #712cae;
+      --accent: #00f0ff;
+      --accent2: #ff007f;
+      --accent-glow: rgba(0,240,255,0.25);
+      --text: #ffffff;
+      --text2: #f2e2ff;
+      --text3: #00f0ff;
+    }
+
+    body.sakura-theme {
+      --bg: #fff0f3;
+      --bg2: #ffe0e6;
+      --bg3: #ffccd5;
+      --surface: #fff5f7;
+      --surface2: #ffb3c1;
+      --border: #ffa6c9;
+      --border2: #ff85a1;
+      --accent: #ff4d6d;
+      --accent2: #c9184a;
+      --accent-glow: rgba(255,77,109,0.15);
+      --text: #4a0e17;
+      --text2: #801d2d;
+      --text3: #a32f43;
+    }
+
     /* ─── OLD MONEY VINTAGE LEDGER DECORATIONS ─── */
     body.old-money-theme nav, body.mahogany-theme nav {
       border-bottom: 3px double var(--border);
@@ -1077,6 +1141,10 @@
         <button class="theme-option-btn" onclick="applyTheme('midnight')">🌌 Cosmic Navy</button>
         <button class="theme-option-btn" onclick="applyTheme('emerald')">🌲 Forest Emerald</button>
         <button class="theme-option-btn" onclick="applyTheme('amethyst')">🍇 Royal Amethyst</button>
+        <button class="theme-option-btn" onclick="applyTheme('matcha')">🍵 Matcha Green Latte</button>
+        <button class="theme-option-btn" onclick="applyTheme('autumn')">🍂 Nordic Autumn</button>
+        <button class="theme-option-btn" onclick="applyTheme('cyberpunk')">⚡ Cyberpunk Neon</button>
+        <button class="theme-option-btn" onclick="applyTheme('sakura')">🌸 Sakura Blossom</button>
       </div>
     </div>
   </div>
@@ -1992,7 +2060,7 @@ function toggleThemeDropdown(e) {
 }
 
 function applyTheme(themeName) {
-  document.body.classList.remove('light-theme', 'sepia-theme', 'midnight-theme', 'emerald-theme', 'amethyst-theme', 'old-money-theme', 'mahogany-theme');
+  document.body.classList.remove('light-theme', 'sepia-theme', 'midnight-theme', 'emerald-theme', 'amethyst-theme', 'old-money-theme', 'mahogany-theme', 'matcha-theme', 'autumn-theme', 'cyberpunk-theme', 'sakura-theme');
   state.theme = themeName;
   if (themeName !== 'dark') {
     document.body.classList.add(`${themeName}-theme`);
