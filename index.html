@@ -1119,6 +1119,28 @@
       .hero { padding: 3rem 1rem; }
       .dashboard-panel { grid-template-columns: 1fr 1fr; padding: 1rem; margin-top: -1.5rem; gap: 1rem; }
       .reader-nav-progress { display: none; }
+
+      /* Phone compatibility overrides */
+      .shelf { gap: 1rem; padding: 0.8rem 0.2rem 1.6rem; }
+      .shelf .book-card { width: 120px; }
+      .shelf .book-cover { height: 180px; padding: 0.8rem 0.5rem; }
+      .shelf .book-cover-title { font-size: 0.75rem !important; }
+      .shelf .book-cover-author { font-size: 0.6rem !important; margin-top: 1px; }
+      .shelf .book-cover-emoji { font-size: 2.2rem; }
+      
+      .results-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 1rem; }
+      .results-grid .book-card { width: 100%; }
+      .results-grid .book-cover { width: 100%; height: 195px; }
+      
+      .reader-viewport { padding: 5.5rem 1rem 4rem; }
+      .reader-title-header { font-size: 1.6rem !important; margin-bottom: 1.5rem; }
+      .reader-content-text { font-size: 16px !important; line-height: 1.8 !important; }
+      
+      .netflix-hero-content { max-width: 100%; margin-left: 0; padding: 0 10px; }
+      .netflix-hero-title { font-size: 1.6rem !important; }
+      .netflix-hero-subtitle { font-size: 0.85rem !important; margin-bottom: 1.2rem; }
+      .featured-slide { padding: 0 25px; }
+      .featured-slider-container { height: 380px; }
     }
   </style>
 </head>
@@ -1310,7 +1332,7 @@
       <p style="font-size:0.85rem;color:var(--text3)">Generate summaries for any book in the world or look up difficult words dynamically.</p>
     </div>
     
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; align-items: start;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; align-items: start;">
       <!-- AI Book Summarizer -->
       <div style="background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1)">
         <h3 style="font-family:var(--heading-font);font-size:1.3rem;font-weight:800;color:var(--text);margin-bottom:0.4rem;display:flex;align-items:center;gap:0.5rem">
