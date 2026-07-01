@@ -320,28 +320,22 @@
     
     /* ─── PREMIUM BOOK COVER DESIGN ─────────────────── */
     .book-card {
-      position: relative;
-      width: 170px; height: 240px; flex-shrink: 0; cursor: pointer;
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
-      border-radius: 10px; overflow: hidden;
-      box-shadow: var(--shadow);
+      width: 170px; flex-shrink: 0; cursor: pointer; transition: transform var(--transition);
     }
-    .book-card:hover {
-      transform: scale(1.05);
-      z-index: 10;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    }
+    .book-card:hover { transform: translateY(-8px); }
     .book-cover {
-      width: 100%; height: 100%; position: relative; overflow: hidden;
+      width: 170px; height: 240px; border-radius: 10px;
+      padding: 1.5rem 1.2rem; position: relative; overflow: hidden;
+      box-shadow: var(--shadow); transition: all var(--transition);
       display: flex; flex-direction: column; justify-content: center; align-items: center;
       text-align: center; border: 1.5px dashed rgba(255,255,255,0.15);
-      transition: all 0.3s ease;
     }
     .book-cover::before {
       content: ''; position: absolute; inset: 6px;
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 6px; pointer-events: none; z-index: 2;
     }
+    .book-card:hover .book-cover { box-shadow: var(--shadow-lg); }
     
     /* Cover Art Layer Overrides */
     .book-cover.has-cover-image {
@@ -388,22 +382,12 @@
       padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.65rem; color: #fff; font-weight: 700;
     }
     
-    .book-card-info {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      background: linear-gradient(to top, rgba(11, 13, 18, 0.95) 0%, rgba(11, 13, 18, 0.75) 75%, transparent 100%);
-      padding: 1.5rem 0.8rem 0.8rem;
-      opacity: 0; transition: opacity 0.25s ease;
-      pointer-events: none; z-index: 4;
-      text-align: left;
-    }
-    .book-card:hover .book-card-info {
-      opacity: 1;
-    }
-    .book-title { font-size: 0.85rem; font-weight: 700; color: #ffffff; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .book-author { font-size: 0.72rem; color: rgba(255,255,255,0.7); margin-top: 0.15rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .book-rating { display: flex; align-items: center; gap: 0.25rem; margin-top: 0.3rem; }
-    .book-rating svg { width: 10px; height: 10px; fill: var(--gold); }
-    .book-rating span { font-size: 0.68rem; color: rgba(255,255,255,0.6); font-weight: 600; }
+    .book-card-info { padding: 0.75rem 0.25rem 0; }
+    .book-title { font-size: 0.9rem; font-weight: 700; color: var(--text); line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .book-author { font-size: 0.78rem; color: var(--text3); margin-top: 0.15rem; }
+    .book-rating { display: flex; align-items: center; gap: 0.25rem; margin-top: 0.35rem; }
+    .book-rating svg { width: 12px; height: 12px; fill: var(--gold); }
+    .book-rating span { font-size: 0.72rem; color: var(--text3); font-weight: 600; }
 
     /* ─── GRID FOR BROWSE / SEARCH ──────────────────── */
     .results-grid {
@@ -668,113 +652,6 @@
       font-size: 1.5rem; display: flex; align-items: center; justify-content: center;
     }
 
-    /* ─── SCREENSHOT INSPIRED PREMIUM NETFLIX STYLE LAYOUT ─── */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      background: rgba(10, 13, 22, 0.95);
-      backdrop-filter: blur(25px);
-      -webkit-backdrop-filter: blur(25px);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      height: 72px;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 2rem;
-      transition: background var(--transition), border-color var(--transition);
-    }
-    body.light-theme nav { background: rgba(249, 249, 251, 0.92); border-bottom-color: rgba(0,0,0,0.06); }
-    body.sepia-theme nav { background: rgba(244, 237, 216, 0.92); border-bottom-color: rgba(0,0,0,0.06); }
-    body.midnight-theme nav { background: rgba(5, 11, 24, 0.95); border-bottom-color: rgba(255,255,255,0.08); }
-    
-    .logo-subtitle {
-      font-size: 0.5rem; font-weight: 700; color: var(--text3); letter-spacing: 0.1px; text-transform: uppercase; white-space: nowrap;
-    }
-    body.light-theme .logo-subtitle { color: #64748b; }
-    
-    .nav-center-menu {
-      display: flex; align-items: center; gap: 1.2rem; flex: 1; justify-content: center;
-    }
-    .nav-link-item {
-      background: none; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; padding: 0.25rem 0;
-      opacity: 0.65; transition: opacity 0.2s, transform 0.2s, color 0.2s;
-      color: var(--text);
-    }
-    .nav-link-item:hover { opacity: 0.95; transform: translateY(-1px); }
-    .nav-link-item.active { opacity: 1; font-weight: 700; color: var(--accent) !important; border-bottom: 2px solid var(--accent); }
-    
-    .nav-search-wrap { position: relative; width: 220px; }
-    .nav-search-wrap input {
-      width: 100%; padding: 0.45rem 0.6rem 0.45rem 2rem; background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; color: var(--text); font-size: 0.8rem;
-      outline: none; transition: all 0.25s ease;
-    }
-    body.light-theme .nav-search-wrap input { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.12); }
-    .nav-search-wrap input:focus {
-      background: rgba(255,255,255,0.1); border-color: var(--accent);
-      box-shadow: 0 0 8px var(--accent-glow);
-    }
-    .nav-search-wrap svg {
-      position: absolute; left: 0.6rem; top: 50%; transform: translateY(-50%);
-      width: 14px; height: 14px; fill: var(--text3); pointer-events: none;
-    }
-    
-    .nav-control-item {
-      background: none; border: none; color: var(--text2); font-size: 1.1rem; cursor: pointer;
-      width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
-      border-radius: 50%; transition: background var(--transition), color var(--transition), transform var(--transition);
-    }
-    .nav-control-item:hover { background: var(--surface); color: var(--text); transform: scale(1.05); }
-    .nav-control-item.active { background: var(--accent-glow); color: var(--accent); }
-    
-    /* Hero Banner styles */
-    .featured-hero-banner {
-      position: relative; width: 100%; height: 380px; border-radius: 12px; overflow: hidden;
-      margin-bottom: 2.5rem; background-size: cover; background-position: center; background-repeat: no-repeat;
-      box-shadow: var(--shadow-lg); border: 1px solid var(--border); display: flex; align-items: flex-end;
-    }
-    .featured-hero-overlay {
-      position: absolute; inset: 0;
-      background: linear-gradient(to top, var(--bg) 0%, rgba(10, 13, 22, 0.4) 60%, rgba(10, 13, 22, 0.2) 100%);
-      z-index: 1;
-    }
-    .featured-hero-banner::before {
-      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 80px;
-      background: linear-gradient(90deg, rgba(239, 68, 68, 0.15) 0%, transparent 100%);
-      z-index: 2; pointer-events: none;
-    }
-    .featured-hero-banner::after {
-      content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 80px;
-      background: linear-gradient(-90deg, rgba(239, 68, 68, 0.15) 0%, transparent 100%);
-      z-index: 2; pointer-events: none;
-    }
-    .featured-hero-content {
-      position: relative; z-index: 3; padding: 2.2rem; max-width: 580px; text-align: left;
-    }
-    .featured-hero-title {
-      font-family: var(--heading-font); font-size: 2.5rem; font-weight: 800; color: #ffffff;
-      line-height: 1.15; margin-bottom: 0.4rem; text-shadow: 0 2px 8px rgba(0,0,0,0.6);
-    }
-    .featured-hero-subtitle {
-      font-size: 0.9rem; color: rgba(255, 255, 255, 0.85); font-weight: 500;
-      margin-bottom: 1.2rem; text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-    }
-    .featured-hero-actions { display: flex; gap: 0.8rem; }
-    .btn-hero-read {
-      background: #ffffff; color: #0b0f19; border: none; padding: 0.65rem 1.4rem;
-      border-radius: 4px; font-weight: 700; font-size: 0.88rem; cursor: pointer;
-      display: flex; align-items: center; gap: 0.4rem; transition: background 0.2s, transform 0.1s;
-    }
-    .btn-hero-read:hover { background: #e2e8f0; transform: translateY(-1px); }
-    .btn-hero-info {
-      background: rgba(255, 255, 255, 0.22); color: #ffffff; border: none; padding: 0.65rem 1.4rem;
-      border-radius: 4px; font-weight: 700; font-size: 0.88rem; cursor: pointer;
-      display: flex; align-items: center; gap: 0.4rem; backdrop-filter: blur(10px);
-      transition: background 0.2s, transform 0.1s;
-    }
-    .btn-hero-info:hover { background: rgba(255, 255, 255, 0.32); transform: translateY(-1px); }
-    
-    @media (max-width: 960px) {
-      .nav-center-menu { display: none; }
-    }
-
     /* ─── RESPONSIVE WRAPPERS ─────────────────────────── */
     @media (max-width: 900px) {
       .detail-card { flex-direction: column; padding: 1.5rem; }
@@ -797,40 +674,26 @@
      TOP NAVIGATION BAR
 ════════════════════════════════════════ -->
 <nav>
-  <!-- Left Brand Logo (Inspired by SAHITYA ACCESS layout) -->
-  <div class="nav-logo" onclick="navigate('home')" style="display:flex; align-items:center; gap:0.6rem; cursor:pointer; flex-shrink:0">
-    <div class="logo-image-circle" style="width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, var(--accent) 0%, var(--teal) 100%); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow: 0 0 10px rgba(20,184,166,0.3)">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="#ffffff"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/><path d="M22 9L12 3 2 9l10 5.45z"/><path d="M12 21.5c-3.1 0-5.7-1.8-7-4.5l-1.7.9c1.6 3.4 5 5.6 8.7 5.6s7.1-2.2 8.7-5.6l-1.7-.9c-1.3 2.7-3.9 4.5-7 4.5z"/></svg>
-    </div>
-    <div style="display:flex; flex-direction:column; gap:0.05rem; text-align:left">
-      <span style="font-family:var(--heading-font); font-size:1.1rem; font-weight:800; letter-spacing:0.5px; color:var(--text)">HELIX ACCESS</span>
-      <span class="logo-subtitle">DIGITAL LIBRARY ACCESSIBILITY AND READING SUPPORT PLATFORM</span>
-    </div>
+  <div class="nav-logo" onclick="navigate('home')">
+    <svg viewBox="0 0 24 24" width="28" height="28" fill="var(--accent)"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/><path d="M22 9L12 3 2 9l10 5.45z"/><path d="M12 21.5c-3.1 0-5.7-1.8-7-4.5l-1.7.9c1.6 3.4 5 5.6 8.7 5.6s7.1-2.2 8.7-5.6l-1.7-.9c-1.3 2.7-3.9 4.5-7 4.5z"/></svg>
+    Helix Reader
+    <a href="https://iamhardikarora321-wq.github.io/helix-reader/" target="_blank" style="margin-left:0.6rem; font-size:0.65rem; background:rgba(20,184,166,0.15); color:var(--teal); padding: 0.15rem 0.4rem; border-radius: 4px; font-weight:700; text-transform:uppercase; text-decoration:none; letter-spacing:0.5px" onclick="event.stopPropagation()">Live Site</a>
   </div>
-
-  <!-- Center Links (Screenshot Netflix Style Category Navigation) -->
-  <div class="nav-center-menu">
-    <button class="nav-btn nav-link-item active" id="nav-home" onclick="navigate('home')">Home</button>
-    <button class="nav-link-item" onclick="filterByTopicNavbar('Science')">Science Fiction</button>
-    <button class="nav-link-item" onclick="filterByTopicNavbar('Fiction')">Fantasy</button>
-    <button class="nav-link-item" onclick="filterByTopicNavbar('Mystery')">Mystery</button>
-    <button class="nav-link-item" onclick="filterByTopicNavbar('History')">History</button>
-    <button class="nav-link-item" onclick="filterByTopicNavbar('Romance')">Romance</button>
-    <button class="nav-link-item" onclick="filterByTopicNavbar('Philosophy')">Academics</button>
+  <div class="nav-search">
+    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+    <input type="text" id="global-search-input" placeholder="Search titles, authors, categories, or book story keywords..." oninput="handleSearch(this.value)" />
   </div>
-
-  <!-- Right Actions (Search input and Icon settings) -->
-  <div style="display:flex; align-items:center; gap:0.8rem; flex-shrink:0">
-    <!-- Navbar Search Sync with Placeholder "Titles, authors, genres..." -->
-    <div class="nav-search-wrap">
-      <input type="text" id="global-search-input" placeholder="Titles, authors, genres..." oninput="handleSearch(this.value)" />
-      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-    </div>
-
-    <!-- Theme Dropdown Switcher (🌙) -->
+  <div class="nav-links">
+    <button class="nav-btn active" id="nav-home" onclick="navigate('home')">Discover</button>
+    <button class="nav-btn" id="nav-search" onclick="navigate('search')">Browse</button>
+    <button class="nav-btn" id="nav-library" onclick="navigate('library')">My Library</button>
+    <button class="nav-btn" id="nav-tools" onclick="navigate('tools')">AI Tools</button>
+    
     <div class="theme-dropdown-wrap">
-      <button class="theme-select-btn nav-control-item" onclick="toggleThemeDropdown(event)" title="Toggle Theme">🌙</button>
-      <div class="theme-dropdown" id="theme-dropdown" style="right:0">
+      <button class="theme-select-btn" onclick="toggleThemeDropdown(event)" title="Toggle Theme">
+        <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+      </button>
+      <div class="theme-dropdown" id="theme-dropdown">
         <button class="theme-option-btn" onclick="applyTheme('dark')">🌙 Midnight Charcoal</button>
         <button class="theme-option-btn" onclick="applyTheme('light')">☀️ Pure Light</button>
         <button class="theme-option-btn" onclick="applyTheme('sepia')">☕ Classic Sepia</button>
@@ -839,15 +702,6 @@
         <button class="theme-option-btn" onclick="applyTheme('amethyst')">🍇 Royal Amethyst</button>
       </div>
     </div>
-
-    <!-- Font Configurations Button (Aa) -->
-    <button class="nav-control-item" onclick="toggleFontConfig(event)" title="Text Settings (Aa)" style="font-size:0.92rem; font-weight:700">Aa</button>
-
-    <!-- Library Shelf Button (📁) -->
-    <button class="nav-btn nav-control-item" onclick="navigate('library')" id="nav-library" title="My Library Shelf">📁</button>
-
-    <!-- AI Tools Assistant Button (🤖) -->
-    <button class="nav-btn nav-control-item" onclick="navigate('tools')" id="nav-tools" title="AI Summaries & Study Tools">🤖</button>
   </div>
 </nav>
 
@@ -855,14 +709,64 @@
      DISCOVER / HOME PAGE
 ════════════════════════════════════════ -->
 <div id="home-page" class="page active page-wrap">
-  <div class="container" style="margin-top: 1.5rem;">
-    <!-- Featured Widescreen Hero Banner (Stretches across top under navbar) -->
-    <div id="featured-card-target"></div>
+  <div class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-content">
+      <div class="hero-badge">🧬 <span>Kindle-Type Experience</span> querying 158 Million books</div>
+      <h1>Explore the World's<br/><em>Greatest Literature</em></h1>
+      <p>Discover over 15,000 locally cataloged classics and search over 158 million books globally from all continents and authors.</p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="navigate('search')">⚡ Start Exploring</button>
+        <button class="btn-secondary" onclick="openImporter()">📥 Import Custom text</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="container" style="margin-top: -2.5rem;">
+    <!-- Gamified dashboard stats -->
+    <div class="dashboard-panel">
+      <div class="dash-stat-item">
+        <div class="dash-stat-icon">🔥</div>
+        <div class="dash-stat-info">
+          <span class="dash-stat-val" id="dash-streak">1 Day</span>
+          <span class="dash-stat-lbl">Read Streak</span>
+        </div>
+      </div>
+      <div class="dash-stat-item">
+        <div class="dash-stat-icon">📚</div>
+        <div class="dash-stat-info">
+          <span class="dash-stat-val" id="dash-read">0</span>
+          <span class="dash-stat-lbl">Completed</span>
+        </div>
+      </div>
+      <div class="dash-stat-item">
+        <div class="dash-stat-icon">⭐</div>
+        <div class="dash-stat-info">
+          <span class="dash-stat-val" id="dash-xp">0 XP</span>
+          <span class="dash-stat-lbl">Knowledge Points</span>
+        </div>
+      </div>
+      <div class="dash-stat-item">
+        <div class="dash-stat-icon">🏆</div>
+        <div class="dash-stat-info">
+          <span class="dash-stat-val" id="dash-badges">0 / 6</span>
+          <span class="dash-stat-lbl">Achievements</span>
+        </div>
+      </div>
+    </div>
 
-    <!-- Shelf: Science Fiction -->
+    <!-- Featured Section -->
     <div class="shelf-wrap">
       <div class="section-header">
-        <div class="section-title">Science Fiction</div>
+        <div class="section-title">⭐ Featured Masterwork</div>
+      </div>
+      <div id="featured-card-target"></div>
+    </div>
+
+    <!-- Shelf: Science & Nature -->
+    <div class="shelf-wrap">
+      <div class="section-header">
+        <div class="section-title">🔬 Science & Discovery</div>
         <span class="section-more" onclick="filterByTopic('Science')">See all →</span>
       </div>
       <div class="shelf" id="shelf-science"></div>
@@ -871,7 +775,7 @@
     <!-- Shelf: Fiction -->
     <div class="shelf-wrap">
       <div class="section-header">
-        <div class="section-title">Fiction</div>
+        <div class="section-title">📖 World Fiction</div>
         <span class="section-more" onclick="filterByTopic('Fiction')">See all →</span>
       </div>
       <div class="shelf" id="shelf-fiction"></div>
@@ -880,7 +784,7 @@
     <!-- Shelf: Philosophy -->
     <div class="shelf-wrap">
       <div class="section-header">
-        <div class="section-title">Philosophy</div>
+        <div class="section-title">💭 Great Minds & Philosophy</div>
         <span class="section-more" onclick="filterByTopic('Philosophy')">See all →</span>
       </div>
       <div class="shelf" id="shelf-philosophy"></div>
@@ -889,7 +793,7 @@
     <!-- Shelf: Biography -->
     <div class="shelf-wrap">
       <div class="section-header">
-        <div class="section-title">Biography</div>
+        <div class="section-title">👤 Inspiring Biographies</div>
         <span class="section-more" onclick="filterByTopic('Biography')">See all →</span>
       </div>
       <div class="shelf" id="shelf-biography"></div>
@@ -898,47 +802,9 @@
     <!-- Authors Spotlights -->
     <div class="shelf-wrap">
       <div class="section-header">
-        <div class="section-title">Famous Authors Spotlight</div>
+        <div class="section-title">✍️ Famous Authors Spotlight</div>
       </div>
       <div class="shelf" id="shelf-authors"></div>
-    </div>
-
-    <!-- Gamified Reading Insights & Importer (Preserves streak, achievements, stats, and import action) -->
-    <div class="shelf-wrap" style="margin-top: 3.5rem; border-top: 1px solid var(--border); padding-top: 2rem; margin-bottom: 2rem">
-      <div class="section-header" style="margin-bottom: 1.5rem">
-        <div class="section-title" style="font-size: 1.2rem">📊 Personal Reading Insights</div>
-        <button class="btn-secondary" onclick="openImporter()" style="font-size: 0.8rem; padding: 0.4rem 0.8rem">📥 Import Custom Text</button>
-      </div>
-      <div class="dashboard-panel">
-        <div class="dash-stat-item">
-          <div class="dash-stat-icon">🔥</div>
-          <div class="dash-stat-info">
-            <span class="dash-stat-val" id="dash-streak">1 Day</span>
-            <span class="dash-stat-lbl">Read Streak</span>
-          </div>
-        </div>
-        <div class="dash-stat-item">
-          <div class="dash-stat-icon">📚</div>
-          <div class="dash-stat-info">
-            <span class="dash-stat-val" id="dash-read">0</span>
-            <span class="dash-stat-lbl">Completed</span>
-          </div>
-        </div>
-        <div class="dash-stat-item">
-          <div class="dash-stat-icon">⭐</div>
-          <div class="dash-stat-info">
-            <span class="dash-stat-val" id="dash-xp">0 XP</span>
-            <span class="dash-stat-lbl">Knowledge Points</span>
-          </div>
-        </div>
-        <div class="dash-stat-item">
-          <div class="dash-stat-icon">🏆</div>
-          <div class="dash-stat-info">
-            <span class="dash-stat-val" id="dash-badges">0 / 6</span>
-            <span class="dash-stat-lbl">Achievements</span>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </div>
@@ -1726,13 +1592,6 @@ function navigate(pageId) {
     navBtn.classList.add('active');
   }
   
-  // Clean active states for genre navigation links
-  document.querySelectorAll('.nav-link-item').forEach(btn => btn.classList.remove('active'));
-  if (pageId === 'home') {
-    const homeBtn = document.getElementById('nav-home');
-    if (homeBtn) homeBtn.classList.add('active');
-  }
-  
   const targetChanged = state.currentPage !== pageId;
   state.currentPage = pageId;
   saveState();
@@ -2047,22 +1906,14 @@ function hasBookCover(book) {
   return !!(book.cover && book.cover !== 'none' && book.cover.startsWith('http'));
 }
 
-function getCoverUrl(book) {
-  if (!book) return '';
+function makeCoverStyle(book) {
   const cachedCover = state.covers[book.id];
   if (cachedCover && cachedCover !== 'none') {
-    return cachedCover;
+    return `background-image: url('${cachedCover}'); background-size: cover; background-position: center;`;
   }
+  // Use book.cover ONLY for MASTER_BOOKS / procedural books with valid URLs
   if (book.cover && book.cover !== 'none' && book.cover.startsWith('http')) {
-    return book.cover;
-  }
-  return '';
-}
-
-function makeCoverStyle(book) {
-  const coverUrl = getCoverUrl(book);
-  if (coverUrl) {
-    return `background-image: url('${coverUrl}'); background-size: cover; background-position: center;`;
+    return `background-image: url('${book.cover}'); background-size: cover; background-position: center;`;
   }
   const colors = book.color || ['#1e293b', '#0f172a'];
   return `background: linear-gradient(140deg, ${colors[0]} 0%, ${colors[1]} 100%);`;
@@ -2141,24 +1992,40 @@ function renderDiscoverPage() {
   // Featured book
   const featured = allBooks[0];
   const featTarget = document.getElementById('featured-card-target');
-  const coverUrl = getCoverUrl(featured);
-  const backgroundStyle = coverUrl 
-    ? `background-image: linear-gradient(90deg, rgba(10,13,22,0.92) 0%, rgba(10,13,22,0.4) 60%, rgba(10,13,22,0.2) 100%), url('${coverUrl}')` 
-    : `background: linear-gradient(135deg, var(--accent) 0%, var(--teal) 100%)`;
+  const hasCover = hasBookCover(featured);
   
   featTarget.innerHTML = `
-    <div class="featured-hero-banner" style="${backgroundStyle}">
-      <div class="featured-hero-overlay"></div>
-      <div class="featured-hero-content">
-        <h1 class="featured-hero-title">${featured.title}</h1>
-        <p class="featured-hero-subtitle">Helix choice by ${featured.author}. Pages: ${featured.pages}. Rating: ${featured.rating} ★.</p>
-        <div class="featured-hero-actions">
-          <button class="btn-hero-read" onclick="openReader('${featured.id}')">
-            <span>▶️</span> Read Excerpt
+    <div class="detail-card">
+      <div class="detail-cover-area">
+        <div class="detail-cover-img ${hasCover ? 'has-cover-image' : ''}" data-book-id="${featured.id}" style="${makeCoverStyle(featured)}">
+          <div class="book-spine-line"></div>
+          ${hasCover ? '' : `<div class="book-cover-emoji" style="font-size:4rem">${featured.emoji || '📖'}</div>`}
+          <div class="book-cover-text">
+            <div class="book-cover-title" style="font-size:1.15rem">${featured.title}</div>
+            <div class="book-cover-author">${featured.author}</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-info-area">
+        <div>
+          <span style="font-size:0.75rem;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:1px">Recommended Pick of the Week</span>
+          <h2 style="font-family:var(--heading-font);font-size:2rem;font-weight:800;margin-top:0.2rem;margin-bottom:0.8rem">${featured.title}</h2>
+          <div class="detail-meta-group">
+            <span class="detail-meta-chip">${featured.topic}</span>
+            <span class="detail-meta-chip">🌐 ${featured.lang}</span>
+            <span class="detail-meta-chip">⭐ ${featured.rating} Rating</span>
+          </div>
+          <p class="detail-description">${featured.summary}</p>
+        </div>
+        <div class="detail-action-row">
+          <!-- Clicking Read redirects user to available sites list modal -->
+          <button class="btn-primary" onclick="triggerPlatformRedirect('${featured.id}')">
+            <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor;margin-right:0.4rem"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+            Read Book
           </button>
-          <button class="btn-hero-info" onclick="openBookDetails('${featured.id}')">
-            <span>ℹ️</span> More Info
-          </button>
+          <!-- Secondary action reads excerpt locally -->
+          <button class="btn-secondary" onclick="openReader('${featured.id}')">📜 Read Excerpt</button>
+          <button class="btn-secondary" onclick="openBookDetails('${featured.id}')">🔍 Detail Guide</button>
         </div>
       </div>
     </div>
@@ -2835,7 +2702,9 @@ function updateReaderProgress(pct) {
 let readerFontSize = 18;
 let readerLineSpacing = 1.95;
 
-// font configuration toggle moved to navbar-helpers
+function toggleFontConfig() {
+  document.getElementById('font-config-panel').classList.toggle('show');
+}
 
 function hideFontConfig() {
   document.getElementById('font-config-panel').classList.remove('show');
@@ -4046,32 +3915,6 @@ function saveWordToSanctuary(word, definition) {
     btn.style.color = '#fff';
     btn.style.borderColor = 'var(--teal)';
   }
-}
-
-function filterByTopicNavbar(topicName) {
-  activeSearchCategory = topicName;
-  activeSearchQuery = '';
-  lastFetchedQuery = '';
-  DYNAMIC_SEARCH_CACHE = [];
-  
-  // Update navbar links active states
-  document.querySelectorAll('.nav-link-item').forEach(btn => {
-    btn.classList.remove('active');
-    if (btn.textContent.trim().toLowerCase().includes(topicName.toLowerCase()) || 
-       (topicName === 'Science' && btn.textContent.trim().toLowerCase() === 'science fiction') ||
-       (topicName === 'Philosophy' && btn.textContent.trim().toLowerCase() === 'academics') ||
-       (topicName === 'Fiction' && btn.textContent.trim().toLowerCase() === 'fantasy')) {
-      btn.classList.add('active');
-    }
-  });
-
-  navigate('search');
-  renderSearchPage();
-}
-
-function toggleFontConfig(e) {
-  if (e) e.stopPropagation();
-  document.getElementById('font-config-panel').classList.toggle('show');
 }
 
 // ════════════════════════════════════════
