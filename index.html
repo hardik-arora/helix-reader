@@ -31,7 +31,7 @@
       --text2: #9ca3af;
       --text3: #6b7280;
       
-      --heading-font: 'Outfit', sans-serif;
+      --heading-font: 'EB Garamond', 'Outfit', Georgia, serif;
       --body-font: 'Inter', sans-serif;
       --reader-font: 'Lora', serif;
       --radius: 12px;
@@ -165,6 +165,24 @@
       
       --heading-font: 'EB Garamond', Georgia, serif;
       --reader-font: 'EB Garamond', Georgia, serif;
+    }
+
+    /* ─── OLD MONEY VINTAGE LEDGER DECORATIONS ─── */
+    body.old-money-theme nav, body.mahogany-theme nav {
+      border-bottom: 3px double var(--border);
+    }
+    body.old-money-theme .detail-card, body.mahogany-theme .detail-card {
+      position: relative;
+    }
+    body.old-money-theme .detail-card::before, body.mahogany-theme .detail-card::before {
+      content: ''; position: absolute; inset: 8px;
+      border: 1px dashed rgba(179,142,93,0.45);
+      border-radius: calc(var(--radius-lg) - 8px);
+      pointer-events: none;
+    }
+    body.old-money-theme .filter-chip, body.mahogany-theme .filter-chip {
+      font-family: var(--heading-font);
+      font-weight: 700;
     }
 
     /* Accessibility high contrast easy-mode overrides */
@@ -1567,7 +1585,7 @@ const safeStore = {
 
 // State Object
 const state = {
-  theme: safeStore.getItem('h_theme') || 'dark',
+  theme: safeStore.getItem('h_theme') || 'old-money',
   favorites: JSON.parse(safeStore.getItem('h_favs') || '[]'),
   completed: JSON.parse(safeStore.getItem('h_done') || '[]'),
   reading: JSON.parse(safeStore.getItem('h_reading') || '[]'),
@@ -3977,6 +3995,17 @@ function showNotification(msg) {
 // INITIALIZATION
 // ════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  // Showcase the new Old Money theme by default once
+  try {
+    if (!localStorage.getItem('h_showcase_old_money_v1')) {
+      localStorage.setItem('h_theme', 'old-money');
+      localStorage.setItem('h_showcase_old_money_v1', 'true');
+      state.theme = 'old-money';
+    }
+  } catch(e) {
+    console.warn("Storage check failed", e);
+  }
+  
   // Apply saved theme
   applyTheme(state.theme);
   
