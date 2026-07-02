@@ -615,6 +615,70 @@
       --text3: #00f5ff;
     }
 
+    body.glitch-theme {
+      --bg: linear-gradient(45deg, #1b0c26 0%, #031c26 25%, #18021c 50%, #201a08 75%, #05260c 100%);
+      --bg2: #0d0613;
+      --bg3: #042533;
+      --surface: rgba(13, 6, 20, 0.5);
+      --surface2: rgba(3, 28, 38, 0.6);
+      --border: rgba(255, 0, 208, 0.2);
+      --border2: rgba(0, 255, 255, 0.25);
+      --accent: #ff00d0;
+      --accent2: #00ffff;
+      --accent-glow: rgba(255, 0, 208, 0.25);
+      --text: #f5f3ff;
+      --text2: #c084fc;
+      --text3: #00ffff;
+    }
+
+    body.quantum-theme {
+      --bg: linear-gradient(135deg, #0f0014 0%, #2d0015 35%, #471d02 70%, #0c2b2b 100%);
+      --bg2: #0a010d;
+      --bg3: #1f0c01;
+      --surface: rgba(45, 0, 21, 0.45);
+      --surface2: rgba(71, 29, 2, 0.6);
+      --border: rgba(255, 128, 8, 0.2);
+      --border2: rgba(60, 140, 114, 0.25);
+      --accent: #ff8008;
+      --accent2: #3c8c72;
+      --accent-glow: rgba(255, 128, 8, 0.25);
+      --text: #fffbf7;
+      --text2: #ffd3b6;
+      --text3: #ff8008;
+    }
+
+    body.timewarp-theme {
+      --bg: linear-gradient(225deg, #0d001a 0%, #022416 40%, #302602 80%, #1c0005 100%);
+      --bg2: #06000c;
+      --bg3: #01140c;
+      --surface: rgba(13, 0, 26, 0.45);
+      --surface2: rgba(2, 36, 22, 0.6);
+      --border: rgba(255, 215, 0, 0.2);
+      --border2: rgba(0, 255, 204, 0.25);
+      --accent: #ffd700;
+      --accent2: #00ffcc;
+      --accent-glow: rgba(255, 215, 0, 0.25);
+      --text: #fdfcff;
+      --text2: #e9d5ff;
+      --text3: #ffd700;
+    }
+
+    body.acidcyber-theme {
+      --bg: linear-gradient(135deg, #080312 0%, #1b0424 45%, #052920 85%, #0b1f03 100%);
+      --bg2: #05020b;
+      --bg3: #0f0214;
+      --surface: rgba(27, 4, 36, 0.45);
+      --surface2: rgba(5, 41, 32, 0.6);
+      --border: rgba(0, 255, 216, 0.2);
+      --border2: rgba(204, 255, 0, 0.25);
+      --accent: #00ffd8;
+      --accent2: #ccff00;
+      --accent-glow: rgba(0, 255, 216, 0.25);
+      --text: #f9f5ff;
+      --text2: #d6bfff;
+      --text3: #00ffd8;
+    }
+
     /* Theme Slider Layouts */
     .theme-dropdown-container {
       display: flex;
@@ -2356,18 +2420,33 @@
             <div class="theme-slide-card" onclick="applyTheme('nordic-frost')" title="Nordic Frost">
               <span class="theme-card-emoji">❄️</span>
               <span class="theme-card-label">Frost</span>
-              <div class="theme-card-colors"><span style="background:#eef5f8"></span><span style="background:#2b678c"></span></div>
+            <div class="theme-card-colors"><span style="background:#eef5f8"></span><span style="background:#2b678c"></span></div>
             </div>
-            <div class="theme-slide-card" onclick="applyTheme('deepsea')" title="Deep Sea (Gradient)">
-               <span class="theme-card-emoji">🌊</span>
-               <span class="theme-card-label">DeepSea</span>
-               <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #010612, #03152d)"></span><span style="background:#00f2fe"></span></div>
-             </div>
-             <div class="theme-slide-card" onclick="applyTheme('phantom')" title="Neon Phantom (Gradient)">
-               <span class="theme-card-emoji">👻</span>
-               <span class="theme-card-label">Phantom</span>
-               <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #090314, #17072e)"></span><span style="background:#ff007f"></span></div>
-             </div>
+            <div class="theme-slide-card" onclick="applyTheme('peacock')" title="Peacock Glow (Gradient)">
+                <span class="theme-card-emoji">🦚</span>
+                <span class="theme-card-label">Peacock</span>
+                <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #040212, #080d28)"></span><span style="background:#00f5ff"></span></div>
+              </div>
+              <div class="theme-slide-card" onclick="applyTheme('glitch')" title="Glitch Iridescence (Gradient)">
+                <span class="theme-card-emoji">💿</span>
+                <span class="theme-card-label">Glitch</span>
+                <div class="theme-card-colors"><span style="background:linear-gradient(45deg, #1b0c26, #031c26, #18021c)"></span><span style="background:#ff00d0"></span></div>
+              </div>
+              <div class="theme-slide-card" onclick="applyTheme('quantum')" title="Quantum Flare (Gradient)">
+                <span class="theme-card-emoji">⚛️</span>
+                <span class="theme-card-label">Quantum</span>
+                <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #0f0014, #2d0015, #471d02)"></span><span style="background:#ff8008"></span></div>
+              </div>
+              <div class="theme-slide-card" onclick="applyTheme('timewarp')" title="Time Warp (Gradient)">
+                <span class="theme-card-emoji">🌀</span>
+                <span class="theme-card-label">Warp</span>
+                <div class="theme-card-colors"><span style="background:linear-gradient(225deg, #0d001a, #022416, #302602)"></span><span style="background:#ffd700"></span></div>
+              </div>
+              <div class="theme-slide-card" onclick="applyTheme('acidcyber')" title="Acid Cyber (Gradient)">
+                <span class="theme-card-emoji">🧪</span>
+                <span class="theme-card-label">Acid</span>
+                <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #080312, #1b0424, #052920)"></span><span style="background:#00ffd8"></span></div>
+              </div>
              <div class="theme-slide-card" onclick="applyTheme('alien')" title="Alien Hive (Gradient)">
                <span class="theme-card-emoji">👽</span>
                <span class="theme-card-label">Alien</span>
@@ -3202,6 +3281,26 @@
           <span class="theme-card-emoji">🦚</span>
           <span class="theme-card-label">Peacock</span>
           <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #040212, #080d28)"></span><span style="background:#00f5ff"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('glitch')" title="Glitch Iridescence">
+          <span class="theme-card-emoji">💿</span>
+          <span class="theme-card-label">Glitch</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(45deg, #1b0c26, #031c26, #18021c)"></span><span style="background:#ff00d0"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('quantum')" title="Quantum Flare">
+          <span class="theme-card-emoji">⚛️</span>
+          <span class="theme-card-label">Quantum</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #0f0014, #2d0015, #471d02)"></span><span style="background:#ff8008"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('timewarp')" title="Time Warp">
+          <span class="theme-card-emoji">🌀</span>
+          <span class="theme-card-label">Warp</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(225deg, #0d001a, #022416, #302602)"></span><span style="background:#ffd700"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('acidcyber')" title="Acid Cyber">
+          <span class="theme-card-emoji">🧪</span>
+          <span class="theme-card-label">Acid</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #080312, #1b0424, #052920)"></span><span style="background:#00ffd8"></span></div>
         </div>
       </div>
       <button class="theme-slider-arrow right" onclick="slideThemes('right', 'mobile-theme-slider', event)">›</button>
@@ -4129,7 +4228,7 @@ function closeMobileThemeSheet() {
 }
 
 function applyTheme(themeName) {
-  document.body.classList.remove('light-theme', 'sepia-theme', 'midnight-theme', 'emerald-theme', 'amethyst-theme', 'old-money-theme', 'mahogany-theme', 'matcha-theme', 'autumn-theme', 'cyberpunk-theme', 'sakura-theme', 'solarized-theme', 'quartz-theme', 'ember-theme', 'synthwave-theme', 'forest-gold-theme', 'cappuccino-theme', 'eclipse-theme', 'nordic-frost-theme', 'nebula-theme', 'sunset-theme', 'matrix-theme', 'candy-theme', 'supernova-theme', 'glacial-theme', 'saturn-theme', 'holographic-theme', 'obsidian-theme', 'bloodmoon-theme', 'toxic-theme', 'deepsea-theme', 'phantom-theme', 'alien-theme', 'magma-theme', 'peacock-theme');
+  document.body.classList.remove('light-theme', 'sepia-theme', 'midnight-theme', 'emerald-theme', 'amethyst-theme', 'old-money-theme', 'mahogany-theme', 'matcha-theme', 'autumn-theme', 'cyberpunk-theme', 'sakura-theme', 'solarized-theme', 'quartz-theme', 'ember-theme', 'synthwave-theme', 'forest-gold-theme', 'cappuccino-theme', 'eclipse-theme', 'nordic-frost-theme', 'nebula-theme', 'sunset-theme', 'matrix-theme', 'candy-theme', 'supernova-theme', 'glacial-theme', 'saturn-theme', 'holographic-theme', 'obsidian-theme', 'bloodmoon-theme', 'toxic-theme', 'deepsea-theme', 'phantom-theme', 'alien-theme', 'magma-theme', 'peacock-theme', 'glitch-theme', 'quantum-theme', 'timewarp-theme', 'acidcyber-theme');
   state.theme = themeName;
   if (themeName !== 'dark') {
     document.body.classList.add(`${themeName}-theme`);
