@@ -231,6 +231,70 @@
       --text3: #a32f43;
     }
 
+    body.solarized-theme {
+      --bg: #002b36;
+      --bg2: #073642;
+      --bg3: #586e75;
+      --surface: #073642;
+      --surface2: #586e75;
+      --border: #586e75;
+      --border2: #93a1a1;
+      --accent: #2aa198;
+      --accent2: #b58900;
+      --accent-glow: rgba(42,161,152,0.25);
+      --text: #fdf6e3;
+      --text2: #eee8d5;
+      --text3: #93a1a1;
+    }
+
+    body.quartz-theme {
+      --bg: #f7f0f5;
+      --bg2: #ebdce6;
+      --bg3: #dcc2d6;
+      --surface: #faf4f8;
+      --surface2: #d6e2e9;
+      --border: #cddafd;
+      --border2: #a3bcf9;
+      --accent: #b5e2fa;
+      --accent2: #edafb8;
+      --accent-glow: rgba(181,226,250,0.2);
+      --text: #353b3c;
+      --text2: #5f6c7d;
+      --text3: #9fb1bc;
+    }
+
+    body.ember-theme {
+      --bg: #0d0c0c;
+      --bg2: #1c1514;
+      --bg3: #2d1d1a;
+      --surface: #241a18;
+      --surface2: #3f2620;
+      --border: #5d352b;
+      --border2: #804334;
+      --accent: #f97316;
+      --accent2: #ef4444;
+      --accent-glow: rgba(249,115,22,0.25);
+      --text: #fef2f2;
+      --text2: #fca5a5;
+      --text3: #ef4444;
+    }
+
+    body.synthwave-theme {
+      --bg: #0f051d;
+      --bg2: #1e0b3c;
+      --bg3: #2d115b;
+      --surface: #280a50;
+      --surface2: #431284;
+      --border: #f43f5e;
+      --border2: #fbbf24;
+      --accent: #ec4899;
+      --accent2: #e11d48;
+      --accent-glow: rgba(236,72,153,0.3);
+      --text: #fdf2f8;
+      --text2: #fbcfe8;
+      --text3: #f472b6;
+    }
+
     /* ─── OLD MONEY VINTAGE LEDGER DECORATIONS ─── */
     body.old-money-theme nav, body.mahogany-theme nav {
       border-bottom: 3px double var(--border);
@@ -1782,6 +1846,10 @@
         <button class="theme-option-btn" onclick="applyTheme('autumn')">🍂 Nordic Autumn</button>
         <button class="theme-option-btn" onclick="applyTheme('cyberpunk')">⚡ Cyberpunk Neon</button>
         <button class="theme-option-btn" onclick="applyTheme('sakura')">🌸 Sakura Blossom</button>
+        <button class="theme-option-btn" onclick="applyTheme('solarized')">🌊 Solarized Ocean</button>
+        <button class="theme-option-btn" onclick="applyTheme('quartz')">💎 Rose Quartz & Serenity</button>
+        <button class="theme-option-btn" onclick="applyTheme('ember')">🌋 Volcano Ember</button>
+        <button class="theme-option-btn" onclick="applyTheme('synthwave')">👾 Retro Synthwave</button>
       </div>
     </div>
 
@@ -2404,6 +2472,22 @@
       <button class="theme-grid-option" onclick="applyTheme('sakura')">
         <span class="theme-emoji">🌸</span>
         <span class="theme-label">Sakura Blossom</span>
+      </button>
+      <button class="theme-grid-option" onclick="applyTheme('solarized')">
+        <span class="theme-emoji">🌊</span>
+        <span class="theme-label">Solarized Ocean</span>
+      </button>
+      <button class="theme-grid-option" onclick="applyTheme('quartz')">
+        <span class="theme-emoji">💎</span>
+        <span class="theme-label">Rose Quartz & Serenity</span>
+      </button>
+      <button class="theme-grid-option" onclick="applyTheme('ember')">
+        <span class="theme-emoji">🌋</span>
+        <span class="theme-label">Volcano Ember</span>
+      </button>
+      <button class="theme-grid-option" onclick="applyTheme('synthwave')">
+        <span class="theme-emoji">👾</span>
+        <span class="theme-label">Retro Synthwave</span>
       </button>
     </div>
   </div>
@@ -3329,7 +3413,7 @@ function closeMobileThemeSheet() {
 }
 
 function applyTheme(themeName) {
-  document.body.classList.remove('light-theme', 'sepia-theme', 'midnight-theme', 'emerald-theme', 'amethyst-theme', 'old-money-theme', 'mahogany-theme', 'matcha-theme', 'autumn-theme', 'cyberpunk-theme', 'sakura-theme');
+  document.body.classList.remove('light-theme', 'sepia-theme', 'midnight-theme', 'emerald-theme', 'amethyst-theme', 'old-money-theme', 'mahogany-theme', 'matcha-theme', 'autumn-theme', 'cyberpunk-theme', 'sakura-theme', 'solarized-theme', 'quartz-theme', 'ember-theme', 'synthwave-theme');
   state.theme = themeName;
   if (themeName !== 'dark') {
     document.body.classList.add(`${themeName}-theme`);
