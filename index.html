@@ -1474,6 +1474,104 @@
       .featured-slide { padding: 0 25px; }
       .featured-slider-container { height: 380px; }
     }
+
+    /* Mobile Theme Bottom Sheet Styling */
+    .mobile-theme-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .mobile-theme-overlay.show {
+      display: flex;
+      animation: fadeIn 0.25s ease forwards;
+    }
+    .mobile-theme-sheet {
+      width: 100%;
+      max-width: 500px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-radius: 20px 20px 0 0;
+      padding: 1.5rem;
+      box-shadow: 0 -10px 25px rgba(0,0,0,0.15);
+      max-height: 80vh;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+    .mobile-theme-overlay.show .mobile-theme-sheet {
+      animation: sheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .mobile-theme-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.2rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.8rem;
+    }
+    .mobile-theme-header h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+    }
+    .close-sheet-btn {
+      background: none;
+      border: none;
+      color: var(--text3);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .mobile-theme-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.8rem;
+    }
+    .theme-grid-option {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.8rem 1rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .theme-grid-option:active {
+      transform: scale(0.98);
+      background: var(--surface3);
+    }
+    .theme-grid-option .theme-emoji {
+      font-size: 1.2rem;
+    }
+    .theme-grid-option .theme-label {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    @keyframes sheetSlideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -2063,6 +2161,66 @@
 
 <!-- Toast notifications -->
 <div class="toast" id="toast-notify">Action successful!</div>
+
+<!-- Mobile Theme Bottom Sheet -->
+<div id="mobile-theme-overlay" class="mobile-theme-overlay" onclick="closeMobileThemeSheet()">
+  <div class="mobile-theme-sheet" onclick="event.stopPropagation()">
+    <div class="mobile-theme-header">
+      <h3>Select Theme</h3>
+      <button class="close-sheet-btn" onclick="closeMobileThemeSheet()">✕</button>
+    </div>
+    <div class="mobile-theme-grid">
+      <button class="theme-grid-option" onclick="applyTheme('dark')">
+        <span class="theme-emoji">🌙</span>
+        <span class="theme-label">Midnight Charcoal</span>
+      </button>
+      <button class="theme-grid-option" onclick="applyTheme('light')">
+        <span class="theme-emoji">☀️</span>
+        <span class="theme-label">Pure Light</span>
+      </button>
+      <button class="theme-grid-option" onclick="applyTheme('sepia')">
+        <span class="theme-emoji">☕</span>
+        <span class="theme-label">Classic Sepia</span>
+      </button>
+      <button class="theme-grid-option" onclick="applyTheme('old-money')">
+        <span class="theme-emoji">📜</span>
+        <span class="theme-label">Old Money Ivory</span>
+      </button>
+      <button class="theme-grid-option" onclick="applyTheme('mahogany')">
+        <span class="theme-emoji">🍷</span>
+        <span class="theme-label">Mahogany Gold</span>
+      </button>
+      <button class="theme-grid-option" onclick="applyTheme('midnight')">
+        <span class="theme-emoji">🌌</span>
+        <span class="theme-label">Cosmic Navy</span>
+      </button>
+      <button class="theme-grid-option" onclick="applyTheme('emerald')">
+        <span class="theme-emoji">🌲</span>
+        <span class="theme-label">Forest Emerald</span>
+      </button>
+      <button class="theme-grid-option" onclick="applyTheme('amethyst')">
+        <span class="theme-emoji">🍇</span>
+        <span class="theme-label">Royal Amethyst</span>
+      </button>
+      <button class="theme-grid-option" onclick="applyTheme('matcha')">
+        <span class="theme-emoji">🍵</span>
+        <span class="theme-label">Matcha Green</span>
+      </button>
+      <button class="theme-grid-option" onclick="applyTheme('autumn')">
+        <span class="theme-emoji">🍂</span>
+        <span class="theme-label">Nordic Autumn</span>
+      </button>
+      <button class="theme-grid-option" onclick="applyTheme('cyberpunk')">
+        <span class="theme-emoji">⚡</span>
+        <span class="theme-label">Cyberpunk Neon</span>
+      </button>
+      <button class="theme-grid-option" onclick="applyTheme('sakura')">
+        <span class="theme-emoji">🌸</span>
+        <span class="theme-label">Sakura Blossom</span>
+      </button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ══════════════════════════════════════════════════════════════
@@ -2788,7 +2946,24 @@ function toggleThemeDropdown(e) {
   e.stopPropagation();
   const profileDropdown = document.getElementById('profile-dropdown');
   if (profileDropdown) profileDropdown.classList.remove('show');
-  document.getElementById('theme-dropdown').classList.toggle('show');
+  
+  if (window.innerWidth <= 768) {
+    const overlay = document.getElementById('mobile-theme-overlay');
+    if (overlay) {
+      overlay.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+  } else {
+    document.getElementById('theme-dropdown').classList.toggle('show');
+  }
+}
+
+function closeMobileThemeSheet() {
+  const overlay = document.getElementById('mobile-theme-overlay');
+  if (overlay) {
+    overlay.classList.remove('show');
+    document.body.style.overflow = '';
+  }
 }
 
 function applyTheme(themeName) {
@@ -2799,6 +2974,7 @@ function applyTheme(themeName) {
   }
   saveState();
   document.getElementById('theme-dropdown').classList.remove('show');
+  closeMobileThemeSheet();
 }
 
 // Close popup clicks
