@@ -679,6 +679,70 @@
       --text3: #00ffd8;
     }
 
+    body.singularity-theme {
+      --bg: linear-gradient(135deg, #020205 0%, #0c081f 35%, #2c0e3a 70%, #ff5e62 100%);
+      --bg2: #05040f;
+      --bg3: #180924;
+      --surface: rgba(44, 14, 58, 0.45);
+      --surface2: rgba(74, 21, 98, 0.6);
+      --border: rgba(255, 94, 98, 0.2);
+      --border2: rgba(161, 140, 209, 0.25);
+      --accent: #ff5e62;
+      --accent2: #a18cd1;
+      --accent-glow: rgba(255, 94, 98, 0.25);
+      --text: #fff0f3;
+      --text2: #fbcfe8;
+      --text3: #ff5e62;
+    }
+
+    body.jadedynasty-theme {
+      --bg: linear-gradient(135deg, #030d07 0%, #0a2916 40%, #5c4008 80%, #1f0803 100%);
+      --bg2: #05160b;
+      --bg3: #1f0c01;
+      --surface: rgba(10, 41, 22, 0.45);
+      --surface2: rgba(92, 64, 8, 0.6);
+      --border: rgba(0, 255, 187, 0.2);
+      --border2: rgba(255, 170, 0, 0.25);
+      --accent: #00ffbb;
+      --accent2: #ffaa00;
+      --accent-glow: rgba(0, 255, 187, 0.25);
+      --text: #f0fff4;
+      --text2: #fef3c7;
+      --text3: #00ffbb;
+    }
+
+    body.galacticrust-theme {
+      --bg: linear-gradient(135deg, #0c020f 0%, #290819 33%, #3d2a04 66%, #031c26 100%);
+      --bg2: #0d0613;
+      --bg3: #241902;
+      --surface: rgba(41, 8, 25, 0.45);
+      --surface2: rgba(3, 28, 38, 0.6);
+      --border: rgba(226, 149, 120, 0.2);
+      --border2: rgba(131, 197, 190, 0.25);
+      --accent: #e29578;
+      --accent2: #83c5be;
+      --accent-glow: rgba(226, 149, 120, 0.25);
+      --text: #fffaf8;
+      --text2: #e2e8f0;
+      --text3: #e29578;
+    }
+
+    body.plasmastorm-theme {
+      --bg: linear-gradient(225deg, #030a16 0%, #0a1f3d 40%, #4c005c 80%, #050212 100%);
+      --bg2: #050f24;
+      --bg3: #2b0035;
+      --surface: rgba(10, 31, 61, 0.45);
+      --surface2: rgba(76, 0, 92, 0.6);
+      --border: rgba(0, 255, 255, 0.2);
+      --border2: rgba(255, 0, 255, 0.25);
+      --accent: #00ffff;
+      --accent2: #ff00ff;
+      --accent-glow: rgba(0, 255, 255, 0.25);
+      --text: #f0fdff;
+      --text2: #fae8ff;
+      --text3: #00ffff;
+    }
+
     /* Theme Slider Layouts */
     .theme-dropdown-container {
       display: flex;
@@ -2447,6 +2511,26 @@
                 <span class="theme-card-label">Acid</span>
                 <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #080312, #1b0424, #052920)"></span><span style="background:#00ffd8"></span></div>
               </div>
+              <div class="theme-slide-card" onclick="applyTheme('singularity')" title="Event Horizon (Gradient)">
+                <span class="theme-card-emoji">🕳️</span>
+                <span class="theme-card-label">Horizon</span>
+                <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #020205, #0c081f, #2c0e3a)"></span><span style="background:#ff5e62"></span></div>
+              </div>
+              <div class="theme-slide-card" onclick="applyTheme('jadedynasty')" title="Jade Dynasty (Gradient)">
+                <span class="theme-card-emoji">🐉</span>
+                <span class="theme-card-label">JadeD</span>
+                <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #030d07, #0a2916, #5c4008)"></span><span style="background:#00ffbb"></span></div>
+              </div>
+              <div class="theme-slide-card" onclick="applyTheme('galacticrust')" title="Galactic Rust (Gradient)">
+                <span class="theme-card-emoji">🪐</span>
+                <span class="theme-card-label">G-Rust</span>
+                <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #0c020f, #290819, #3d2a04)"></span><span style="background:#e29578"></span></div>
+              </div>
+              <div class="theme-slide-card" onclick="applyTheme('plasmastorm')" title="Plasma Storm (Gradient)">
+                <span class="theme-card-emoji">⚡</span>
+                <span class="theme-card-label">Plasma</span>
+                <div class="theme-card-colors"><span style="background:linear-gradient(225deg, #030a16, #0a1f3d, #4c005c)"></span><span style="background:#00ffff"></span></div>
+              </div>
              <div class="theme-slide-card" onclick="applyTheme('alien')" title="Alien Hive (Gradient)">
                <span class="theme-card-emoji">👽</span>
                <span class="theme-card-label">Alien</span>
@@ -3301,6 +3385,26 @@
           <span class="theme-card-emoji">🧪</span>
           <span class="theme-card-label">Acid</span>
           <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #080312, #1b0424, #052920)"></span><span style="background:#00ffd8"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('singularity')" title="Event Horizon">
+          <span class="theme-card-emoji">🕳️</span>
+          <span class="theme-card-label">Horizon</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #020205, #0c081f, #2c0e3a)"></span><span style="background:#ff5e62"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('jadedynasty')" title="Jade Dynasty">
+          <span class="theme-card-emoji">🐉</span>
+          <span class="theme-card-label">JadeD</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #030d07, #0a2916, #5c4008)"></span><span style="background:#00ffbb"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('galacticrust')" title="Galactic Rust">
+          <span class="theme-card-emoji">🪐</span>
+          <span class="theme-card-label">G-Rust</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #0c020f, #290819, #3d2a04)"></span><span style="background:#e29578"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('plasmastorm')" title="Plasma Storm">
+          <span class="theme-card-emoji">⚡</span>
+          <span class="theme-card-label">Plasma</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(225deg, #030a16, #0a1f3d, #4c005c)"></span><span style="background:#00ffff"></span></div>
         </div>
       </div>
       <button class="theme-slider-arrow right" onclick="slideThemes('right', 'mobile-theme-slider', event)">›</button>
@@ -4228,7 +4332,7 @@ function closeMobileThemeSheet() {
 }
 
 function applyTheme(themeName) {
-  document.body.classList.remove('light-theme', 'sepia-theme', 'midnight-theme', 'emerald-theme', 'amethyst-theme', 'old-money-theme', 'mahogany-theme', 'matcha-theme', 'autumn-theme', 'cyberpunk-theme', 'sakura-theme', 'solarized-theme', 'quartz-theme', 'ember-theme', 'synthwave-theme', 'forest-gold-theme', 'cappuccino-theme', 'eclipse-theme', 'nordic-frost-theme', 'nebula-theme', 'sunset-theme', 'matrix-theme', 'candy-theme', 'supernova-theme', 'glacial-theme', 'saturn-theme', 'holographic-theme', 'obsidian-theme', 'bloodmoon-theme', 'toxic-theme', 'deepsea-theme', 'phantom-theme', 'alien-theme', 'magma-theme', 'peacock-theme', 'glitch-theme', 'quantum-theme', 'timewarp-theme', 'acidcyber-theme');
+  document.body.classList.remove('light-theme', 'sepia-theme', 'midnight-theme', 'emerald-theme', 'amethyst-theme', 'old-money-theme', 'mahogany-theme', 'matcha-theme', 'autumn-theme', 'cyberpunk-theme', 'sakura-theme', 'solarized-theme', 'quartz-theme', 'ember-theme', 'synthwave-theme', 'forest-gold-theme', 'cappuccino-theme', 'eclipse-theme', 'nordic-frost-theme', 'nebula-theme', 'sunset-theme', 'matrix-theme', 'candy-theme', 'supernova-theme', 'glacial-theme', 'saturn-theme', 'holographic-theme', 'obsidian-theme', 'bloodmoon-theme', 'toxic-theme', 'deepsea-theme', 'phantom-theme', 'alien-theme', 'magma-theme', 'peacock-theme', 'glitch-theme', 'quantum-theme', 'timewarp-theme', 'acidcyber-theme', 'singularity-theme', 'jadedynasty-theme', 'galacticrust-theme', 'plasmastorm-theme');
   state.theme = themeName;
   if (themeName !== 'dark') {
     document.body.classList.add(`${themeName}-theme`);
