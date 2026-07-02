@@ -1572,6 +1572,175 @@
       from { opacity: 0; }
       to { opacity: 1; }
     }
+
+    /* OAuth section styling */
+    .auth-oauth-divider {
+      display: flex; align-items: center; justify-content: center;
+      margin: 1.2rem 0 0.8rem; text-align: center;
+      color: var(--text3); font-size: 0.72rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .auth-oauth-divider::before, .auth-oauth-divider::after {
+      content: ""; flex: 1; height: 1px; background: var(--border);
+    }
+    .auth-oauth-divider::before { margin-right: 0.8rem; }
+    .auth-oauth-divider::after { margin-left: 0.8rem; }
+    
+    .auth-oauth-buttons {
+      display: flex; flex-direction: column; gap: 0.6rem;
+      margin-bottom: 0.5rem;
+    }
+    .auth-oauth-btn {
+      display: flex; align-items: center; justify-content: center; gap: 0.8rem;
+      width: 100%; padding: 0.8rem 1rem; border-radius: var(--radius);
+      border: 1px solid var(--border); background: var(--surface2);
+      color: var(--text); font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; transition: all var(--transition);
+      font-family: var(--body-font);
+    }
+    .auth-oauth-btn:hover {
+      background: var(--surface); border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+    .auth-oauth-btn:active {
+      transform: translateY(1px);
+    }
+    .auth-oauth-btn svg {
+      width: 18px; height: 18px;
+    }
+
+    /* Mock OAuth Modal Styles */
+    .oauth-modal-card {
+      width: 90%;
+      max-width: 400px;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-lg);
+      padding: 2.2rem;
+      box-shadow: var(--shadow-lg), 0 20px 40px rgba(0,0,0,0.4);
+      animation: modalSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      box-sizing: border-box;
+      position: relative;
+    }
+    .oauth-modal-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 1.2rem;
+      text-align: center;
+      position: relative;
+    }
+    .oauth-modal-header .close-sheet-btn {
+      position: absolute;
+      top: -1.2rem;
+      right: -1.2rem;
+    }
+    .oauth-brand-logo {
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .oauth-brand-logo svg {
+      width: 48px;
+      height: 48px;
+    }
+    .oauth-modal-header h3 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text);
+      margin: 0;
+    }
+    .oauth-modal-desc {
+      font-size: 0.82rem;
+      color: var(--text3);
+      text-align: center;
+      margin-top: 0.2rem;
+      margin-bottom: 1.4rem;
+    }
+    .oauth-accounts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+    }
+    .oauth-account-item {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface2);
+      cursor: pointer;
+      transition: all var(--transition);
+      text-align: left;
+    }
+    .oauth-account-item:hover {
+      border-color: var(--accent);
+      background: var(--surface);
+      transform: translateY(-1px);
+    }
+    .oauth-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+    .oauth-account-details {
+      display: flex;
+      flex-direction: column;
+    }
+    .oauth-account-name {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .oauth-account-id {
+      font-size: 0.75rem;
+      color: var(--text3);
+    }
+    .oauth-divider-text {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: var(--text3);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      font-weight: 800;
+      margin: 1.2rem 0;
+      letter-spacing: 0.5px;
+    }
+    .oauth-divider-text::before, .oauth-divider-text::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .oauth-divider-text::before { margin-right: 0.6rem; }
+    .oauth-divider-text::after { margin-left: 0.6rem; }
+    
+    /* Loading Spinner */
+    .oauth-spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      margin: 0 auto;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
@@ -1629,6 +1798,7 @@
         <div class="profile-info">
           <div class="profile-name" id="profile-name">User</div>
           <div class="profile-xp" id="profile-xp">0 XP</div>
+          <div class="profile-provider" id="profile-provider" style="font-size: 0.72rem; color: var(--text3); margin-top: 0.25rem; font-weight: 700;"></div>
         </div>
         <button class="profile-logout-btn" onclick="logoutUser()">🚪 Log Out</button>
       </div>
@@ -1694,6 +1864,23 @@
         </div>
         <button type="submit" class="auth-btn-submit">Create Account</button>
       </form>
+
+      <!-- OAuth Dividers & Buttons -->
+      <div class="auth-oauth-divider">or sign in with</div>
+      <div class="auth-oauth-buttons">
+        <button type="button" class="auth-oauth-btn google-btn" onclick="openOAuthModal('google')">
+          <svg viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.67 0 3.17.58 4.35 1.71l3.25-3.25C17.63 1.7 15.01 1 12 1 7.37 1 3.4 3.66 1.54 7.54l3.86 3C6.31 7.56 8.93 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.42 3.57v2.97h3.91c2.28-2.1 3.54-5.19 3.54-8.69z"/><path fill="#FBBC05" d="M5.4 14.54c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.96H1.54C.56 8.93 0 11.13 0 13.43c0 2.3.56 4.5 1.54 6.47l3.86-3.36z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.91-2.97c-1.08.72-2.48 1.16-4.05 1.16-3.07 0-5.69-2.52-6.6-5.5H1.54v3.36C3.4 20.34 7.37 23 12 23z"/></svg>
+          Google
+        </button>
+        <button type="button" class="auth-oauth-btn apple-btn" onclick="openOAuthModal('apple')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05 1.88-3.08 1.88-1.02 0-1.4-.61-2.56-.61-1.17 0-1.58.59-2.56.61-1.03.02-2.26-1.02-3.24-1.99-2-1.99-3.53-5.62-3.53-9.02 0-5.39 3.49-8.24 6.9-8.24 1.07 0 2.08.66 2.74.66.66 0 1.91-.79 3.19-.79 1.34 0 5.12.49 6.27 3.39-2.9 1.72-2.43 5.48.51 6.67-1.13 2.74-2.49 5.5-4.99 7.44M14.9 3.34c.76-.92 1.27-2.2 1.27-3.48-1.11.04-2.45.74-3.25 1.68-.69.8-1.3 2.09-1.3 3.35 1.23.1 2.52-.63 3.28-1.55"/></svg>
+          Apple
+        </button>
+        <button type="button" class="auth-oauth-btn github-btn" onclick="openOAuthModal('github')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.05 6.839 9.38.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.047 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+          GitHub
+        </button>
+      </div>
 
       <div class="auth-guest-btn" onclick="continueAsGuest()">Continue as Guest &rarr;</div>
     </div>
@@ -2218,6 +2405,40 @@
         <span class="theme-emoji">🌸</span>
         <span class="theme-label">Sakura Blossom</span>
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- Mock OAuth Dialog Modal -->
+<div id="oauth-modal" class="mobile-theme-overlay" onclick="closeOAuthModal()">
+  <div class="oauth-modal-card" onclick="event.stopPropagation()">
+    <div class="oauth-modal-header">
+      <div class="oauth-brand-logo" id="oauth-brand-logo-target"></div>
+      <h3 id="oauth-modal-title">Sign in with Google</h3>
+      <button class="close-sheet-btn" onclick="closeOAuthModal()">✕</button>
+    </div>
+    
+    <div id="oauth-step-select" class="oauth-modal-body">
+      <p class="oauth-modal-desc" id="oauth-modal-desc-target">to continue to Helix Reader</p>
+      <div class="oauth-accounts-list" id="oauth-accounts-list-target"></div>
+      <div class="oauth-divider-text">or use another account</div>
+      <form id="oauth-custom-form" onsubmit="handleCustomOAuthSubmit(event)">
+        <div class="auth-input-group" style="margin-bottom:0.8rem">
+          <label for="oauth-custom-name" id="oauth-custom-name-label">Display Name</label>
+          <input type="text" id="oauth-custom-name" placeholder="E.g. Hardik Arora" required />
+        </div>
+        <div class="auth-input-group" style="margin-bottom:1.2rem">
+          <label for="oauth-custom-id" id="oauth-custom-id-label">Email Address</label>
+          <input type="text" id="oauth-custom-id" placeholder="E.g. hardik@gmail.com" required />
+        </div>
+        <button type="submit" class="auth-btn-submit" style="margin-top:0">Continue</button>
+      </form>
+    </div>
+
+    <div id="oauth-step-progress" class="oauth-modal-body" style="display:none; text-align:center; padding: 1.5rem 0 0.5rem;">
+      <div class="oauth-spinner"></div>
+      <h4 style="margin-top:1.5rem; margin-bottom:0.5rem; font-size:1.1rem; color:var(--text);" id="oauth-progress-title">Connecting to Google...</h4>
+      <p style="font-size:0.8rem; color:var(--text3);" id="oauth-progress-subtitle">Securing your session credentials...</p>
     </div>
   </div>
 </div>
@@ -2780,6 +3001,23 @@ function updateAuthNavBar() {
       document.getElementById('profile-avatar').textContent = initial;
       document.getElementById('profile-name').textContent = currentUser;
       document.getElementById('profile-xp').textContent = `${state.xp || 0} XP`;
+      
+      const providerEl = document.getElementById('profile-provider');
+      if (providerEl) {
+        if (currentUser.includes('(Google)')) {
+          providerEl.textContent = '🔑 Google Signed-in';
+          providerEl.style.color = '#4285F4';
+        } else if (currentUser.includes('(Apple)')) {
+          providerEl.textContent = ' Apple Signed-in';
+          providerEl.style.color = 'var(--text)';
+        } else if (currentUser.includes('(GitHub)')) {
+          providerEl.textContent = '🐙 GitHub Signed-in';
+          providerEl.style.color = '#2da44e';
+        } else {
+          providerEl.textContent = '👤 Standard Account';
+          providerEl.style.color = 'var(--text3)';
+        }
+      }
     }
   } else {
     if (authSection) authSection.style.display = 'flex';
@@ -2811,6 +3049,130 @@ function logoutUser() {
   updateAuthNavBar();
   showNotification('🚪 Logged out successfully!');
   navigate('auth');
+}
+
+// ════════════════════════════════════════
+// MOCK OAUTH INTEGRATION
+// ════════════════════════════════════════
+let activeOAuthProvider = null;
+
+const oauthAccounts = {
+  google: [
+    { name: 'Hardik Arora', email: 'hardik.arora@gmail.com', avatar: 'HA' },
+    { name: 'Guest Reader', email: 'guest.reader@gmail.com', avatar: 'GR' }
+  ],
+  apple: [
+    { name: 'Hardik Arora', email: 'hardik.arora@icloud.com', avatar: '' }
+  ],
+  github: [
+    { name: 'hardikarora321', email: 'hardikarora321@github.com', avatar: 'GH' }
+  ]
+};
+
+const oauthLogos = {
+  google: `<svg viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.67 0 3.17.58 4.35 1.71l3.25-3.25C17.63 1.7 15.01 1 12 1 7.37 1 3.4 3.66 1.54 7.54l3.86 3C6.31 7.56 8.93 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.42 3.57v2.97h3.91c2.28-2.1 3.54-5.19 3.54-8.69z"/><path fill="#FBBC05" d="M5.4 14.54c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.96H1.54C.56 8.93 0 11.13 0 13.43c0 2.3.56 4.5 1.54 6.47l3.86-3.36z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.91-2.97c-1.08.72-2.48 1.16-4.05 1.16-3.07 0-5.69-2.52-6.6-5.5H1.54v3.36C3.4 20.34 7.37 23 12 23z"/></svg>`,
+  apple: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05 1.88-3.08 1.88-1.02 0-1.4-.61-2.56-.61-1.17 0-1.58.59-2.56.61-1.03.02-2.26-1.02-3.24-1.99-2-1.99-3.53-5.62-3.53-9.02 0-5.39 3.49-8.24 6.9-8.24 1.07 0 2.08.66 2.74.66.66 0 1.91-.79 3.19-.79 1.34 0 5.12.49 6.27 3.39-2.9 1.72-2.43 5.48.51 6.67-1.13 2.74-2.49 5.5-4.99 7.44M14.9 3.34c.76-.92 1.27-2.2 1.27-3.48-1.11.04-2.45.74-3.25 1.68-.69.8-1.3 2.09-1.3 3.35 1.23.1 2.52-.63 3.28-1.55"/></svg>`,
+  github: `<svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.05 6.839 9.38.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.047 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>`
+};
+
+function openOAuthModal(provider) {
+  activeOAuthProvider = provider;
+  
+  const logoTarget = document.getElementById('oauth-brand-logo-target');
+  const titleTarget = document.getElementById('oauth-modal-title');
+  const descTarget = document.getElementById('oauth-modal-desc-target');
+  const nameLabel = document.getElementById('oauth-custom-name-label');
+  const idLabel = document.getElementById('oauth-custom-id-label');
+  
+  if (logoTarget) logoTarget.innerHTML = oauthLogos[provider];
+  
+  const providerLabel = provider === 'github' ? 'GitHub' : (provider.charAt(0).toUpperCase() + provider.slice(1));
+  if (titleTarget) titleTarget.textContent = `Sign in with ${providerLabel}`;
+  if (descTarget) descTarget.textContent = `to continue to Helix Reader`;
+  
+  if (nameLabel) nameLabel.textContent = `Display Name`;
+  if (idLabel) idLabel.textContent = provider === 'apple' ? 'Apple ID / Email' : (provider === 'github' ? 'GitHub Username' : 'Email Address');
+  
+  document.getElementById('oauth-custom-name').value = '';
+  document.getElementById('oauth-custom-id').value = '';
+  
+  const listTarget = document.getElementById('oauth-accounts-list-target');
+  if (listTarget) {
+    listTarget.innerHTML = '';
+    const accounts = oauthAccounts[provider] || [];
+    accounts.forEach(acc => {
+      const item = document.createElement('div');
+      item.className = 'oauth-account-item';
+      item.onclick = () => selectOAuthAccount(acc.name, acc.email);
+      item.innerHTML = `
+        <div class="oauth-avatar">${acc.avatar}</div>
+        <div class="oauth-account-details">
+          <div class="oauth-account-name">${acc.name}</div>
+          <div class="oauth-account-id">${acc.email}</div>
+        </div>
+      `;
+      listTarget.appendChild(item);
+    });
+  }
+  
+  document.getElementById('oauth-step-select').style.display = 'block';
+  document.getElementById('oauth-step-progress').style.display = 'none';
+  
+  const modal = document.getElementById('oauth-modal');
+  if (modal) {
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeOAuthModal() {
+  const modal = document.getElementById('oauth-modal');
+  if (modal) {
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+  activeOAuthProvider = null;
+}
+
+function selectOAuthAccount(name, email) {
+  triggerOAuthProgress(name, email);
+}
+
+function handleCustomOAuthSubmit(event) {
+  event.preventDefault();
+  const name = document.getElementById('oauth-custom-name').value.trim();
+  const email = document.getElementById('oauth-custom-id').value.trim();
+  triggerOAuthProgress(name, email);
+}
+
+function triggerOAuthProgress(name, email) {
+  document.getElementById('oauth-step-select').style.display = 'none';
+  document.getElementById('oauth-step-progress').style.display = 'block';
+  
+  const providerLabel = activeOAuthProvider === 'github' ? 'GitHub' : (activeOAuthProvider.charAt(0).toUpperCase() + activeOAuthProvider.slice(1));
+  document.getElementById('oauth-progress-title').textContent = `Connecting to ${providerLabel}...`;
+  document.getElementById('oauth-progress-subtitle').textContent = `Securing your session credentials...`;
+  
+  setTimeout(() => {
+    const username = `${name} (${providerLabel})`;
+    
+    let u = userDb.findUser(username);
+    if (!u) {
+      userDb.registerUser(username, '');
+      u = userDb.findUser(username);
+    }
+    
+    currentUser = u.username;
+    safeStore.setItem('h_current_user', currentUser);
+    applyUserState(u.state);
+    updateAuthNavBar();
+    
+    addXP(15);
+    
+    closeOAuthModal();
+    showNotification(`👋 Welcome, ${currentUser}!`);
+    navigate('home');
+  }, 1500);
 }
 
 function handleAuthSubmit(event, mode) {
