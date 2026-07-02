@@ -4,7 +4,7 @@ A premium, feature-rich, Kindle-inspired digital library application providing a
 
 ## 🚀 Live & Local Links
 
-- 🌐 **Live Website Link:** **[https://iamhardikarora321-wq.github.io/helix-reader/](https://iamhardikarora321-wq.github.io/helix-reader/)**
+- 🌐 **Live Website Link:** **[https://hardik-arora.github.io/helix-reader/](https://hardik-arora.github.io/helix-reader/)**
 - 🏠 **Local Server Link:** **[http://localhost:8000](http://localhost:8000)**
 
 If you need to start the server again manually in the future, run:
