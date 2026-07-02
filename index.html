@@ -423,6 +423,70 @@
       --text3: #ff9a9e;
     }
 
+    body.supernova-theme {
+      --bg: linear-gradient(135deg, #18002a 0%, #001233 50%, #2b001a 100%);
+      --bg2: #120320;
+      --bg3: #1a0833;
+      --surface: rgba(26, 4, 46, 0.45);
+      --surface2: rgba(43, 6, 77, 0.6);
+      --border: rgba(255, 0, 127, 0.15);
+      --border2: rgba(0, 240, 255, 0.25);
+      --accent: #00f0ff;
+      --accent2: #ff007f;
+      --accent-glow: rgba(0, 240, 255, 0.25);
+      --text: #ffffff;
+      --text2: #fbcfe8;
+      --text3: #00f0ff;
+    }
+
+    body.glacial-theme {
+      --bg: linear-gradient(135deg, #020c1b 0%, #002233 50%, #051c14 100%);
+      --bg2: #011429;
+      --bg3: #032b3f;
+      --surface: rgba(3, 34, 54, 0.45);
+      --surface2: rgba(6, 52, 82, 0.6);
+      --border: rgba(0, 255, 216, 0.15);
+      --border2: rgba(168, 255, 178, 0.25);
+      --accent: #00ffd8;
+      --accent2: #a8ffb2;
+      --accent-glow: rgba(0, 255, 216, 0.25);
+      --text: #e6ffff;
+      --text2: #a8ffb2;
+      --text3: #00ffd8;
+    }
+
+    body.saturn-theme {
+      --bg: linear-gradient(135deg, #0e0a03 0%, #1c1507 50%, #0e0a03 100%);
+      --bg2: #140f05;
+      --bg3: #261d0a;
+      --surface: rgba(38, 29, 10, 0.45);
+      --surface2: rgba(59, 44, 15, 0.6);
+      --border: rgba(255, 215, 0, 0.15);
+      --border2: rgba(255, 140, 0, 0.25);
+      --accent: #ffd700;
+      --accent2: #ff8c00;
+      --accent-glow: rgba(255, 215, 0, 0.25);
+      --text: #fffae6;
+      --text2: #ffd700;
+      --text3: #ff8c00;
+    }
+
+    body.holographic-theme {
+      --bg: linear-gradient(135deg, #f0f4ff 0%, #fff0f5 33%, #f0fff4 66%, #fffaf0 100%);
+      --bg2: #f7f9ff;
+      --bg3: #fff7fa;
+      --surface: rgba(255, 255, 255, 0.65);
+      --surface2: rgba(255, 255, 255, 0.8);
+      --border: rgba(161, 196, 253, 0.35);
+      --border2: rgba(255, 182, 193, 0.35);
+      --accent: #8e2de2;
+      --accent2: #4a00e0;
+      --accent-glow: rgba(142, 45, 226, 0.2);
+      --text: #2f2542;
+      --text2: #6c5299;
+      --text3: #8e2de2;
+    }
+
     /* Theme Slider Layouts */
     .theme-dropdown-container {
       display: flex;
@@ -2166,6 +2230,31 @@
               <span class="theme-card-label">Frost</span>
               <div class="theme-card-colors"><span style="background:#eef5f8"></span><span style="background:#2b678c"></span></div>
             </div>
+            <div class="theme-slide-card" onclick="applyTheme('candy')" title="Cotton Candy (Gradient)">
+               <span class="theme-card-emoji">🍨</span>
+               <span class="theme-card-label">Candy</span>
+               <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #fff0f5, #e6efff)"></span><span style="background:#ff9a9e"></span></div>
+             </div>
+             <div class="theme-slide-card" onclick="applyTheme('supernova')" title="Supernova Glow (Gradient)">
+               <span class="theme-card-emoji">🌌</span>
+               <span class="theme-card-label">Supernova</span>
+               <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #18002a, #001233)"></span><span style="background:#00f0ff"></span></div>
+             </div>
+             <div class="theme-slide-card" onclick="applyTheme('glacial')" title="Glacial Aurora (Gradient)">
+               <span class="theme-card-emoji">🧊</span>
+               <span class="theme-card-label">Glacial</span>
+               <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #020c1b, #002233)"></span><span style="background:#00ffd8"></span></div>
+             </div>
+             <div class="theme-slide-card" onclick="applyTheme('saturn')" title="Saturn Gold (Gradient)">
+               <span class="theme-card-emoji">🪐</span>
+               <span class="theme-card-label">Saturn</span>
+               <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #0e0a03, #1c1507)"></span><span style="background:#ffd700"></span></div>
+             </div>
+             <div class="theme-slide-card" onclick="applyTheme('holographic')" title="Holographic Prism (Gradient)">
+               <span class="theme-card-emoji">🦄</span>
+               <span class="theme-card-label">Prism</span>
+               <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #f0f4ff, #fff0f5)"></span><span style="background:#8e2de2"></span></div>
+             </div>
             <div class="theme-slide-card" onclick="applyTheme('nebula')" title="Nebula Aurora (Gradient)">
               <span class="theme-card-emoji">🌌</span>
               <span class="theme-card-label">Nebula</span>
@@ -2885,6 +2974,26 @@
           <span class="theme-card-emoji">🍨</span>
           <span class="theme-card-label">Candy</span>
           <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #fff0f5, #e6efff)"></span><span style="background:#ff9a9e"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('supernova')" title="Supernova Glow">
+          <span class="theme-card-emoji">🌌</span>
+          <span class="theme-card-label">Supernova</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #18002a, #001233)"></span><span style="background:#00f0ff"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('glacial')" title="Glacial Aurora">
+          <span class="theme-card-emoji">🧊</span>
+          <span class="theme-card-label">Glacial</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #020c1b, #002233)"></span><span style="background:#00ffd8"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('saturn')" title="Saturn Gold">
+          <span class="theme-card-emoji">🪐</span>
+          <span class="theme-card-label">Saturn</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #0e0a03, #1c1507)"></span><span style="background:#ffd700"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('holographic')" title="Holographic Prism">
+          <span class="theme-card-emoji">🦄</span>
+          <span class="theme-card-label">Prism</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #f0f4ff, #fff0f5)"></span><span style="background:#8e2de2"></span></div>
         </div>
       </div>
       <button class="theme-slider-arrow right" onclick="slideThemes('right', 'mobile-theme-slider', event)">›</button>
@@ -3812,7 +3921,7 @@ function closeMobileThemeSheet() {
 }
 
 function applyTheme(themeName) {
-  document.body.classList.remove('light-theme', 'sepia-theme', 'midnight-theme', 'emerald-theme', 'amethyst-theme', 'old-money-theme', 'mahogany-theme', 'matcha-theme', 'autumn-theme', 'cyberpunk-theme', 'sakura-theme', 'solarized-theme', 'quartz-theme', 'ember-theme', 'synthwave-theme', 'forest-gold-theme', 'cappuccino-theme', 'eclipse-theme', 'nordic-frost-theme', 'nebula-theme', 'sunset-theme', 'matrix-theme', 'candy-theme');
+  document.body.classList.remove('light-theme', 'sepia-theme', 'midnight-theme', 'emerald-theme', 'amethyst-theme', 'old-money-theme', 'mahogany-theme', 'matcha-theme', 'autumn-theme', 'cyberpunk-theme', 'sakura-theme', 'solarized-theme', 'quartz-theme', 'ember-theme', 'synthwave-theme', 'forest-gold-theme', 'cappuccino-theme', 'eclipse-theme', 'nordic-frost-theme', 'nebula-theme', 'sunset-theme', 'matrix-theme', 'candy-theme', 'supernova-theme', 'glacial-theme', 'saturn-theme', 'holographic-theme');
   state.theme = themeName;
   if (themeName !== 'dark') {
     document.body.classList.add(`${themeName}-theme`);
