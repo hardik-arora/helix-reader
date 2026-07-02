@@ -1304,73 +1304,92 @@
     /* ─── AUTHENTICATION PAGE & PROFILE ─────────────── */
     .auth-bg {
       display: flex; align-items: center; justify-content: center;
-      min-height: 80vh; width: 100%; position: relative; overflow: hidden;
+      min-height: 85vh; width: 100%; position: relative; overflow: hidden;
+      padding: 4rem 1rem 2rem; box-sizing: border-box;
     }
     .auth-card {
-      background: rgba(255, 255, 255, 0.03);
-      backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+      background: rgba(27, 32, 48, 0.4);
+      backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: var(--radius-lg); padding: 2.5rem;
-      width: 100%; max-width: 420px; box-shadow: var(--shadow-lg);
-      display: flex; flex-direction: column; gap: 1.5rem;
+      border-radius: var(--radius-lg); padding: 3rem 2.5rem;
+      width: 100%; max-width: 440px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px var(--accent-glow);
+      display: flex; flex-direction: column; gap: 1.8rem;
       position: relative; z-index: 10;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .auth-card:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6), 0 0 50px var(--accent-glow);
     }
     body.light-theme .auth-card {
-      background: rgba(0, 0, 0, 0.02);
-      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
     }
     .auth-title {
-      font-family: var(--heading-font); font-size: 2.2rem; font-weight: 800;
-      text-align: center; color: var(--text); margin-bottom: 0.2rem;
+      font-family: var(--heading-font); font-size: 2.4rem; font-weight: 800;
+      text-align: center;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--teal) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.5px;
     }
     .auth-subtitle {
-      font-size: 0.85rem; color: var(--text2); text-align: center;
-      margin-top: -1.2rem; margin-bottom: 0.5rem;
+      font-size: 0.88rem; color: var(--text2); text-align: center;
+      margin-top: 0; margin-bottom: 0.5rem;
+      line-height: 1.4;
     }
     .auth-tabs {
-      display: flex; background: var(--bg3); padding: 4px;
-      border-radius: 10px; border: 1px solid var(--border); position: relative;
+      display: flex; background: var(--bg2); padding: 4px;
+      border-radius: var(--radius); border: 1px solid var(--border); position: relative;
     }
     .auth-tab-btn {
-      flex: 1; text-align: center; padding: 0.6rem 0; font-size: 0.85rem;
+      flex: 1; text-align: center; padding: 0.7rem 0; font-size: 0.88rem;
       font-weight: 700; color: var(--text2); cursor: pointer; z-index: 2;
-      transition: color var(--transition); border-radius: 8px;
+      transition: all var(--transition); border-radius: 8px;
     }
-    .auth-tab-btn.active { color: var(--text); background: var(--surface); }
+    .auth-tab-btn:hover { color: var(--text); }
+    .auth-tab-btn.active { color: #ffffff !important; background: var(--accent); box-shadow: 0 4px 12px var(--accent-glow); }
+    body.light-theme .auth-tab-btn.active { color: #ffffff !important; }
     
     .auth-form-wrap {
-      display: flex; flex-direction: column; gap: 1.2rem;
+      display: flex; flex-direction: column; gap: 1.4rem;
     }
     .auth-input-group {
-      display: flex; flex-direction: column; gap: 0.4rem;
+      display: flex; flex-direction: column; gap: 0.5rem;
     }
     .auth-input-group label {
       font-size: 0.72rem; font-weight: 800; color: var(--text3);
-      text-transform: uppercase; letter-spacing: 0.5px;
+      text-transform: uppercase; letter-spacing: 1px;
     }
     .auth-input-group input {
-      padding: 0.8rem 1rem; border-radius: 8px; border: 1px solid var(--border);
-      background: var(--surface); color: var(--text); font-size: 0.92rem;
-      transition: border-color var(--transition), box-shadow var(--transition);
+      padding: 0.85rem 1.1rem; border-radius: var(--radius); border: 1px solid var(--border);
+      background: var(--bg2); color: var(--text); font-size: 0.95rem; font-family: var(--body-font);
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
     }
     .auth-input-group input:focus {
-      border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-glow);
+      border-color: var(--accent); outline: none; background: var(--surface);
+      box-shadow: 0 0 0 3px var(--accent-glow), inset 0 1px 2px rgba(0,0,0,0.2);
     }
     .auth-btn-submit {
-      width: 100%; padding: 0.9rem; border-radius: 8px; font-size: 0.95rem;
+      width: 100%; padding: 0.95rem; border-radius: var(--radius); font-size: 0.95rem;
       font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent2));
       color: #fff !important; cursor: pointer; border: none;
-      box-shadow: 0 4px 15px var(--accent-glow); transition: all var(--transition);
-      text-align: center; margin-top: 0.5rem;
+      box-shadow: 0 6px 20px var(--accent-glow); transition: all var(--transition);
+      text-align: center; margin-top: 0.6rem;
+      font-family: var(--body-font);
+      letter-spacing: 0.5px;
     }
-    .auth-btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--accent-glow); }
-    .auth-btn-submit:active { transform: translateY(0); }
+    .auth-btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 24px var(--accent-glow); }
+    .auth-btn-submit:active { transform: translateY(1px); }
     
     .auth-guest-btn {
-      text-align: center; font-size: 0.85rem; color: var(--text3);
-      cursor: pointer; transition: color var(--transition); margin-top: 0.2rem;
+      text-align: center; font-size: 0.88rem; color: var(--text2);
+      cursor: pointer; transition: color var(--transition), transform var(--transition); margin-top: 0.4rem;
+      font-weight: 600;
     }
-    .auth-guest-btn:hover { color: var(--accent); }
+    .auth-guest-btn:hover { color: var(--teal); transform: translateX(2px); }
 
     /* Nav bar Profile button and dropdown */
     .profile-dropdown-wrap { position: relative; }
