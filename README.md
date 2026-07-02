@@ -34,7 +34,7 @@ This project combines a premium web interface with a self-contained Python NLP a
 
 1. **🌐 158 Million Book Index & Platform Selector**: Query the global digital library in real-time. Clicking "Read Book" launches a platform redirect modal connecting readers directly to digitized copies on **Project Gutenberg, Open Library, Google Books, and Internet Archive**.
 2. **✍️ Global Authors Spotlight**: Features legendary literature spanning all continents, including a dedicated Indian literature registry (Rabindranath Tagore, Kalidasa, Arundhati Roy, R. K. Narayan, Premchand, Wings of Fire, and classical epics).
-3. **🎭 Premium Styling & Themes**: Toggle between Midnight Dark, Cosmic Navy, Pure Light, and Classic Sepia modes instantly.
+3. **🎭 Premium Styling & Themes**: Toggle between 28 premium themes (including 8 gorgeous linear gradients) instantly.
 4. **🔊 Text-to-Speech (TTS) Voice Engine**: High-fidelity paragraph reading voice synthesis with active highlighting and speed controls.
 5. **♿ Reading Focus Modes**: Dyslexic-friendly layouts (dyslexic letter-spacing) and sentence-by-sentence focus view toggles.
 6. **📖 Floating Dictionary**: Highlight any word in the reader to view meanings, save vocabulary words, and trigger audio pronunciation.
