@@ -359,6 +359,70 @@
       --text3: #628299;
     }
 
+    body.nebula-theme {
+      --bg: linear-gradient(135deg, #0d0822 0%, #1c0e35 50%, #0d0822 100%);
+      --bg2: #160c2b;
+      --bg3: #221240;
+      --surface: rgba(30, 16, 56, 0.45);
+      --surface2: rgba(45, 24, 82, 0.6);
+      --border: rgba(255, 255, 255, 0.08);
+      --border2: rgba(255, 255, 255, 0.15);
+      --accent: #ff007f;
+      --accent2: #8a2be2;
+      --accent-glow: rgba(255, 0, 127, 0.25);
+      --text: #ffffff;
+      --text2: #e0b0ff;
+      --text3: #ff007f;
+    }
+
+    body.sunset-theme {
+      --bg: linear-gradient(135deg, #1b0a1c 0%, #3b1022 50%, #1b0a1c 100%);
+      --bg2: #240c1e;
+      --bg3: #3b142d;
+      --surface: rgba(59, 20, 45, 0.45);
+      --surface2: rgba(82, 24, 60, 0.6);
+      --border: rgba(255, 255, 255, 0.08);
+      --border2: rgba(255, 255, 255, 0.15);
+      --accent: #ff7e5f;
+      --accent2: #feb47b;
+      --accent-glow: rgba(255, 126, 95, 0.25);
+      --text: #ffffff;
+      --text2: #fed3b7;
+      --text3: #ff7e5f;
+    }
+
+    body.matrix-theme {
+      --bg: linear-gradient(135deg, #020a05 0%, #051a0c 50%, #020a05 100%);
+      --bg2: #030e06;
+      --bg3: #082612;
+      --surface: rgba(5, 30, 15, 0.45);
+      --surface2: rgba(8, 48, 24, 0.6);
+      --border: rgba(0, 255, 102, 0.1);
+      --border2: rgba(0, 255, 102, 0.2);
+      --accent: #00ff66;
+      --accent2: #008833;
+      --accent-glow: rgba(0, 255, 102, 0.25);
+      --text: #e6ffe6;
+      --text2: #80ffaa;
+      --text3: #00ff66;
+    }
+
+    body.candy-theme {
+      --bg: linear-gradient(135deg, #fff0f5 0%, #e6efff 100%);
+      --bg2: #fcf4f7;
+      --bg3: #edf2fc;
+      --surface: rgba(255, 255, 255, 0.7);
+      --surface2: rgba(255, 255, 255, 0.85);
+      --border: rgba(255, 182, 193, 0.4);
+      --border2: rgba(161, 196, 253, 0.4);
+      --accent: #ff9a9e;
+      --accent2: #a1c4fd;
+      --accent-glow: rgba(255, 154, 158, 0.2);
+      --text: #4e3f43;
+      --text2: #756a85;
+      --text3: #ff9a9e;
+    }
+
     /* Theme Slider Layouts */
     .theme-dropdown-container {
       display: flex;
@@ -2102,6 +2166,26 @@
               <span class="theme-card-label">Frost</span>
               <div class="theme-card-colors"><span style="background:#eef5f8"></span><span style="background:#2b678c"></span></div>
             </div>
+            <div class="theme-slide-card" onclick="applyTheme('nebula')" title="Nebula Aurora (Gradient)">
+              <span class="theme-card-emoji">🌌</span>
+              <span class="theme-card-label">Nebula</span>
+              <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #0d0822, #1c0e35)"></span><span style="background:#ff007f"></span></div>
+            </div>
+            <div class="theme-slide-card" onclick="applyTheme('sunset')" title="Sunset Mirage (Gradient)">
+              <span class="theme-card-emoji">🌅</span>
+              <span class="theme-card-label">Sunset</span>
+              <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #1b0a1c, #3b1022)"></span><span style="background:#ff7e5f"></span></div>
+            </div>
+            <div class="theme-slide-card" onclick="applyTheme('matrix')" title="Cyber Emerald (Gradient)">
+              <span class="theme-card-emoji">🔋</span>
+              <span class="theme-card-label">CyberG</span>
+              <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #020a05, #051a0c)"></span><span style="background:#00ff66"></span></div>
+            </div>
+            <div class="theme-slide-card" onclick="applyTheme('candy')" title="Cotton Candy (Gradient)">
+              <span class="theme-card-emoji">🍨</span>
+              <span class="theme-card-label">Candy</span>
+              <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #fff0f5, #e6efff)"></span><span style="background:#ff9a9e"></span></div>
+            </div>
           </div>
           <button class="theme-slider-arrow right" onclick="slideThemes('right', 'desktop-theme-slider', event)">›</button>
         </div>
@@ -2781,6 +2865,26 @@
           <span class="theme-card-emoji">❄️</span>
           <span class="theme-card-label">Frost</span>
           <div class="theme-card-colors"><span style="background:#eef5f8"></span><span style="background:#2b678c"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('nebula')" title="Nebula Aurora">
+          <span class="theme-card-emoji">🌌</span>
+          <span class="theme-card-label">Nebula</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #0d0822, #1c0e35)"></span><span style="background:#ff007f"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('sunset')" title="Sunset Mirage">
+          <span class="theme-card-emoji">🌅</span>
+          <span class="theme-card-label">Sunset</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #1b0a1c, #3b1022)"></span><span style="background:#ff7e5f"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('matrix')" title="Cyber Emerald">
+          <span class="theme-card-emoji">🔋</span>
+          <span class="theme-card-label">CyberG</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #020a05, #051a0c)"></span><span style="background:#00ff66"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('candy')" title="Cotton Candy">
+          <span class="theme-card-emoji">🍨</span>
+          <span class="theme-card-label">Candy</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #fff0f5, #e6efff)"></span><span style="background:#ff9a9e"></span></div>
         </div>
       </div>
       <button class="theme-slider-arrow right" onclick="slideThemes('right', 'mobile-theme-slider', event)">›</button>
@@ -3708,7 +3812,7 @@ function closeMobileThemeSheet() {
 }
 
 function applyTheme(themeName) {
-  document.body.classList.remove('light-theme', 'sepia-theme', 'midnight-theme', 'emerald-theme', 'amethyst-theme', 'old-money-theme', 'mahogany-theme', 'matcha-theme', 'autumn-theme', 'cyberpunk-theme', 'sakura-theme', 'solarized-theme', 'quartz-theme', 'ember-theme', 'synthwave-theme', 'forest-gold-theme', 'cappuccino-theme', 'eclipse-theme', 'nordic-frost-theme');
+  document.body.classList.remove('light-theme', 'sepia-theme', 'midnight-theme', 'emerald-theme', 'amethyst-theme', 'old-money-theme', 'mahogany-theme', 'matcha-theme', 'autumn-theme', 'cyberpunk-theme', 'sakura-theme', 'solarized-theme', 'quartz-theme', 'ember-theme', 'synthwave-theme', 'forest-gold-theme', 'cappuccino-theme', 'eclipse-theme', 'nordic-frost-theme', 'nebula-theme', 'sunset-theme', 'matrix-theme', 'candy-theme');
   state.theme = themeName;
   if (themeName !== 'dark') {
     document.body.classList.add(`${themeName}-theme`);
