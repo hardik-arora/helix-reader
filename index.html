@@ -1301,6 +1301,109 @@
       font-size: 1.5rem; display: flex; align-items: center; justify-content: center;
     }
 
+    /* ─── AUTHENTICATION PAGE & PROFILE ─────────────── */
+    .auth-bg {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 80vh; width: 100%; position: relative; overflow: hidden;
+    }
+    .auth-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-lg); padding: 2.5rem;
+      width: 100%; max-width: 420px; box-shadow: var(--shadow-lg);
+      display: flex; flex-direction: column; gap: 1.5rem;
+      position: relative; z-index: 10;
+    }
+    body.light-theme .auth-card {
+      background: rgba(0, 0, 0, 0.02);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    .auth-title {
+      font-family: var(--heading-font); font-size: 2.2rem; font-weight: 800;
+      text-align: center; color: var(--text); margin-bottom: 0.2rem;
+    }
+    .auth-subtitle {
+      font-size: 0.85rem; color: var(--text2); text-align: center;
+      margin-top: -1.2rem; margin-bottom: 0.5rem;
+    }
+    .auth-tabs {
+      display: flex; background: var(--bg3); padding: 4px;
+      border-radius: 10px; border: 1px solid var(--border); position: relative;
+    }
+    .auth-tab-btn {
+      flex: 1; text-align: center; padding: 0.6rem 0; font-size: 0.85rem;
+      font-weight: 700; color: var(--text2); cursor: pointer; z-index: 2;
+      transition: color var(--transition); border-radius: 8px;
+    }
+    .auth-tab-btn.active { color: var(--text); background: var(--surface); }
+    
+    .auth-form-wrap {
+      display: flex; flex-direction: column; gap: 1.2rem;
+    }
+    .auth-input-group {
+      display: flex; flex-direction: column; gap: 0.4rem;
+    }
+    .auth-input-group label {
+      font-size: 0.72rem; font-weight: 800; color: var(--text3);
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .auth-input-group input {
+      padding: 0.8rem 1rem; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--text); font-size: 0.92rem;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .auth-input-group input:focus {
+      border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .auth-btn-submit {
+      width: 100%; padding: 0.9rem; border-radius: 8px; font-size: 0.95rem;
+      font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff !important; cursor: pointer; border: none;
+      box-shadow: 0 4px 15px var(--accent-glow); transition: all var(--transition);
+      text-align: center; margin-top: 0.5rem;
+    }
+    .auth-btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--accent-glow); }
+    .auth-btn-submit:active { transform: translateY(0); }
+    
+    .auth-guest-btn {
+      text-align: center; font-size: 0.85rem; color: var(--text3);
+      cursor: pointer; transition: color var(--transition); margin-top: 0.2rem;
+    }
+    .auth-guest-btn:hover { color: var(--accent); }
+
+    /* Nav bar Profile button and dropdown */
+    .profile-dropdown-wrap { position: relative; }
+    .profile-btn {
+      width: 40px; height: 40px; border-radius: 50%; background: var(--surface2);
+      border: 2px solid var(--accent); color: var(--text); font-weight: 700;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      transition: transform var(--transition); padding: 0; box-sizing: border-box;
+    }
+    .profile-btn:hover { transform: scale(1.05); }
+    .profile-avatar {
+      font-size: 0.95rem; font-family: var(--heading-font); color: var(--text);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .profile-dropdown {
+      position: absolute; top: 52px; right: 0; width: 220px;
+      background: var(--surface); border: 1px solid var(--border2);
+      border-radius: var(--radius); padding: 1rem; box-shadow: var(--shadow-lg);
+      display: none; flex-direction: column; gap: 0.8rem; z-index: 1000;
+      animation: modalSlideUp var(--transition);
+    }
+    .profile-dropdown.show { display: flex; }
+    .profile-info { border-bottom: 1px solid var(--border); padding-bottom: 0.6rem; }
+    .profile-name { font-weight: 800; font-size: 0.95rem; color: var(--text); }
+    .profile-xp { font-size: 0.75rem; color: var(--accent); font-weight: 600; margin-top: 0.15rem; }
+    .profile-logout-btn {
+      width: 100%; padding: 0.5rem; border-radius: 6px; font-size: 0.8rem;
+      font-weight: 700; background: var(--bg2); color: var(--coral);
+      border: 1px solid var(--border); cursor: pointer; transition: background var(--transition);
+      text-align: center;
+    }
+    .profile-logout-btn:hover { background: rgba(239,68,68,0.1); }
+
     /* ─── RESPONSIVE WRAPPERS ─────────────────────────── */
     @media (max-width: 900px) {
       .detail-card { flex-direction: column; padding: 1.5rem; }
@@ -1395,8 +1498,81 @@
         <button class="theme-option-btn" onclick="applyTheme('sakura')">🌸 Sakura Blossom</button>
       </div>
     </div>
+
+    <!-- User Authentication Profile drop down -->
+    <div id="nav-auth-section" style="display: flex; align-items: center; gap: 0.5rem; margin-left: 0.5rem;">
+      <button class="nav-btn" id="nav-auth" onclick="navigate('auth')">Sign In</button>
+    </div>
+    
+    <div class="profile-dropdown-wrap" id="profile-dropdown-wrap" style="display: none; margin-left: 0.5rem;">
+      <button class="profile-btn" onclick="toggleProfileDropdown(event)" id="profile-btn">
+        <div class="profile-avatar" id="profile-avatar">U</div>
+      </button>
+      <div class="profile-dropdown" id="profile-dropdown">
+        <div class="profile-info">
+          <div class="profile-name" id="profile-name">User</div>
+          <div class="profile-xp" id="profile-xp">0 XP</div>
+        </div>
+        <button class="profile-logout-btn" onclick="logoutUser()">🚪 Log Out</button>
+      </div>
+    </div>
   </div>
 </nav>
+
+<!-- ════════════════════════════════════════
+     AUTHENTICATION PAGE (LOGIN / SIGN UP)
+     ════════════════════════════════════════ -->
+<div id="auth-page" class="page page-wrap">
+  <div class="auth-bg">
+    <!-- Floating background aesthetic elements -->
+    <div style="position:absolute; top:-20%; left:-10%; width:400px; height:400px; background:radial-gradient(circle, var(--accent) 0%, transparent 70%); opacity:0.12; filter:blur(60px); pointer-events:none;"></div>
+    <div style="position:absolute; bottom:-10%; right:-5%; width:500px; height:500px; background:radial-gradient(circle, var(--teal) 0%, transparent 70%); opacity:0.12; filter:blur(60px); pointer-events:none;"></div>
+
+    <div class="auth-card">
+      <div>
+        <h1 class="auth-title">Welcome to Helix</h1>
+        <p class="auth-subtitle">Immerse yourself in world classics</p>
+      </div>
+
+      <div class="auth-tabs">
+        <div class="auth-tab-btn active" id="auth-tab-login" onclick="switchAuthTab('login')">Sign In</div>
+        <div class="auth-tab-btn" id="auth-tab-register" onclick="switchAuthTab('register')">Create Account</div>
+      </div>
+
+      <!-- Sign In Form -->
+      <form id="auth-login-form" class="auth-form-wrap" onsubmit="handleAuthSubmit(event, 'login')">
+        <div class="auth-input-group">
+          <label for="login-username">Username</label>
+          <input type="text" id="login-username" placeholder="Enter your username" required autocomplete="username" />
+        </div>
+        <div class="auth-input-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" placeholder="Enter your password" required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="auth-btn-submit">Sign In</button>
+      </form>
+
+      <!-- Create Account Form -->
+      <form id="auth-register-form" class="auth-form-wrap" style="display:none;" onsubmit="handleAuthSubmit(event, 'register')">
+        <div class="auth-input-group">
+          <label for="register-username">Username</label>
+          <input type="text" id="register-username" placeholder="Choose a username" required autocomplete="username" />
+        </div>
+        <div class="auth-input-group">
+          <label for="register-password">Password</label>
+          <input type="password" id="register-password" placeholder="Create a password" required autocomplete="new-password" />
+        </div>
+        <div class="auth-input-group">
+          <label for="register-confirm-password">Confirm Password</label>
+          <input type="password" id="register-confirm-password" placeholder="Confirm your password" required autocomplete="new-password" />
+        </div>
+        <button type="submit" class="auth-btn-submit">Create Account</button>
+      </form>
+
+      <div class="auth-guest-btn" onclick="continueAsGuest()">Continue as Guest &rarr;</div>
+    </div>
+  </div>
+</div>
 
 <!-- ════════════════════════════════════════
      DISCOVER / HOME PAGE
@@ -2211,8 +2387,74 @@ const safeStore = {
   }
 };
 
-// State Object
-const state = {
+// Mock User Database Manager
+const userDb = {
+  getUsers() {
+    try {
+      return JSON.parse(safeStore.getItem('h_users') || '[]');
+    } catch(e) {
+      return [];
+    }
+  },
+  saveUsers(users) {
+    safeStore.setItem('h_users', JSON.stringify(users));
+  },
+  findUser(username) {
+    const users = this.getUsers();
+    return users.find(u => u.username.toLowerCase() === username.toLowerCase());
+  },
+  registerUser(username, password) {
+    if (this.findUser(username)) return { success: false, message: 'Username already exists' };
+    const users = this.getUsers();
+    const newUser = {
+      username,
+      password,
+      state: {
+        theme: 'old-money',
+        favorites: [],
+        completed: [],
+        reading: [],
+        progress: {},
+        vocab: [],
+        highlights: [],
+        xp: 0,
+        customBooks: [],
+        badges: [],
+        covers: {},
+        olLinks: {}
+      }
+    };
+    users.push(newUser);
+    this.saveUsers(users);
+    return { success: true };
+  },
+  updateUserState(username, userState) {
+    const users = this.getUsers();
+    const idx = users.findIndex(u => u.username.toLowerCase() === username.toLowerCase());
+    if (idx > -1) {
+      users[idx].state = {
+        theme: userState.theme,
+        favorites: userState.favorites,
+        completed: userState.completed,
+        reading: userState.reading,
+        progress: userState.progress,
+        vocab: userState.vocab,
+        highlights: userState.highlights,
+        xp: userState.xp,
+        customBooks: userState.customBooks,
+        badges: userState.badges,
+        covers: userState.covers,
+        olLinks: userState.olLinks
+      };
+      this.saveUsers(users);
+    }
+  }
+};
+
+let currentUser = safeStore.getItem('h_current_user') || null;
+
+// Guest default fallback states
+const defaultGuestState = {
   theme: safeStore.getItem('h_theme') || 'old-money',
   favorites: JSON.parse(safeStore.getItem('h_favs') || '[]'),
   completed: JSON.parse(safeStore.getItem('h_done') || '[]'),
@@ -2223,23 +2465,29 @@ const state = {
   xp: parseInt(safeStore.getItem('h_xp') || '0'),
   customBooks: JSON.parse(safeStore.getItem('h_custom') || '[]'),
   badges: JSON.parse(safeStore.getItem('h_badges') || '[]'),
-  covers: JSON.parse(safeStore.getItem('h_covers') || '{}'), // cover image cache mapping (url or 'none')
-  olLinks: JSON.parse(safeStore.getItem('h_ol_links') || '{}') // Open Library readable link cache mapping
+  covers: JSON.parse(safeStore.getItem('h_covers') || '{}'),
+  olLinks: JSON.parse(safeStore.getItem('h_ol_links') || '{}')
 };
 
-// ── CACHE BUST v2: Clear all old 'none' cover entries so new dual-source
-//    fetch (Open Library + Wikipedia) runs fresh for every previously-failed book
+// Initial state creation
+const state = { ...defaultGuestState };
+
+if (currentUser) {
+  const u = userDb.findUser(currentUser);
+  if (u && u.state) {
+    Object.assign(state, u.state);
+  }
+}
+
+// ── CACHE BUST v2
 (function bustStaleCoverCache() {
   const COVER_VERSION = 'v9';
   const storedVersion = safeStore.getItem('h_cover_version');
   if (storedVersion !== COVER_VERSION) {
-    // Full wipe — removes bad Unsplash URLs, fake OL IDs, stale Wikipedia references, and stale 'none' entries
     state.covers = {};
     safeStore.setItem('h_cover_version', COVER_VERSION);
     console.log('[Helix] Cover cache fully reset to v9.');
   }
-  // Always pre-seed verified cover URLs for MASTER_BOOKS
-  // so they show instantly without needing the IntersectionObserver fetch
   MASTER_BOOKS.forEach(book => {
     if (!state.covers[book.id] && book.cover && book.cover.startsWith('http')) {
       state.covers[book.id] = book.cover;
@@ -2248,25 +2496,197 @@ const state = {
   safeStore.setItem('h_covers', JSON.stringify(state.covers));
 })();
 
+function applyUserState(userState) {
+  state.theme = userState.theme || 'old-money';
+  state.favorites = userState.favorites || [];
+  state.completed = userState.completed || [];
+  state.reading = userState.reading || [];
+  state.progress = userState.progress || {};
+  state.vocab = userState.vocab || [];
+  state.highlights = userState.highlights || [];
+  state.xp = userState.xp || 0;
+  state.customBooks = userState.customBooks || [];
+  state.badges = userState.badges || [];
+  state.covers = userState.covers || {};
+  state.olLinks = userState.olLinks || {};
+  
+  applyTheme(state.theme);
+}
+
 function saveState() {
-  safeStore.setItem('h_theme', state.theme);
-  safeStore.setItem('h_favs', JSON.stringify(state.favorites));
-  safeStore.setItem('h_done', JSON.stringify(state.completed));
-  safeStore.setItem('h_reading', JSON.stringify(state.reading));
-  safeStore.setItem('h_progress', JSON.stringify(state.progress));
-  safeStore.setItem('h_vocab', JSON.stringify(state.vocab));
-  safeStore.setItem('h_highlights', JSON.stringify(state.highlights));
-  safeStore.setItem('h_xp', state.xp);
-  safeStore.setItem('h_custom', JSON.stringify(state.customBooks));
-  safeStore.setItem('h_badges', JSON.stringify(state.badges));
-  safeStore.setItem('h_covers', JSON.stringify(state.covers));
-  safeStore.setItem('h_ol_links', JSON.stringify(state.olLinks));
+  if (currentUser) {
+    userDb.updateUserState(currentUser, state);
+  } else {
+    safeStore.setItem('h_theme', state.theme);
+    safeStore.setItem('h_favs', JSON.stringify(state.favorites));
+    safeStore.setItem('h_done', JSON.stringify(state.completed));
+    safeStore.setItem('h_reading', JSON.stringify(state.reading));
+    safeStore.setItem('h_progress', JSON.stringify(state.progress));
+    safeStore.setItem('h_vocab', JSON.stringify(state.vocab));
+    safeStore.setItem('h_highlights', JSON.stringify(state.highlights));
+    safeStore.setItem('h_xp', state.xp);
+    safeStore.setItem('h_custom', JSON.stringify(state.customBooks));
+    safeStore.setItem('h_badges', JSON.stringify(state.badges));
+    safeStore.setItem('h_covers', JSON.stringify(state.covers));
+    safeStore.setItem('h_ol_links', JSON.stringify(state.olLinks));
+  }
+}
+
+// Authentication UI Helpers
+function switchAuthTab(tab) {
+  const loginTab = document.getElementById('auth-tab-login');
+  const regTab = document.getElementById('auth-tab-register');
+  const loginForm = document.getElementById('auth-login-form');
+  const regForm = document.getElementById('auth-register-form');
+  
+  if (tab === 'login') {
+    loginTab.classList.add('active');
+    regTab.classList.remove('active');
+    loginForm.style.display = 'flex';
+    regForm.style.display = 'none';
+  } else {
+    regTab.classList.add('active');
+    loginTab.classList.remove('active');
+    regForm.style.display = 'flex';
+    loginForm.style.display = 'none';
+  }
+}
+
+function continueAsGuest() {
+  currentUser = null;
+  safeStore.setItem('h_current_user', '');
+  try {
+    sessionStorage.setItem('h_guest_bypassed', 'true');
+  } catch(e){}
+  
+  applyUserState(defaultGuestState);
+  updateAuthNavBar();
+  showNotification('Continuing as Guest');
+  navigate('home');
+}
+
+function updateAuthNavBar() {
+  const authSection = document.getElementById('nav-auth-section');
+  const profileWrap = document.getElementById('profile-dropdown-wrap');
+  
+  if (currentUser) {
+    if (authSection) authSection.style.display = 'none';
+    if (profileWrap) {
+      profileWrap.style.display = 'block';
+      const initial = currentUser.charAt(0).toUpperCase();
+      document.getElementById('profile-avatar').textContent = initial;
+      document.getElementById('profile-name').textContent = currentUser;
+      document.getElementById('profile-xp').textContent = `${state.xp || 0} XP`;
+    }
+  } else {
+    if (authSection) authSection.style.display = 'flex';
+    if (profileWrap) profileWrap.style.display = 'none';
+  }
+}
+
+function toggleProfileDropdown(event) {
+  if (event) event.stopPropagation();
+  const dropdown = document.getElementById('profile-dropdown');
+  if (dropdown) {
+    dropdown.classList.toggle('show');
+  }
+}
+
+// Close profile dropdown when clicking outside
+window.addEventListener('click', () => {
+  const dropdown = document.getElementById('profile-dropdown');
+  if (dropdown && dropdown.classList.contains('show')) {
+    dropdown.classList.remove('show');
+  }
+});
+
+function logoutUser() {
+  currentUser = null;
+  safeStore.setItem('h_current_user', '');
+  
+  applyUserState(defaultGuestState);
+  updateAuthNavBar();
+  showNotification('🚪 Logged out successfully!');
+  navigate('auth');
+}
+
+function handleAuthSubmit(event, mode) {
+  event.preventDefault();
+  
+  if (mode === 'login') {
+    const userVal = document.getElementById('login-username').value.trim();
+    const passVal = document.getElementById('login-password').value;
+    
+    const u = userDb.findUser(userVal);
+    if (!u || u.password !== passVal) {
+      showNotification('❌ Invalid username or password!');
+      return;
+    }
+    
+    currentUser = u.username;
+    safeStore.setItem('h_current_user', currentUser);
+    applyUserState(u.state);
+    updateAuthNavBar();
+    showNotification(`👋 Welcome back, ${currentUser}!`);
+    
+    document.getElementById('login-username').value = '';
+    document.getElementById('login-password').value = '';
+    
+    navigate('home');
+  } else {
+    const userVal = document.getElementById('register-username').value.trim();
+    const passVal = document.getElementById('register-password').value;
+    const confirmVal = document.getElementById('register-confirm-password').value;
+    
+    if (userVal.length < 3) {
+      showNotification('❌ Username must be at least 3 characters!');
+      return;
+    }
+    if (passVal.length < 4) {
+      showNotification('❌ Password must be at least 4 characters!');
+      return;
+    }
+    if (passVal !== confirmVal) {
+      showNotification('❌ Passwords do not match!');
+      return;
+    }
+    
+    const reg = userDb.registerUser(userVal, passVal);
+    if (!reg.success) {
+      showNotification(`❌ ${reg.message}`);
+      return;
+    }
+    
+    currentUser = userVal;
+    safeStore.setItem('h_current_user', currentUser);
+    const u = userDb.findUser(currentUser);
+    applyUserState(u.state);
+    updateAuthNavBar();
+    showNotification('🎉 Account created successfully!');
+    
+    document.getElementById('register-username').value = '';
+    document.getElementById('register-password').value = '';
+    document.getElementById('register-confirm-password').value = '';
+    
+    navigate('home');
+  }
 }
 
 // ════════════════════════════════════════
 // NAVIGATION SYSTEM
 // ════════════════════════════════════════
 function navigate(pageId) {
+  // Gatekeeper: Lock all pages except auth unless signed in or guest-bypassed
+  let bypassed = false;
+  try {
+    bypassed = sessionStorage.getItem('h_guest_bypassed') === 'true';
+  } catch(e){}
+  
+  if (pageId !== 'auth' && !currentUser && !bypassed) {
+    pageId = 'auth';
+    showNotification('🔒 Please Sign In or Continue as Guest first!');
+  }
+
   // Hide all panels
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
@@ -2321,6 +2741,8 @@ function navigate(pageId) {
 // ════════════════════════════════════════
 function toggleThemeDropdown(e) {
   e.stopPropagation();
+  const profileDropdown = document.getElementById('profile-dropdown');
+  if (profileDropdown) profileDropdown.classList.remove('show');
   document.getElementById('theme-dropdown').classList.toggle('show');
 }
 
@@ -4845,9 +5267,22 @@ document.addEventListener('DOMContentLoaded', () => {
   // Apply saved theme
   applyTheme(state.theme);
   
-  // Load main lists
-  renderDiscoverPage();
-  checkBadgesUnlock();
+  // Setup navbar profile display
+  updateAuthNavBar();
+  
+  // Check if guest bypassed auth in current session
+  let bypassed = false;
+  try {
+    bypassed = sessionStorage.getItem('h_guest_bypassed') === 'true';
+  } catch(e){}
+  
+  if (!currentUser && !bypassed) {
+    navigate('auth');
+  } else {
+    // Load main lists
+    renderDiscoverPage();
+    checkBadgesUnlock();
+  }
 });
 </script>
 </body>
