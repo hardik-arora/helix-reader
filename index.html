@@ -551,6 +551,70 @@
       --text3: #00f2fe;
     }
 
+    body.phantom-theme {
+      --bg: linear-gradient(135deg, #090314 0%, #17072e 50%, #090314 100%);
+      --bg2: #0e041e;
+      --bg3: #1f0a3d;
+      --surface: rgba(31, 10, 61, 0.45);
+      --surface2: rgba(53, 16, 102, 0.6);
+      --border: rgba(255, 0, 127, 0.15);
+      --border2: rgba(160, 32, 240, 0.25);
+      --accent: #ff007f;
+      --accent2: #a020f0;
+      --accent-glow: rgba(255, 0, 127, 0.25);
+      --text: #fdf2f8;
+      --text2: #fbcfe8;
+      --text3: #ff007f;
+    }
+
+    body.alien-theme {
+      --bg: linear-gradient(135deg, #030d07 0%, #0c2314 50%, #030d07 100%);
+      --bg2: #05160b;
+      --bg3: #0f351e;
+      --surface: rgba(15, 53, 30, 0.45);
+      --surface2: rgba(24, 82, 47, 0.6);
+      --border: rgba(173, 255, 47, 0.15);
+      --border2: rgba(57, 255, 20, 0.25);
+      --accent: #adff2f;
+      --accent2: #39ff14;
+      --accent-glow: rgba(173, 255, 47, 0.25);
+      --text: #f5fff0;
+      --text2: #e0f2fe;
+      --text3: #adff2f;
+    }
+
+    body.magma-theme {
+      --bg: linear-gradient(135deg, #0c0808 0%, #1c0e0c 50%, #0c0808 100%);
+      --bg2: #120c0c;
+      --bg3: #2a1512;
+      --surface: rgba(42, 21, 18, 0.45);
+      --surface2: rgba(69, 34, 30, 0.6);
+      --border: rgba(255, 85, 0, 0.15);
+      --border2: rgba(255, 204, 0, 0.25);
+      --accent: #ff5500;
+      --accent2: #ffcc00;
+      --accent-glow: rgba(255, 85, 0, 0.25);
+      --text: #fffaf0;
+      --text2: #ffe4b5;
+      --text3: #ff5500;
+    }
+
+    body.peacock-theme {
+      --bg: linear-gradient(135deg, #040212 0%, #080d28 50%, #040212 100%);
+      --bg2: #05031b;
+      --bg3: #0c153d;
+      --surface: rgba(12, 21, 61, 0.45);
+      --surface2: rgba(20, 34, 99, 0.6);
+      --border: rgba(0, 245, 255, 0.15);
+      --border2: rgba(0, 255, 136, 0.25);
+      --accent: #00f5ff;
+      --accent2: #00ff88;
+      --accent-glow: rgba(0, 245, 255, 0.25);
+      --text: #f0faff;
+      --text2: #ccfffa;
+      --text3: #00f5ff;
+    }
+
     /* Theme Slider Layouts */
     .theme-dropdown-container {
       display: flex;
@@ -2294,16 +2358,36 @@
               <span class="theme-card-label">Frost</span>
               <div class="theme-card-colors"><span style="background:#eef5f8"></span><span style="background:#2b678c"></span></div>
             </div>
-            <div class="theme-slide-card" onclick="applyTheme('holographic')" title="Holographic Prism (Gradient)">
-              <span class="theme-card-emoji">🦄</span>
-              <span class="theme-card-label">Prism</span>
-              <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #f0f4ff, #fff0f5)"></span><span style="background:#8e2de2"></span></div>
-            </div>
-            <div class="theme-slide-card" onclick="applyTheme('obsidian')" title="Obsidian Abyss (Gradient)">
-              <span class="theme-card-emoji">🖤</span>
-              <span class="theme-card-label">Obsidian</span>
-              <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #090a0f, #12131a)"></span><span style="background:#818cf8"></span></div>
-            </div>
+            <div class="theme-slide-card" onclick="applyTheme('deepsea')" title="Deep Sea (Gradient)">
+               <span class="theme-card-emoji">🌊</span>
+               <span class="theme-card-label">DeepSea</span>
+               <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #010612, #03152d)"></span><span style="background:#00f2fe"></span></div>
+             </div>
+             <div class="theme-slide-card" onclick="applyTheme('phantom')" title="Neon Phantom (Gradient)">
+               <span class="theme-card-emoji">👻</span>
+               <span class="theme-card-label">Phantom</span>
+               <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #090314, #17072e)"></span><span style="background:#ff007f"></span></div>
+             </div>
+             <div class="theme-slide-card" onclick="applyTheme('alien')" title="Alien Hive (Gradient)">
+               <span class="theme-card-emoji">👽</span>
+               <span class="theme-card-label">Alien</span>
+               <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #030d07, #0c2314)"></span><span style="background:#adff2f"></span></div>
+             </div>
+             <div class="theme-slide-card" onclick="applyTheme('magma')" title="Magma Core (Gradient)">
+               <span class="theme-card-emoji">🌋</span>
+               <span class="theme-card-label">Magma</span>
+               <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #0c0808, #1c0e0c)"></span><span style="background:#ff5500"></span></div>
+             </div>
+             <div class="theme-slide-card" onclick="applyTheme('peacock')" title="Peacock Glow (Gradient)">
+               <span class="theme-card-emoji">🦚</span>
+               <span class="theme-card-label">Peacock</span>
+               <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #040212, #080d28)"></span><span style="background:#00f5ff"></span></div>
+             </div>
+             <div class="theme-slide-card" onclick="applyTheme('obsidian')" title="Obsidian Abyss (Gradient)">
+               <span class="theme-card-emoji">🖤</span>
+               <span class="theme-card-label">Obsidian</span>
+               <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #090a0f, #12131a)"></span><span style="background:#818cf8"></span></div>
+             </div>
             <div class="theme-slide-card" onclick="applyTheme('bloodmoon')" title="Blood Moon (Gradient)">
               <span class="theme-card-emoji">🩸</span>
               <span class="theme-card-label">BloodMoon</span>
@@ -3098,6 +3182,26 @@
           <span class="theme-card-emoji">🌊</span>
           <span class="theme-card-label">DeepSea</span>
           <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #010612, #03152d)"></span><span style="background:#00f2fe"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('phantom')" title="Neon Phantom">
+          <span class="theme-card-emoji">👻</span>
+          <span class="theme-card-label">Phantom</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #090314, #17072e)"></span><span style="background:#ff007f"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('alien')" title="Alien Hive">
+          <span class="theme-card-emoji">👽</span>
+          <span class="theme-card-label">Alien</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #030d07, #0c2314)"></span><span style="background:#adff2f"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('magma')" title="Magma Core">
+          <span class="theme-card-emoji">🌋</span>
+          <span class="theme-card-label">Magma</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #0c0808, #1c0e0c)"></span><span style="background:#ff5500"></span></div>
+        </div>
+        <div class="theme-slide-card" onclick="applyTheme('peacock')" title="Peacock Glow">
+          <span class="theme-card-emoji">🦚</span>
+          <span class="theme-card-label">Peacock</span>
+          <div class="theme-card-colors"><span style="background:linear-gradient(135deg, #040212, #080d28)"></span><span style="background:#00f5ff"></span></div>
         </div>
       </div>
       <button class="theme-slider-arrow right" onclick="slideThemes('right', 'mobile-theme-slider', event)">›</button>
@@ -4025,7 +4129,7 @@ function closeMobileThemeSheet() {
 }
 
 function applyTheme(themeName) {
-  document.body.classList.remove('light-theme', 'sepia-theme', 'midnight-theme', 'emerald-theme', 'amethyst-theme', 'old-money-theme', 'mahogany-theme', 'matcha-theme', 'autumn-theme', 'cyberpunk-theme', 'sakura-theme', 'solarized-theme', 'quartz-theme', 'ember-theme', 'synthwave-theme', 'forest-gold-theme', 'cappuccino-theme', 'eclipse-theme', 'nordic-frost-theme', 'nebula-theme', 'sunset-theme', 'matrix-theme', 'candy-theme', 'supernova-theme', 'glacial-theme', 'saturn-theme', 'holographic-theme', 'obsidian-theme', 'bloodmoon-theme', 'toxic-theme', 'deepsea-theme');
+  document.body.classList.remove('light-theme', 'sepia-theme', 'midnight-theme', 'emerald-theme', 'amethyst-theme', 'old-money-theme', 'mahogany-theme', 'matcha-theme', 'autumn-theme', 'cyberpunk-theme', 'sakura-theme', 'solarized-theme', 'quartz-theme', 'ember-theme', 'synthwave-theme', 'forest-gold-theme', 'cappuccino-theme', 'eclipse-theme', 'nordic-frost-theme', 'nebula-theme', 'sunset-theme', 'matrix-theme', 'candy-theme', 'supernova-theme', 'glacial-theme', 'saturn-theme', 'holographic-theme', 'obsidian-theme', 'bloodmoon-theme', 'toxic-theme', 'deepsea-theme', 'phantom-theme', 'alien-theme', 'magma-theme', 'peacock-theme');
   state.theme = themeName;
   if (themeName !== 'dark') {
     document.body.classList.add(`${themeName}-theme`);
