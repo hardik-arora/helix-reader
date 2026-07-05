@@ -5655,41 +5655,83 @@ function speakParagraphSequence() {
   let chosenVoice = null;
 
   if (selectedVoiceGender === 'male') {
-    // 1. Try to find a natural/neural/google/siri male voice first
+    // Hrithik Roshan Style: Prioritize Indian English Natural/Neural/Online male voices
     chosenVoice = voices.find(v => {
       const n = v.name.toLowerCase();
-      const isEnglish = v.lang.startsWith('en');
-      const isMaleName = n.includes('male') || n.includes('david') || n.includes('mark') || n.includes('george') || n.includes('daniel') || n.includes('ravi') || n.includes('guy') || n.includes('james') || n.includes('premium') || n.includes('voice 1') || n.includes('voice 3') || n.includes('oliver');
+      const isInd = v.lang.includes('IN') || v.lang.includes('in') || n.includes('india');
+      const isMale = n.includes('male') || n.includes('prabhat') || n.includes('rishi') || n.includes('ravi') || n.includes('guy') || n.includes('james') || n.includes('oliver');
       const isNatural = n.includes('natural') || n.includes('google') || n.includes('neural') || n.includes('siri') || n.includes('online');
-      return isEnglish && isMaleName && isNatural;
+      return isInd && isMale && isNatural;
     });
 
-    // 2. Fall back to standard male voice
+    // 2. Fall back to standard Indian English male voice
+    if (!chosenVoice) {
+      chosenVoice = voices.find(v => {
+        const n = v.name.toLowerCase();
+        const isInd = v.lang.includes('IN') || v.lang.includes('in') || n.includes('india');
+        const isMale = n.includes('male') || n.includes('prabhat') || n.includes('rishi') || n.includes('ravi') || n.includes('guy') || n.includes('james') || n.includes('oliver');
+        return isInd && isMale;
+      });
+    }
+
+    // 3. Fall back to natural English male voice
     if (!chosenVoice) {
       chosenVoice = voices.find(v => {
         const n = v.name.toLowerCase();
         const isEnglish = v.lang.startsWith('en');
-        const isMaleName = n.includes('male') || n.includes('david') || n.includes('mark') || n.includes('george') || n.includes('daniel') || n.includes('ravi') || n.includes('guy') || n.includes('james') || n.includes('premium') || n.includes('voice 1') || n.includes('voice 3') || n.includes('oliver');
-        return isEnglish && isMaleName;
+        const isMale = n.includes('male') || n.includes('david') || n.includes('mark') || n.includes('george') || n.includes('daniel') || n.includes('guy') || n.includes('james') || n.includes('premium') || n.includes('voice 1') || n.includes('voice 3') || n.includes('oliver');
+        const isNatural = n.includes('natural') || n.includes('google') || n.includes('neural') || n.includes('siri') || n.includes('online');
+        return isEnglish && isMale && isNatural;
+      });
+    }
+
+    // 4. Fall back to any English male voice
+    if (!chosenVoice) {
+      chosenVoice = voices.find(v => {
+        const n = v.name.toLowerCase();
+        const isEnglish = v.lang.startsWith('en');
+        const isMale = n.includes('male') || n.includes('david') || n.includes('mark') || n.includes('george') || n.includes('daniel') || n.includes('ravi') || n.includes('guy') || n.includes('james') || n.includes('premium') || n.includes('voice 1') || n.includes('voice 3') || n.includes('oliver');
+        return isEnglish && isMale;
       });
     }
   } else {
-    // 1. Try to find a natural/neural/google/siri female voice first
+    // Shraddha Kapoor Style: Prioritize Indian English Natural/Neural/Online female voices
     chosenVoice = voices.find(v => {
       const n = v.name.toLowerCase();
-      const isEnglish = v.lang.startsWith('en');
-      const isFemaleName = n.includes('female') || n.includes('zira') || n.includes('samantha') || n.includes('tessa') || n.includes('susan') || n.includes('hazel') || n.includes('victoria') || n.includes('karen') || n.includes('siri') || n.includes('apple') || n.includes('ava') || n.includes('zoe') || n.includes('voice 2') || n.includes('voice 4') || n.includes('aria') || n.includes('jenny');
+      const isInd = v.lang.includes('IN') || v.lang.includes('in') || n.includes('india');
+      const isFemale = n.includes('female') || n.includes('heera') || n.includes('neerja') || n.includes('isha') || n.includes('zira') || n.includes('samantha') || n.includes('aria') || n.includes('jenny');
       const isNatural = n.includes('natural') || n.includes('google') || n.includes('neural') || n.includes('siri') || n.includes('online');
-      return isEnglish && isFemaleName && isNatural;
+      return isInd && isFemale && isNatural;
     });
 
-    // 2. Fall back to standard female voice
+    // 2. Fall back to standard Indian English female voice
+    if (!chosenVoice) {
+      chosenVoice = voices.find(v => {
+        const n = v.name.toLowerCase();
+        const isInd = v.lang.includes('IN') || v.lang.includes('in') || n.includes('india');
+        const isFemale = n.includes('female') || n.includes('heera') || n.includes('neerja') || n.includes('isha') || n.includes('zira') || n.includes('samantha') || n.includes('aria') || n.includes('jenny');
+        return isInd && isFemale;
+      });
+    }
+
+    // 3. Fall back to natural English female voice
     if (!chosenVoice) {
       chosenVoice = voices.find(v => {
         const n = v.name.toLowerCase();
         const isEnglish = v.lang.startsWith('en');
-        const isFemaleName = n.includes('female') || n.includes('zira') || n.includes('samantha') || n.includes('tessa') || n.includes('susan') || n.includes('hazel') || n.includes('victoria') || n.includes('karen') || n.includes('apple') || n.includes('ava') || n.includes('zoe') || n.includes('voice 2') || n.includes('voice 4') || n.includes('aria') || n.includes('jenny');
-        return isEnglish && isFemaleName;
+        const isFemale = n.includes('female') || n.includes('zira') || n.includes('samantha') || n.includes('tessa') || n.includes('susan') || n.includes('hazel') || n.includes('victoria') || n.includes('karen') || n.includes('siri') || n.includes('apple') || n.includes('ava') || n.includes('zoe') || n.includes('voice 2') || n.includes('voice 4') || n.includes('aria') || n.includes('jenny');
+        const isNatural = n.includes('natural') || n.includes('google') || n.includes('neural') || n.includes('siri') || n.includes('online');
+        return isEnglish && isFemale && isNatural;
+      });
+    }
+
+    // 4. Fall back to any English female voice
+    if (!chosenVoice) {
+      chosenVoice = voices.find(v => {
+        const n = v.name.toLowerCase();
+        const isEnglish = v.lang.startsWith('en');
+        const isFemale = n.includes('female') || n.includes('zira') || n.includes('samantha') || n.includes('tessa') || n.includes('susan') || n.includes('hazel') || n.includes('victoria') || n.includes('karen') || n.includes('apple') || n.includes('ava') || n.includes('zoe') || n.includes('voice 2') || n.includes('voice 4') || n.includes('aria') || n.includes('jenny');
+        return isEnglish && isFemale;
       });
     }
   }
@@ -5705,9 +5747,24 @@ function speakParagraphSequence() {
     ttsUtterance.voice = chosenVoice;
   }
 
-  // Keep pitch at exactly 1.0. This prevents the browser from dropping neural high-quality synthesis
-  // and keeps the voice sounding completely human-like and natural!
-  ttsUtterance.pitch = 1.0; 
+  // Ensure default pitch for neural voices so they sound human (avoid robotic DSP shifts)
+  if (chosenVoice) {
+    const vn = chosenVoice.name.toLowerCase();
+    const isNeural = vn.includes('natural') || vn.includes('neural') || vn.includes('google') || vn.includes('siri') || vn.includes('online') || vn.includes('premium');
+    if (isNeural) {
+      ttsUtterance.pitch = 1.0; 
+    } else {
+      // Legacy offline fallback voice styling adjustments
+      if (selectedVoiceGender === 'male') {
+        ttsUtterance.pitch = 0.90;
+      } else {
+        ttsUtterance.pitch = 1.10;
+      }
+    }
+  } else {
+    ttsUtterance.pitch = 1.0;
+  }
+  
   ttsUtterance.rate = audioSpeed;
 
   ttsUtterance.onend = () => {
@@ -5852,9 +5909,10 @@ function speakActiveDictWord() {
     ttsSynth.cancel();
     const ut = new SpeechSynthesisUtterance(activeSelectionWord);
     
-    // Prioritize natural/neural voices for dictionary pronunciations as well
+    // Prioritize natural/neural Indian English voices for dictionary pronunciations as well
     const voices = ttsSynth.getVoices();
-    const preferredVoice = voices.find(v => v.name.includes('Google US English') || v.name.includes('Natural') || v.name.includes('Siri') || v.lang.startsWith('en-US'));
+    const preferredVoice = voices.find(v => (v.lang.includes('IN') || v.lang.includes('in') || v.name.toLowerCase().includes('india')) && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Siri') || v.name.includes('Online'))) ||
+                           voices.find(v => v.name.includes('Google US English') || v.name.includes('Natural') || v.name.includes('Siri') || v.lang.startsWith('en-US'));
     if (preferredVoice) ut.voice = preferredVoice;
     
     ut.pitch = 1.0;
