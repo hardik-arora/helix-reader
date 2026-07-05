@@ -1755,6 +1755,21 @@
     .audio-btn { width: 28px; height: 28px; border-radius: 50%; color: var(--text); }
     .audio-btn:hover { background: var(--surface); color: var(--accent); }
     .audio-btn svg { width: 14px; height: 14px; fill: currentColor; }
+    .audio-controls-bar select {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.4rem;
+      outline: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all var(--transition);
+    }
+    .audio-controls-bar select:hover {
+      border-color: var(--accent);
+    }
     
     /* Reader content styling */
     .reader-viewport {
@@ -2957,7 +2972,11 @@
         <button class="audio-btn" onclick="stopAudio()" title="Stop audio">
           <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
         </button>
-        <select id="audio-speed-select" onchange="changeAudioSpeed(this.value)" style="background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:4px;font-size:0.75rem;padding:0.1rem 0.2rem">
+        <select id="audio-voice-select" onchange="changeAudioVoice(this.value)" title="Choose voice accent/gender">
+          <option value="female" selected>👩 Cute Female</option>
+          <option value="male">👨 Bold Male</option>
+        </select>
+        <select id="audio-speed-select" onchange="changeAudioSpeed(this.value)" title="Speed multiplier">
           <option value="1">1.0x</option>
           <option value="1.25">1.2x</option>
           <option value="1.5">1.5x</option>
@@ -5573,6 +5592,7 @@ function prevEasyPage() {
 let ttsSynth = window.speechSynthesis;
 let ttsUtterance = null;
 let audioSpeed = 1;
+let selectedVoiceGender = 'female';
 let isAudioPlaying = false;
 let isAudioPaused = false;
 let spokenParagraphs = [];
@@ -5580,6 +5600,14 @@ let activeSpokenIndex = 0;
 
 function toggleAudioBar() {
   document.getElementById('audio-controls-bar').classList.toggle('active');
+}
+
+function changeAudioVoice(val) {
+  selectedVoiceGender = val;
+  if (isAudioPlaying) {
+    ttsSynth.cancel();
+    speakParagraphSequence();
+  }
 }
 
 function startAudio() {
@@ -5622,12 +5650,36 @@ function speakParagraphSequence() {
   }
 
   ttsUtterance = new SpeechSynthesisUtterance(spokenParagraphs[activeSpokenIndex]);
-  ttsUtterance.rate = audioSpeed;
-  
-  // Set voice to something pleasant if available
+
   const voices = ttsSynth.getVoices();
-  const preferredVoice = voices.find(v => v.name.includes('Google US English') || v.name.includes('Natural') || v.lang.startsWith('en-US'));
-  if (preferredVoice) ttsUtterance.voice = preferredVoice;
+  let chosenVoice = null;
+
+  if (selectedVoiceGender === 'male') {
+    // Bold, deeper muscular male voice tweaks
+    chosenVoice = voices.find(v => {
+      const n = v.name.toLowerCase();
+      return (n.includes('male') || n.includes('david') || n.includes('mark') || n.includes('george') || n.includes('daniel') || n.includes('ravi') || n.includes('premium')) && v.lang.startsWith('en');
+    });
+    ttsUtterance.pitch = 0.80; // deep muscular voice
+    ttsUtterance.rate = audioSpeed * 0.90; // slightly slower & bolder
+  } else {
+    // Cute, higher-pitch female voice tweaks
+    chosenVoice = voices.find(v => {
+      const n = v.name.toLowerCase();
+      return (n.includes('female') || n.includes('zira') || n.includes('samantha') || n.includes('google us english') || n.includes('tessa') || n.includes('susan') || n.includes('hazel') || n.includes('victoria') || n.includes('karen')) && v.lang.startsWith('en');
+    });
+    ttsUtterance.pitch = 1.20; // higher, cuter pitch
+    ttsUtterance.rate = audioSpeed * 1.05; // slightly faster/cheerful
+  }
+
+  // Fallback to any English voice if specific gender voice not found
+  if (!chosenVoice) {
+    chosenVoice = voices.find(v => v.lang.startsWith('en'));
+  }
+
+  if (chosenVoice) {
+    ttsUtterance.voice = chosenVoice;
+  }
 
   ttsUtterance.onend = () => {
     if (isAudioPlaying) {
