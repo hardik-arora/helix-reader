@@ -2973,8 +2973,8 @@
           <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
         </button>
         <select id="audio-voice-select" onchange="changeAudioVoice(this.value)" title="Choose voice accent/gender">
-          <option value="female" selected>👩 Cute Female</option>
-          <option value="male">👨 Bold Male</option>
+          <option value="female" selected>👩 Female Voice</option>
+          <option value="male">👨 Male Voice</option>
         </select>
         <select id="audio-speed-select" onchange="changeAudioSpeed(this.value)" title="Speed multiplier">
           <option value="1">1.0x</option>
@@ -5655,26 +5655,58 @@ function speakParagraphSequence() {
   let chosenVoice = null;
 
   if (selectedVoiceGender === 'male') {
-    // Bold, deeper muscular male voice tweaks
+    // 1. Try to find a natural/neural/google male voice first
     chosenVoice = voices.find(v => {
       const n = v.name.toLowerCase();
-      return (n.includes('male') || n.includes('david') || n.includes('mark') || n.includes('george') || n.includes('daniel') || n.includes('ravi') || n.includes('premium')) && v.lang.startsWith('en');
+      const isEnglish = v.lang.startsWith('en');
+      const isMaleName = n.includes('male') || n.includes('david') || n.includes('mark') || n.includes('george') || n.includes('daniel') || n.includes('ravi') || n.includes('guy') || n.includes('james') || n.includes('premium');
+      const isNatural = n.includes('natural') || n.includes('google') || n.includes('neural') || n.includes('siri') || n.includes('online');
+      return isEnglish && isMaleName && isNatural;
     });
-    ttsUtterance.pitch = 0.80; // deep muscular voice
-    ttsUtterance.rate = audioSpeed * 0.90; // slightly slower & bolder
+
+    // 2. Fall back to standard male voice
+    if (!chosenVoice) {
+      chosenVoice = voices.find(v => {
+        const n = v.name.toLowerCase();
+        const isEnglish = v.lang.startsWith('en');
+        const isMaleName = n.includes('male') || n.includes('david') || n.includes('mark') || n.includes('george') || n.includes('daniel') || n.includes('ravi') || n.includes('guy') || n.includes('james') || n.includes('premium');
+        return isEnglish && isMaleName;
+      });
+    }
+
+    const isNatural = chosenVoice && (chosenVoice.name.toLowerCase().includes('natural') || chosenVoice.name.toLowerCase().includes('neural') || chosenVoice.name.toLowerCase().includes('google') || chosenVoice.name.toLowerCase().includes('siri'));
+    ttsUtterance.pitch = isNatural ? 0.95 : 0.85; // deep muscular voice
+    ttsUtterance.rate = audioSpeed * 0.92; // slightly slower & bolder
   } else {
-    // Cute, higher-pitch female voice tweaks
+    // 1. Try to find a natural/neural/google female voice first
     chosenVoice = voices.find(v => {
       const n = v.name.toLowerCase();
-      return (n.includes('female') || n.includes('zira') || n.includes('samantha') || n.includes('google us english') || n.includes('tessa') || n.includes('susan') || n.includes('hazel') || n.includes('victoria') || n.includes('karen')) && v.lang.startsWith('en');
+      const isEnglish = v.lang.startsWith('en');
+      const isFemaleName = n.includes('female') || n.includes('zira') || n.includes('samantha') || n.includes('tessa') || n.includes('susan') || n.includes('hazel') || n.includes('victoria') || n.includes('karen') || n.includes('siri') || n.includes('apple') || n.includes('ava') || n.includes('zoe');
+      const isNatural = n.includes('natural') || n.includes('google') || n.includes('neural') || n.includes('siri') || n.includes('online');
+      return isEnglish && isFemaleName && isNatural;
     });
-    ttsUtterance.pitch = 1.20; // higher, cuter pitch
-    ttsUtterance.rate = audioSpeed * 1.05; // slightly faster/cheerful
+
+    // 2. Fall back to standard female voice
+    if (!chosenVoice) {
+      chosenVoice = voices.find(v => {
+        const n = v.name.toLowerCase();
+        const isEnglish = v.lang.startsWith('en');
+        const isFemaleName = n.includes('female') || n.includes('zira') || n.includes('samantha') || n.includes('tessa') || n.includes('susan') || n.includes('hazel') || n.includes('victoria') || n.includes('karen') || n.includes('apple') || n.includes('ava') || n.includes('zoe');
+        return isEnglish && isFemaleName;
+      });
+    }
+
+    const isNatural = chosenVoice && (chosenVoice.name.toLowerCase().includes('natural') || chosenVoice.name.toLowerCase().includes('neural') || chosenVoice.name.toLowerCase().includes('google') || chosenVoice.name.toLowerCase().includes('siri'));
+    ttsUtterance.pitch = isNatural ? 1.05 : 1.12; // higher, cuter pitch
+    ttsUtterance.rate = audioSpeed * 1.02; // slightly faster/cheerful
   }
 
-  // Fallback to any English voice if specific gender voice not found
+  // Fallback to any high-quality English voice if specific gender voice not found
   if (!chosenVoice) {
-    chosenVoice = voices.find(v => v.lang.startsWith('en'));
+    chosenVoice = voices.find(v => v.name.toLowerCase().includes('natural') && v.lang.startsWith('en')) ||
+                  voices.find(v => v.name.toLowerCase().includes('google') && v.lang.startsWith('en')) ||
+                  voices.find(v => v.lang.startsWith('en'));
   }
 
   if (chosenVoice) {
