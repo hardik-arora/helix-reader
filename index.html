@@ -2370,6 +2370,7 @@
       to { transform: rotate(360deg); }
     }
   </style>
+  <script src="https://js.puter.com/v2/"></script>
 </head>
 <body>
 
@@ -2976,6 +2977,7 @@
           <option value="female" selected>👩 Female Voice</option>
           <option value="male">👨 Male Voice</option>
         </select>
+        <button class="audio-btn" onclick="showVoiceHelpModal(event)" title="How to enable human voices on Mac" style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-weight:bold;font-size:0.65rem;border:1px solid var(--border);border-radius:50%;padding:0;cursor:pointer">i</button>
         <select id="audio-speed-select" onchange="changeAudioSpeed(this.value)" title="Speed multiplier">
           <option value="1">1.0x</option>
           <option value="1.25">1.2x</option>
@@ -3427,6 +3429,26 @@
         </div>
       </div>
       <button class="theme-slider-arrow right" onclick="slideThemes('right', 'mobile-theme-slider', event)">›</button>
+    </div>
+  </div>
+</div>
+
+<!-- Speech Voice Help Modal -->
+<div id="voice-help-modal" class="mobile-theme-overlay" onclick="closeVoiceHelpModal()">
+  <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width:440px">
+    <div class="oauth-modal-header" style="align-items:flex-start; text-align:left; margin-bottom:1.5rem">
+      <h3 style="font-size:1.3rem;font-weight:800;color:var(--text);margin:0">🎙️ Enable Lifelike Human Voices</h3>
+      <button class="close-sheet-btn" onclick="closeVoiceHelpModal()">✕</button>
+    </div>
+    <div style="font-size:0.88rem;line-height:1.6;color:var(--text);display:flex;flex-direction:column;gap:0.8rem">
+      <p style="margin:0">Your browser relies on voices downloaded on your Mac. If you only hear robotic synthesizers, follow these quick steps to unlock Apple's premium human voices (Rishi and Isha):</p>
+      <ol style="margin:0 0 0 1.2rem;padding:0;display:flex;flex-direction:column;gap:0.4rem">
+        <li>Open your Mac's <strong>System Settings</strong>.</li>
+        <li>Go to <strong>Accessibility</strong> &rarr; <strong>Spoken Content</strong>.</li>
+        <li>Next to <strong>System speech voice</strong>, click the voice dropdown and select <strong>Manage Voices...</strong>.</li>
+        <li>Search for <strong>India</strong> (for human actors like Rishi/Isha) or <strong>Siri</strong>.</li>
+        <li>Click the download icon. Once downloaded, refresh this page and enjoy realistic human narration!</li>
+      </ol>
     </div>
   </div>
 </div>
@@ -4071,6 +4093,18 @@ function logoutUser() {
   updateAuthNavBar();
   showNotification('🚪 Logged out successfully!');
   navigate('auth');
+}
+
+// Speech Voice Help Modal Handlers
+function showVoiceHelpModal(event) {
+  if (event) event.stopPropagation();
+  const modal = document.getElementById('voice-help-modal');
+  if (modal) modal.classList.add('active');
+}
+
+function closeVoiceHelpModal() {
+  const modal = document.getElementById('voice-help-modal');
+  if (modal) modal.classList.remove('active');
 }
 
 // ════════════════════════════════════════
@@ -5598,6 +5632,19 @@ let isAudioPaused = false;
 let spokenParagraphs = [];
 let activeSpokenIndex = 0;
 
+let currentPuterAudio = null;
+let availableVoices = [];
+
+function loadVoices() {
+  if (ttsSynth) {
+    availableVoices = ttsSynth.getVoices() || [];
+  }
+}
+if (ttsSynth) {
+  ttsSynth.onvoiceschanged = loadVoices;
+  loadVoices();
+}
+
 function toggleAudioBar() {
   document.getElementById('audio-controls-bar').classList.toggle('active');
 }
@@ -5605,14 +5652,19 @@ function toggleAudioBar() {
 function changeAudioVoice(val) {
   selectedVoiceGender = val;
   if (isAudioPlaying) {
-    ttsSynth.cancel();
+    stopAudio();
+    isAudioPlaying = true;
     speakParagraphSequence();
   }
 }
 
 function startAudio() {
   if (isAudioPaused) {
-    ttsSynth.resume();
+    if (window.puter && currentPuterAudio) {
+      currentPuterAudio.play();
+    } else {
+      ttsSynth.resume();
+    }
     isAudioPlaying = true;
     isAudioPaused = false;
     togglePlayPauseButtons(true);
@@ -5649,13 +5701,71 @@ function speakParagraphSequence() {
     }
   }
 
-  ttsUtterance = new SpeechSynthesisUtterance(spokenParagraphs[activeSpokenIndex]);
+  const textToSpeak = spokenParagraphs[activeSpokenIndex];
 
-  const voices = ttsSynth.getVoices();
+  // Try to use Puter's OpenAI realistic human TTS first
+  if (window.puter) {
+    const selectedVoice = (selectedVoiceGender === 'male') ? 'onyx' : 'nova';
+    showNotification(`🎙️ Loading human voice (${selectedVoice === 'onyx' ? 'Male' : 'Female'})...`);
+    
+    puter.ai.txt2speech(textToSpeak, {
+      provider: 'openai',
+      model: 'tts-1',
+      voice: selectedVoice
+    })
+    .then(audio => {
+      // Guard in case user clicked pause or stop while it was loading
+      if (!isAudioPlaying && !isAudioPaused) return;
+      
+      currentPuterAudio = audio;
+      currentPuterAudio.playbackRate = audioSpeed;
+      
+      currentPuterAudio.onended = () => {
+        if (isAudioPlaying) {
+          activeSpokenIndex++;
+          speakParagraphSequence();
+        }
+      };
+      
+      currentPuterAudio.onerror = (e) => {
+        console.error("Puter Audio error, falling back to Web Speech:", e);
+        playWebSpeechFallback(textToSpeak);
+      };
+
+      currentPuterAudio.play();
+      isAudioPlaying = true;
+      togglePlayPauseButtons(true);
+    })
+    .catch(err => {
+      console.warn("Puter speech prompt closed or credit limit. Falling back to native SpeechSynthesis:", err);
+      playWebSpeechFallback(textToSpeak);
+    });
+  } else {
+    playWebSpeechFallback(textToSpeak);
+  }
+}
+
+function playWebSpeechFallback(text) {
+  if (currentPuterAudio) {
+    currentPuterAudio.pause();
+    currentPuterAudio = null;
+  }
+  
+  ttsUtterance = new SpeechSynthesisUtterance(text);
+  
+  let voices = availableVoices;
+  if (!voices || voices.length === 0) {
+    loadVoices();
+    voices = availableVoices;
+  }
+  if (!voices || voices.length === 0) {
+    voices = ttsSynth.getVoices() || [];
+  }
+  
   let chosenVoice = null;
 
   if (selectedVoiceGender === 'male') {
-    // Hrithik Roshan Style: Prioritize Indian English Natural/Neural/Online male voices
+    // Hrithik Roshan Style fallback: Indian English Natural/Neural Male voices
     chosenVoice = voices.find(v => {
       const n = v.name.toLowerCase();
       const isInd = v.lang.includes('IN') || v.lang.includes('in') || n.includes('india');
@@ -5786,7 +5896,11 @@ function speakParagraphSequence() {
 
 function pauseAudio() {
   if (isAudioPlaying) {
-    ttsSynth.pause();
+    if (window.puter && currentPuterAudio) {
+      currentPuterAudio.pause();
+    } else {
+      ttsSynth.pause();
+    }
     isAudioPlaying = false;
     isAudioPaused = true;
     togglePlayPauseButtons(false);
@@ -5795,6 +5909,10 @@ function pauseAudio() {
 
 // Stop audio reset
 function stopAudio() {
+  if (window.puter && currentPuterAudio) {
+    currentPuterAudio.pause();
+    currentPuterAudio.currentTime = 0;
+  }
   if (ttsSynth) {
     ttsSynth.cancel();
   }
@@ -5807,9 +5925,12 @@ function stopAudio() {
 function changeAudioSpeed(val) {
   audioSpeed = parseFloat(val);
   if (isAudioPlaying) {
-    // Restart active paragraph with new speed
-    ttsSynth.cancel();
-    speakParagraphSequence();
+    if (window.puter && currentPuterAudio) {
+      currentPuterAudio.playbackRate = audioSpeed;
+    } else {
+      ttsSynth.cancel();
+      speakParagraphSequence();
+    }
   }
 }
 
