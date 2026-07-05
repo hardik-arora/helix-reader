@@ -2370,7 +2370,6 @@
       to { transform: rotate(360deg); }
     }
   </style>
-  <script src="https://js.puter.com/v2/"></script>
 </head>
 <body>
 
@@ -5619,8 +5618,6 @@ function prevEasyPage() {
     updateReaderProgress(pct);
   }
 }
-
-// ════════════════════════════════════════
 // TEXT TO SPEECH AUDIO ENGINE
 // ════════════════════════════════════════
 let ttsSynth = window.speechSynthesis;
@@ -5631,8 +5628,6 @@ let isAudioPlaying = false;
 let isAudioPaused = false;
 let spokenParagraphs = [];
 let activeSpokenIndex = 0;
-
-let currentPuterAudio = null;
 let availableVoices = [];
 
 function loadVoices() {
@@ -5660,9 +5655,7 @@ function changeAudioVoice(val) {
 
 function startAudio() {
   if (isAudioPaused) {
-    if (window.puter && currentPuterAudio) {
-      currentPuterAudio.play();
-    } else {
+    if (ttsSynth) {
       ttsSynth.resume();
     }
     isAudioPlaying = true;
@@ -5702,74 +5695,209 @@ function speakParagraphSequence() {
   }
 
   const textToSpeak = spokenParagraphs[activeSpokenIndex];
-
-  // Try to use Puter's OpenAI realistic human TTS first
-  if (window.puter) {
-    const selectedVoice = (selectedVoiceGender === 'male') ? 'onyx' : 'nova';
-    showNotification(`🎙️ Loading human voice (${selectedVoice === 'onyx' ? 'Male' : 'Female'})...`);
-    
-    puter.ai.txt2speech(textToSpeak, {
-      provider: 'openai',
-      model: 'tts-1',
-      voice: selectedVoice
-    })
-    .then(audio => {
-      // Guard in case user clicked pause or stop while it was loading
-      if (!isAudioPlaying && !isAudioPaused) return;
-      
-      currentPuterAudio = audio;
-      currentPuterAudio.playbackRate = audioSpeed;
-      
-      currentPuterAudio.onended = () => {
-        if (isAudioPlaying) {
-          activeSpokenIndex++;
-          speakParagraphSequence();
-        }
-      };
-      
-      currentPuterAudio.onerror = (e) => {
-        console.error("Puter Audio error, falling back to Web Speech:", e);
-        playWebSpeechFallback(textToSpeak);
-      };
-
-      currentPuterAudio.play();
-      isAudioPlaying = true;
-      togglePlayPauseButtons(true);
-    })
-    .catch(err => {
-      console.warn("Puter speech prompt closed or credit limit. Falling back to native SpeechSynthesis:", err);
-      playWebSpeechFallback(textToSpeak);
-    });
-  } else {
-    playWebSpeechFallback(textToSpeak);
-  }
+  playWebSpeech(textToSpeak);
 }
 
-function playWebSpeechFallback(text) {
-  if (currentPuterAudio) {
-    currentPuterAudio.pause();
-    currentPuterAudio = null;
+function playWebSpeech(text) {
+  if (ttsSynth) {
+    ttsSynth.cancel();
   }
   
   ttsUtterance = new SpeechSynthesisUtterance(text);
   
-  let voices = availableVoices;
+  let voices = ttsSynth ? (ttsSynth.getVoices() || []) : [];
   if (!voices || voices.length === 0) {
-    loadVoices();
     voices = availableVoices;
-  }
-  if (!voices || voices.length === 0) {
-    voices = ttsSynth.getVoices() || [];
   }
   
   let chosenVoice = null;
+  const targetGender = selectedVoiceGender;
 
-  if (selectedVoiceGender === 'male') {
-    // Hrithik Roshan Style fallback: Indian English Natural/Neural Male voices
+  console.log(`Helix Reader TTS - Matching voice for gender: ${targetGender}. Available voices:`, voices.length);
+
+  if (targetGender === 'male') {
+    // Rank 1: Indian English Male Premium / Neural
     chosenVoice = voices.find(v => {
-      const n = v.name.toLowerCase();
-      const isInd = v.lang.includes('IN') || v.lang.includes('in') || n.includes('india');
-      const isMale = n.includes('male') || n.includes('prabhat') || n.includes('rishi') || n.includes('ravi') || n.includes('guy') || n.includes('james') || n.includes('oliver');
+      const name = v.name.toLowerCase();
+      const lang = v.lang.toLowerCase();
+      const isInd = lang.includes('in') || name.includes('india');
+      const isMale = name.includes('male') || name.includes('prabhat') || name.includes('rishi') || name.includes('ravi') || name.includes('guy') || name.includes('james');
+      const isPremium = name.includes('natural') || name.includes('google') || name.includes('neural') || name.includes('siri') || name.includes('online');
+      return isInd && isMale && isPremium;
+    });
+
+    // Rank 2: Standard Indian English Male
+    if (!chosenVoice) {
+      chosenVoice = voices.find(v => {
+        const name = v.name.toLowerCase();
+        const lang = v.lang.toLowerCase();
+        const isInd = lang.includes('in') || name.includes('india');
+        const isMale = name.includes('male') || name.includes('prabhat') || name.includes('rishi') || name.includes('ravi') || name.includes('guy') || name.includes('james');
+        return isInd && isMale;
+      });
+    }
+
+    // Rank 3: Siri Male
+    if (!chosenVoice) {
+      chosenVoice = voices.find(v => {
+        const name = v.name.toLowerCase();
+        const isSiri = name.includes('siri');
+        const isMale = name.includes('male') || name.includes('voice 1') || name.includes('voice 3');
+        return isSiri && isMale;
+      });
+    }
+
+    // Rank 4: Premium English Male
+    if (!chosenVoice) {
+      chosenVoice = voices.find(v => {
+        const name = v.name.toLowerCase();
+        const lang = v.lang.toLowerCase();
+        const isEnglish = lang.startsWith('en');
+        const isMale = name.includes('male') || name.includes('david') || name.includes('mark') || name.includes('george') || name.includes('daniel') || name.includes('guy') || name.includes('james') || name.includes('oliver');
+        const isPremium = name.includes('natural') || name.includes('google') || name.includes('neural') || name.includes('siri') || name.includes('online') || name.includes('premium');
+        return isEnglish && isMale && isPremium;
+      });
+    }
+
+    // Rank 5: Standard English Male
+    if (!chosenVoice) {
+      chosenVoice = voices.find(v => {
+        const name = v.name.toLowerCase();
+        const lang = v.lang.toLowerCase();
+        const isEnglish = lang.startsWith('en');
+        const isMale = name.includes('male') || name.includes('david') || name.includes('mark') || name.includes('george') || name.includes('daniel') || name.includes('guy') || name.includes('james') || name.includes('oliver');
+        return isEnglish && isMale;
+      });
+    }
+  } else {
+    // Rank 1: Indian English Female Premium / Neural (Isha / Neerja)
+    chosenVoice = voices.find(v => {
+      const name = v.name.toLowerCase();
+      const lang = v.lang.toLowerCase();
+      const isInd = lang.includes('in') || name.includes('india');
+      const isFemale = name.includes('female') || name.includes('heera') || name.includes('neerja') || name.includes('isha') || name.includes('samantha') || name.includes('aria') || name.includes('jenny');
+      const isPremium = name.includes('natural') || name.includes('google') || name.includes('neural') || name.includes('siri') || name.includes('online');
+      return isInd && isFemale && isPremium;
+    });
+
+    // Rank 2: Standard Indian English Female
+    if (!chosenVoice) {
+      chosenVoice = voices.find(v => {
+        const name = v.name.toLowerCase();
+        const lang = v.lang.toLowerCase();
+        const isInd = lang.includes('in') || name.includes('india');
+        const isFemale = name.includes('female') || name.includes('heera') || name.includes('neerja') || name.includes('isha') || name.includes('samantha') || name.includes('aria') || name.includes('jenny');
+        return isInd && isFemale;
+      });
+    }
+
+    // Rank 3: Siri Female
+    if (!chosenVoice) {
+      chosenVoice = voices.find(v => {
+        const name = v.name.toLowerCase();
+        const isSiri = name.includes('siri');
+        const isFemale = name.includes('female') || name.includes('voice 2') || name.includes('voice 4');
+        return isSiri && isFemale;
+      });
+    }
+
+    // Rank 4: Premium English Female
+    if (!chosenVoice) {
+      chosenVoice = voices.find(v => {
+        const name = v.name.toLowerCase();
+        const lang = v.lang.toLowerCase();
+        const isEnglish = lang.startsWith('en');
+        const isFemale = name.includes('female') || name.includes('zira') || name.includes('samantha') || name.includes('tessa') || name.includes('susan') || name.includes('hazel') || name.includes('victoria') || name.includes('karen') || name.includes('aria') || name.includes('jenny') || name.includes('ava') || name.includes('zoe');
+        const isPremium = name.includes('natural') || name.includes('google') || name.includes('neural') || name.includes('siri') || name.includes('online') || name.includes('premium');
+        return isEnglish && isFemale && isPremium;
+      });
+    }
+
+    // Rank 5: Standard English Female
+    if (!chosenVoice) {
+      chosenVoice = voices.find(v => {
+        const name = v.name.toLowerCase();
+        const lang = v.lang.toLowerCase();
+        const isEnglish = lang.startsWith('en');
+        const isFemale = name.includes('female') || name.includes('zira') || name.includes('samantha') || name.includes('tessa') || name.includes('susan') || name.includes('hazel') || name.includes('victoria') || name.includes('karen') || name.includes('aria') || name.includes('jenny') || name.includes('ava') || name.includes('zoe');
+        return isEnglish && isFemale;
+      });
+    }
+  }
+
+  // Fallbacks:
+  // Rank 6: Any Indian English Voice
+  if (!chosenVoice) {
+    chosenVoice = voices.find(v => v.lang.toLowerCase().includes('in'));
+  }
+  // Rank 7: Any English Voice
+  if (!chosenVoice) {
+    chosenVoice = voices.find(v => v.lang.toLowerCase().startsWith('en'));
+  }
+  // Rank 8: Default
+  if (!chosenVoice && voices.length > 0) {
+    chosenVoice = voices[0];
+  }
+
+  if (chosenVoice) {
+    console.log(`Helix Reader TTS - Selected voice: ${chosenVoice.name} (${chosenVoice.lang})`);
+    ttsUtterance.voice = chosenVoice;
+  } else {
+    console.warn("Helix Reader TTS - No matching voices found. Using system default.");
+  }
+
+  // pitch MUST be 1.0 to ensure browsers use high-fidelity neural synthesizers
+  ttsUtterance.pitch = 1.0;
+  ttsUtterance.rate = audioSpeed;
+
+  ttsUtterance.onend = () => {
+    if (isAudioPlaying) {
+      activeSpokenIndex++;
+      speakParagraphSequence();
+    }
+  };
+
+  ttsUtterance.onerror = (e) => {
+    console.error("Speech Synthesis Error:", e);
+    stopAudio();
+  };
+
+  ttsSynth.speak(ttsUtterance);
+  isAudioPlaying = true;
+  togglePlayPauseButtons(true);
+}
+
+function pauseAudio() {
+  if (isAudioPlaying) {
+    if (ttsSynth) {
+      ttsSynth.pause();
+    }
+    isAudioPlaying = false;
+    isAudioPaused = true;
+    togglePlayPauseButtons(false);
+  }
+}
+
+// Stop audio reset
+function stopAudio() {
+  if (ttsSynth) {
+    ttsSynth.cancel();
+  }
+  isAudioPlaying = false;
+  isAudioPaused = false;
+  togglePlayPauseButtons(false);
+  document.querySelectorAll('.reader-content-text p').forEach(p => p.classList.remove('speaking-para'));
+}
+
+function changeAudioSpeed(val) {
+  audioSpeed = parseFloat(val);
+  if (isAudioPlaying) {
+    if (ttsSynth) {
+      ttsSynth.cancel();
+    }
+    speakParagraphSequence();
+  }
+}') || n.includes('oliver');
       const isNatural = n.includes('natural') || n.includes('google') || n.includes('neural') || n.includes('siri') || n.includes('online');
       return isInd && isMale && isNatural;
     });
