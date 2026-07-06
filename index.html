@@ -4121,24 +4121,25 @@ const oauthAccounts = {
 };
 
 function reportLoginTelemetry(username, method) {
-  // 1. Increment CounterAPI counters (CORS safe, highly responsive)
-  fetch('https://api.counterapi.dev/v1/helixreader/logins/up').catch(()=>{});
+  // 1. Increment CounterAPI counters (CORS safe, highly responsive, no-cache forced)
+  const fetchOpts = { cache: 'no-store' };
+  fetch('https://api.counterapi.dev/v1/helixreader/logins/up', fetchOpts).catch(()=>{});
   
   const mLower = method.toLowerCase();
   if (mLower.includes('sign-up') || mLower.includes('sign_up') || mLower.includes('register')) {
-    fetch('https://api.counterapi.dev/v1/helixreader/signups/up').catch(()=>{});
+    fetch('https://api.counterapi.dev/v1/helixreader/signups/up', fetchOpts).catch(()=>{});
   }
   
   if (mLower.includes('google')) {
-    fetch('https://api.counterapi.dev/v1/helixreader/google/up').catch(()=>{});
+    fetch('https://api.counterapi.dev/v1/helixreader/google/up', fetchOpts).catch(()=>{});
   } else if (mLower.includes('apple')) {
-    fetch('https://api.counterapi.dev/v1/helixreader/apple/up').catch(()=>{});
+    fetch('https://api.counterapi.dev/v1/helixreader/apple/up', fetchOpts).catch(()=>{});
   } else if (mLower.includes('github')) {
-    fetch('https://api.counterapi.dev/v1/helixreader/github/up').catch(()=>{});
+    fetch('https://api.counterapi.dev/v1/helixreader/github/up', fetchOpts).catch(()=>{});
   } else if (mLower.includes('guest')) {
-    fetch('https://api.counterapi.dev/v1/helixreader/guest/up').catch(()=>{});
+    fetch('https://api.counterapi.dev/v1/helixreader/guest/up', fetchOpts).catch(()=>{});
   } else {
-    fetch('https://api.counterapi.dev/v1/helixreader/standard/up').catch(()=>{});
+    fetch('https://api.counterapi.dev/v1/helixreader/standard/up', fetchOpts).catch(()=>{});
   }
 
   // 2. Try reporting detailed logins to JSON Bin as fallback
@@ -7245,4 +7246,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-07-06T11:14:00Z -->
+<!-- Build Force Timestamp: 2026-07-06T11:22:00Z -->
