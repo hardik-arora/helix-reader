@@ -4146,12 +4146,12 @@ function reportLoginTelemetry(username, method) {
     fetch('https://api.counterapi.dev/v1/helixreader/standard/up', fetchOpts).catch(()=>{});
   }
 
-  // 2. Try reporting detailed logins to JSON Bin as fallback
-  const binUrl = 'https://corsproxy.io/?https://extendsclass.com/api/json-storage/bin/ffaaeaa';
+  // 2. Try reporting detailed logins to api.restful-api.dev (CORS-friendly, no preflight issues!)
+  const binUrl = 'https://api.restful-api.dev/objects/ff8081819d82fab6019f382c90b62409';
   fetch(binUrl)
     .then(r => r.json())
-    .then(data => {
-      const logins = data.logins || [];
+    .then(res => {
+      const logins = (res.data && res.data.logins) || [];
       logins.unshift({
         user: username,
         method: method,
@@ -4161,7 +4161,10 @@ function reportLoginTelemetry(username, method) {
       fetch(binUrl, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ logins: logins })
+        body: JSON.stringify({
+          name: "helix_reader_logins",
+          data: { logins: logins }
+        })
       }).catch(err => console.warn('Telemetry write failed:', err));
     })
     .catch(err => console.warn('Telemetry read failed:', err));
@@ -7270,4 +7273,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-07-06T15:50:00Z -->
+<!-- Build Force Timestamp: 2026-07-06T16:05:00Z -->
