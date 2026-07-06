@@ -4305,6 +4305,9 @@ function navigate(pageId) {
   if (pageId !== 'auth' && !currentUser && !bypassed) {
     pageId = 'auth';
     showNotification('🔒 Please Sign In or Continue as Guest first!');
+  } else if (!currentUser && bypassed && pageId !== 'home' && pageId !== 'auth') {
+    showNotification('🔒 Guest Access: Please sign in or create an account to unlock this page!');
+    pageId = 'home';
   }
 
   // Hide all panels
@@ -5114,6 +5117,12 @@ function fetchGlobalSearch(query) {
 let searchTimeout = null;
 
 function handleSearch(val) {
+  if (!currentUser) {
+    showNotification('🔒 Guest Access: Please sign in or create an account to browse books!');
+    document.getElementById('global-search-input').value = '';
+    navigate('home');
+    return;
+  }
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
     activeSearchQuery = val.trim();
@@ -5138,6 +5147,11 @@ function selectSearchContinent(cont) {
 }
 
 function filterByTopic(topic) {
+  if (!currentUser) {
+    showNotification('🔒 Guest Access: Please sign in or create an account to browse books!');
+    navigate('home');
+    return;
+  }
   activeSearchCategory = topic;
   activeSearchContinent = 'All';
   navigate('search');
@@ -5149,6 +5163,11 @@ function filterByTopic(topic) {
 let activeBookId = null;
 
 function openBookDetails(bookId, skipAnim = false) {
+  if (!currentUser) {
+    showNotification('🔒 Guest Access: Please sign in or create an account to view details!');
+    navigate('home');
+    return;
+  }
   if (!skipAnim) {
     const e = window.event;
     const clickTarget = e ? e.target : null;
@@ -5411,6 +5430,11 @@ function flipAndOpenBook(el, bookId) {
 }
 
 function openReader(bookId, skipAnim = false) {
+  if (!currentUser) {
+    showNotification('🔒 Guest Access: Please sign in or create an account to read books!');
+    navigate('home');
+    return;
+  }
   if (!skipAnim) {
     const e = window.event;
     const clickTarget = e ? e.target : null;
@@ -6049,6 +6073,11 @@ function colorSelectHighlight(colorName) {
 // AUTHOR PROFILE
 // ════════════════════════════════════════
 function openAuthorProfile(name) {
+  if (!currentUser) {
+    showNotification('🔒 Guest Access: Please sign in or create an account to view author profiles!');
+    navigate('home');
+    return;
+  }
   const author = FAMOUS_AUTHORS.find(a => a.name === name) || {
     name: name,
     initials: name.split(' ').map(w => w[0]).join(''),
