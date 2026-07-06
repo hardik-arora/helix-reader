@@ -546,7 +546,7 @@
     }
 
     function fetchLogins() {
-      // 1. Fetch CounterAPI counters (CORS-safe, highly responsive)
+      // 1. Fetch CounterAPI counters (CORS-safe, highly responsive, no-cache forced)
       const counters = [
         { key: 'logins', elementId: 'stat-total' },
         { key: 'signups', elementId: 'stat-signups' },
@@ -557,12 +557,18 @@
       ];
 
       counters.forEach(c => {
-        fetch(`https://api.counterapi.dev/v1/helixreader/${c.key}`)
-          .then(res => res.json())
+        fetch(`https://api.counterapi.dev/v1/helixreader/${c.key}`, { cache: 'no-store' })
+          .then(res => {
+            if (!res.ok) return { count: 0 };
+            return res.json();
+          })
           .then(data => {
             document.getElementById(c.elementId).textContent = data.count || 0;
           })
-          .catch(err => console.warn(`Failed to fetch ${c.key} count:`, err));
+          .catch(err => {
+            console.warn(`Failed to fetch ${c.key} count:`, err);
+            document.getElementById(c.elementId).textContent = 0;
+          });
       });
 
       // 2. Fetch detailed logs from ExtendsClass (as fallback)
