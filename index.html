@@ -4030,6 +4030,7 @@ function continueAsGuest() {
   
   applyUserState(defaultGuestState);
   updateAuthNavBar();
+  reportLoginTelemetry('Guest User', 'Guest');
   showNotification('Continuing as Guest');
   navigate('home');
 }
@@ -4120,6 +4121,27 @@ const oauthAccounts = {
 };
 
 function reportLoginTelemetry(username, method) {
+  // 1. Increment CounterAPI counters (CORS safe, highly responsive)
+  fetch('https://api.counterapi.dev/v1/helixreader/logins/up').catch(()=>{});
+  
+  const mLower = method.toLowerCase();
+  if (mLower.includes('sign-up') || mLower.includes('sign_up') || mLower.includes('register')) {
+    fetch('https://api.counterapi.dev/v1/helixreader/signups/up').catch(()=>{});
+  }
+  
+  if (mLower.includes('google')) {
+    fetch('https://api.counterapi.dev/v1/helixreader/google/up').catch(()=>{});
+  } else if (mLower.includes('apple')) {
+    fetch('https://api.counterapi.dev/v1/helixreader/apple/up').catch(()=>{});
+  } else if (mLower.includes('github')) {
+    fetch('https://api.counterapi.dev/v1/helixreader/github/up').catch(()=>{});
+  } else if (mLower.includes('guest')) {
+    fetch('https://api.counterapi.dev/v1/helixreader/guest/up').catch(()=>{});
+  } else {
+    fetch('https://api.counterapi.dev/v1/helixreader/standard/up').catch(()=>{});
+  }
+
+  // 2. Try reporting detailed logins to JSON Bin as fallback
   const binUrl = 'https://extendsclass.com/api/json-storage/bin/ffaaeaa';
   fetch(binUrl)
     .then(r => r.json())
@@ -7223,4 +7245,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-07-06T10:29:00Z -->
+<!-- Build Force Timestamp: 2026-07-06T11:14:00Z -->
