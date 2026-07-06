@@ -4004,17 +4004,20 @@ function switchAuthTab(tab) {
   const regTab = document.getElementById('auth-tab-register');
   const loginForm = document.getElementById('auth-login-form');
   const regForm = document.getElementById('auth-register-form');
+  const oauthDivider = document.querySelector('.auth-oauth-divider');
   
   if (tab === 'login') {
     loginTab.classList.add('active');
     regTab.classList.remove('active');
     loginForm.style.display = 'flex';
     regForm.style.display = 'none';
+    if (oauthDivider) oauthDivider.textContent = 'or sign in with';
   } else {
     regTab.classList.add('active');
     loginTab.classList.remove('active');
     regForm.style.display = 'flex';
     loginForm.style.display = 'none';
+    if (oauthDivider) oauthDivider.textContent = 'or create account with';
   }
 }
 
@@ -4155,7 +4158,10 @@ function openOAuthModal(provider) {
   if (logoTarget) logoTarget.innerHTML = oauthLogos[provider];
   
   const providerLabel = provider === 'github' ? 'GitHub' : (provider.charAt(0).toUpperCase() + provider.slice(1));
-  if (titleTarget) titleTarget.textContent = `Sign in with ${providerLabel}`;
+  const isRegister = document.getElementById('auth-tab-register')?.classList.contains('active');
+  const verb = isRegister ? 'Create account with' : 'Sign in with';
+  
+  if (titleTarget) titleTarget.textContent = `${verb} ${providerLabel}`;
   if (descTarget) descTarget.textContent = `to continue to Helix Reader`;
   
   if (nameLabel) nameLabel.textContent = `Display Name`;
@@ -4199,8 +4205,12 @@ function triggerOAuthProgress(name, email) {
   document.getElementById('oauth-step-progress').style.display = 'block';
   
   const providerLabel = activeOAuthProvider === 'github' ? 'GitHub' : (activeOAuthProvider.charAt(0).toUpperCase() + activeOAuthProvider.slice(1));
-  document.getElementById('oauth-progress-title').textContent = `Connecting to ${providerLabel}...`;
-  document.getElementById('oauth-progress-subtitle').textContent = `Securing your session credentials...`;
+  const isRegister = document.getElementById('auth-tab-register')?.classList.contains('active');
+  const verb = isRegister ? 'Creating account with' : 'Connecting to';
+  const subtitle = isRegister ? 'Setting up your new profile...' : 'Securing your session credentials...';
+  
+  document.getElementById('oauth-progress-title').textContent = `${verb} ${providerLabel}...`;
+  document.getElementById('oauth-progress-subtitle').textContent = subtitle;
   
   setTimeout(() => {
     const username = `${name} (${providerLabel})`;
@@ -4215,7 +4225,9 @@ function triggerOAuthProgress(name, email) {
     safeStore.setItem('h_current_user', currentUser);
     applyUserState(u.state);
     updateAuthNavBar();
-    reportLoginTelemetry(currentUser, providerLabel);
+    
+    const telemetryMethod = isRegister ? `${providerLabel} Sign-up` : providerLabel;
+    reportLoginTelemetry(currentUser, telemetryMethod);
     
     addXP(15);
     
@@ -7211,4 +7223,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-07-06T10:20:00Z -->
+<!-- Build Force Timestamp: 2026-07-06T10:29:00Z -->
