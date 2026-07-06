@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="no-referrer" />
   <title>Helix Reader — Kindle-Inspired World Library</title>
   <meta name="description" content="A premium Kindle-inspired world digital library with 75+ books from every great author on Earth. Features immersive reading, text-to-speech, vocabulary builder, highlights, achievements, and quizzes." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -4416,6 +4417,135 @@ window.addEventListener('click', () => {
 // ══════════════════════════════════════════════════════════════
 // WIKIPEDIA DYNAMIC COVER API INTEGRATION (CORS-friendly REST)
 // ══════════════════════════════════════════════════════════════
+function applyBookCoverImage(el, url, book) {
+  if (!url || url === 'none') {
+    ensureEmojiFallback(el, book);
+    return;
+  }
+  const img = new Image();
+  img.onload = () => {
+    el.style.backgroundImage = `url('${url}')`;
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+    el.classList.add('has-cover-image');
+    const emoji = el.querySelector('.book-cover-emoji');
+    if (emoji) emoji.remove();
+  };
+  img.onerror = () => {
+    ensureEmojiFallback(el, book);
+  };
+  img.src = url;
+}
+
+let coverObserver = null;
+
+function ensureEmojiFallback(el, book) {
+  if (!el.classList.contains('has-cover-image')) {
+    if (!el.querySelector('.book-cover-emoji')) {
+      const emojiEl = document.createElement('div');
+      emojiEl.className = 'book-cover-emoji';
+      emojiEl.textContent = book?.emoji || '📖';
+      el.insertBefore(emojiEl, el.firstChild);
+    }
+  }
+}
+
+function initCoverObserver() {
+  if (coverObserver) return;
+  coverObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        observer.unobserve(el);
+        
+        const bookId = el.getAttribute('data-book-id');
+        const allBooks = [...MASTER_BOOKS, ...DYNAMIC_SEARCH_CACHE, ...state.customBooks];
+        const book = allBooks.find(b => b.id === bookId);
+        if (!book) return;
+        
+        fetchBookCover(book).then(url => {
+          applyBookCoverImage(el, url, book);
+        });
+      }
+    });
+  }, { rootMargin: '200px' });
+}
+
+function updateCoversOnScreen() {
+  initCoverObserver();
+  const coverElements = document.querySelectorAll('.book-cover[data-book-id], .detail-cover-img[data-book-id]');
+  const allBooks = [...MASTER_BOOKS, ...DYNAMIC_SEARCH_CACHE, ...state.customBooks];
+  
+  coverElements.forEach(el => {
+    const bookId = el.getAttribute('data-book-id');
+    const book = allBooks.find(b => b.id === bookId);
+    if (!book) return;
+    
+    // Fast render from localStorage cache instantly
+    if (state.covers[bookId]) {
+      applyBookCoverImage(el, state.covers[bookId], book);
+      return;
+    }
+
+    // Fast render from pre-assigned verified book cover directly
+    if (book.cover && book.cover !== 'none' && book.cover.startsWith('http')) {
+      applyBookCoverImage(el, book.cover, book);
+      return;
+    }
+    
+    // Observe for lazy loading if not cached yet
+    coverObserver.observe(el);
+  });
+}
+
+function getCoverUrl(book) {
+  if (!book) return '';
+  const cachedCover = state.covers[book.id];
+  if (cachedCover && cachedCover !== 'none') {
+    return cachedCover;
+  }
+  if (book.cover && book.cover !== 'none' && book.cover.startsWith('http')) {
+    return book.cover;
+  }
+  return '';
+}
+
+function makeCoverStyle(book) {
+  const colors = book.color || ['#1e293b', '#0f172a'];
+  return `background: linear-gradient(140deg, ${colors[0]} 0%, ${colors[1]} 100%);`;
+}
+
+function renderBookCard(book) {
+  return `
+    <div class="book-card" onclick="flipAndOpenBook(this, '${book.id}')">
+      <div class="book-cover" data-book-id="${book.id}" style="${makeCoverStyle(book)}">
+        <div class="book-spine-line"></div>
+        <div class="book-cover-emoji">${book.emoji || '📖'}</div>
+        <div class="book-cover-text">
+          <div class="book-cover-title">${book.title}</div>
+          <div class="book-cover-author">${book.author}</div>
+        </div>
+        <div class="shelf-hover-overlay">
+          <div class="shelf-hover-title">${book.title}</div>
+          <div class="shelf-hover-author">by ${book.author}</div>
+          <div class="shelf-hover-actions">
+            <button class="shelf-hover-btn primary" onclick="event.stopPropagation(); openReader('${book.id}')">▶ Read</button>
+            <button class="shelf-hover-btn secondary" onclick="event.stopPropagation(); flipAndOpenBook(this.closest('.book-card'), '${book.id}')">ℹ Info</button>
+          </div>
+        </div>
+      </div>
+      <div class="book-card-info">
+        <div class="book-title">${book.title}</div>
+        <div class="book-author">${book.author}</div>
+        <div class="book-rating">
+          <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+          <span>${book.rating}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function fetchBookCover(book) {
   const cacheKey = book.id;
   
@@ -4488,93 +4618,7 @@ function fetchBookCover(book) {
     });
 }
 
-let coverObserver = null;
 
-function ensureEmojiFallback(el, book) {
-  // If no cover image on element, make sure the emoji placeholder is present
-  if (!el.classList.contains('has-cover-image')) {
-    if (!el.querySelector('.book-cover-emoji')) {
-      const emojiEl = document.createElement('div');
-      emojiEl.className = 'book-cover-emoji';
-      emojiEl.textContent = book?.emoji || '📖';
-      el.insertBefore(emojiEl, el.firstChild);
-    }
-  }
-}
-
-function initCoverObserver() {
-  if (coverObserver) return;
-  coverObserver = new IntersectionObserver((entries, observer) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const el = entry.target;
-        observer.unobserve(el);
-        
-        const bookId = el.getAttribute('data-book-id');
-        const allBooks = [...MASTER_BOOKS, ...DYNAMIC_SEARCH_CACHE, ...state.customBooks];
-        const book = allBooks.find(b => b.id === bookId);
-        if (!book) return;
-        
-        fetchBookCover(book).then(url => {
-          if (url && url !== 'none') {
-            // Cover found — show it and remove emoji
-            el.style.backgroundImage = `url('${url}')`;
-            el.style.backgroundSize = 'cover';
-            el.style.backgroundPosition = 'center';
-            el.classList.add('has-cover-image');
-            const emoji = el.querySelector('.book-cover-emoji');
-            if (emoji) emoji.remove();
-          } else {
-            // No cover found — ensure emoji placeholder is shown
-            ensureEmojiFallback(el, book);
-          }
-        });
-      }
-    });
-  }, { rootMargin: '200px' });
-}
-
-function updateCoversOnScreen() {
-  initCoverObserver();
-  const coverElements = document.querySelectorAll('.book-cover[data-book-id], .detail-cover-img[data-book-id]');
-  const allBooks = [...MASTER_BOOKS, ...DYNAMIC_SEARCH_CACHE, ...state.customBooks];
-  
-  coverElements.forEach(el => {
-    const bookId = el.getAttribute('data-book-id');
-    const book = allBooks.find(b => b.id === bookId);
-    if (!book) return;
-    
-    // Fast render from localStorage cache instantly
-    if (state.covers[bookId]) {
-      if (state.covers[bookId] !== 'none') {
-        el.style.backgroundImage = `url('${state.covers[bookId]}')`;
-        el.style.backgroundSize = 'cover';
-        el.style.backgroundPosition = 'center';
-        el.classList.add('has-cover-image');
-        const emoji = el.querySelector('.book-cover-emoji');
-        if (emoji) emoji.remove();
-      } else {
-        // Previously fetched and failed — show emoji
-        ensureEmojiFallback(el, book);
-      }
-      return;
-    }
-
-    // Fast render from pre-assigned verified book cover directly
-    if (book.cover && book.cover !== 'none' && book.cover.startsWith('http')) {
-      el.style.backgroundImage = `url('${book.cover}')`;
-      el.style.backgroundSize = 'cover';
-      el.style.backgroundPosition = 'center';
-      el.classList.add('has-cover-image');
-      const emoji = el.querySelector('.book-cover-emoji');
-      if (emoji) emoji.remove();
-      return;
-    }
-    
-    // Observe for lazy loading if not cached yet
-    coverObserver.observe(el);
-  });
-}
 
 // ══════════════════════════════════════════════════════════════
 // OPEN LIBRARY API INTEGRATION (Resolves Direct Read Links)
@@ -5218,9 +5262,9 @@ function openBookDetails(bookId, skipAnim = false) {
     
     <div class="detail-card">
       <div class="detail-cover-area">
-        <div class="detail-cover-img ${hasCover ? 'has-cover-image' : ''}" data-book-id="${book.id}" style="${makeCoverStyle(book)}">
+        <div class="detail-cover-img" data-book-id="${book.id}" style="${makeCoverStyle(book)}">
           <div class="book-spine-line"></div>
-          ${hasCover ? '' : `<div class="book-cover-emoji" style="font-size:4rem">${book.emoji || '📖'}</div>`}
+          <div class="book-cover-emoji" style="font-size:4rem">${book.emoji || '📖'}</div>
           <div class="book-cover-text">
             <div class="book-cover-title" style="font-size:1.15rem">${book.title}</div>
             <div class="book-cover-author">${book.author}</div>
@@ -7171,4 +7215,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-07-06T09:33:00Z -->
+<!-- Build Force Timestamp: 2026-07-06T10:12:00Z -->
