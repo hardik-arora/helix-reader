@@ -508,7 +508,7 @@
   <div id="toast">Logins updated!</div>
 
   <script>
-    const binUrl = 'https://extendsclass.com/api/json-storage/bin/ffaaeaa';
+    const binUrl = 'https://corsproxy.io/?https://extendsclass.com/api/json-storage/bin/ffaaeaa';
     let currentLogs = [];
     let refreshInterval = null;
 
@@ -601,8 +601,8 @@
       if (filtered.length === 0) {
         emptyState.style.display = 'block';
         emptyState.innerHTML = `
-          <div class="empty-state-icon">🛡️</div>
-          <p>Detailed logs are loaded from local cache. Real-time stats are fully linked and active via CounterAPI!</p>
+          <div class="empty-state-icon">📭</div>
+          <p>No login events found. Telemetry records will appear here as users sign in/register.</p>
         `;
       } else {
         emptyState.style.display = 'none';
