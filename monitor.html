@@ -508,7 +508,7 @@
   <div id="toast">Logins updated!</div>
 
   <script>
-    const binUrl = 'https://api.restful-api.dev/objects/ff8081819d82fab6019f382c90b62409';
+    const binUrl = 'https://corsproxy.io/?url=' + encodeURIComponent('https://extendsclass.com/api/json-storage/bin/ffaaeaa');
     let currentLogs = [];
     let refreshInterval = null;
 
@@ -571,11 +571,11 @@
           });
       });
 
-      // 2. Fetch detailed logs from api.restful-api.dev (CORS-friendly, no preflight issues)
+      // 2. Fetch detailed logs from ExtendsClass (via CORS proxy)
       fetch(binUrl, { cache: 'no-store' })
         .then(res => res.json())
         .then(data => {
-          currentLogs = (data.data && data.data.logins) || [];
+          currentLogs = data.logins || [];
           renderLogs();
         })
         .catch(err => {
@@ -649,10 +649,7 @@
         fetch(binUrl, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: "helix_reader_logins",
-            data: { logins: [] }
-          })
+          body: JSON.stringify({ logins: [] })
         })
         .then(() => {
           showToast("🗑️ Detailed telemetry logs cleared!");
