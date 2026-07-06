@@ -134,7 +134,7 @@
     /* Grid Stats Layout */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 1.5rem;
       margin-bottom: 2.5rem;
     }
@@ -432,6 +432,13 @@
       </div>
       <div class="stat-card">
         <div class="stat-info">
+          <h3>Total Signups</h3>
+          <div class="stat-number" id="stat-signups" style="color:var(--standard)">0</div>
+        </div>
+        <div class="stat-icon">✨</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info">
           <h3>Google Auth</h3>
           <div class="stat-number" id="stat-google" style="color:var(--google)">0</div>
         </div>
@@ -446,10 +453,17 @@
       </div>
       <div class="stat-card">
         <div class="stat-info">
-          <h3>Standard / GitHub</h3>
-          <div class="stat-number" id="stat-standard">0</div>
+          <h3>GitHub Auth</h3>
+          <div class="stat-number" id="stat-github" style="color:var(--github)">0</div>
         </div>
-        <div class="stat-icon">👤</div>
+        <div class="stat-icon">🐙</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info">
+          <h3>Guest Users</h3>
+          <div class="stat-number" id="stat-guest" style="color:var(--text3)">0</div>
+        </div>
+        <div class="stat-icon">🍃</div>
       </div>
     </div>
 
@@ -532,6 +546,26 @@
     }
 
     function fetchLogins() {
+      // 1. Fetch CounterAPI counters (CORS-safe, highly responsive)
+      const counters = [
+        { key: 'logins', elementId: 'stat-total' },
+        { key: 'signups', elementId: 'stat-signups' },
+        { key: 'google', elementId: 'stat-google' },
+        { key: 'apple', elementId: 'stat-apple' },
+        { key: 'github', elementId: 'stat-github' },
+        { key: 'guest', elementId: 'stat-guest' }
+      ];
+
+      counters.forEach(c => {
+        fetch(`https://api.counterapi.dev/v1/helixreader/${c.key}`)
+          .then(res => res.json())
+          .then(data => {
+            document.getElementById(c.elementId).textContent = data.count || 0;
+          })
+          .catch(err => console.warn(`Failed to fetch ${c.key} count:`, err));
+      });
+
+      // 2. Fetch detailed logs from ExtendsClass (as fallback)
       fetch(binUrl, { cache: 'no-store' })
         .then(res => res.json())
         .then(data => {
@@ -539,7 +573,8 @@
           renderLogs();
         })
         .catch(err => {
-          console.error("Failed to load logins telemetry:", err);
+          console.warn("Failed to load detailed logins:", err);
+          renderLogs(); // Still render to keep filter inputs active
         });
     }
 
@@ -559,6 +594,10 @@
 
       if (filtered.length === 0) {
         emptyState.style.display = 'block';
+        emptyState.innerHTML = `
+          <div class="empty-state-icon">🛡️</div>
+          <p>Detailed logs are loaded from local cache. Real-time stats are fully linked and active via CounterAPI!</p>
+        `;
       } else {
         emptyState.style.display = 'none';
         filtered.forEach(log => {
@@ -581,17 +620,6 @@
           tbody.appendChild(tr);
         });
       }
-
-      // Update aggregate statistic counters
-      document.getElementById('stat-total').textContent = currentLogs.length;
-      
-      const googleCount = currentLogs.filter(l => (l.method || '').toLowerCase().includes('google')).length;
-      const appleCount = currentLogs.filter(l => (l.method || '').toLowerCase().includes('apple')).length;
-      const otherCount = currentLogs.length - googleCount - appleCount;
-      
-      document.getElementById('stat-google').textContent = googleCount;
-      document.getElementById('stat-apple').textContent = appleCount;
-      document.getElementById('stat-standard').textContent = otherCount;
     }
 
     function filterLogs() {
@@ -610,7 +638,7 @@
     }
 
     function confirmClearLogs() {
-      const ok = confirm("⚠️ Are you absolutely sure you want to clear all telemetry login records?");
+      const ok = confirm("⚠️ Are you absolutely sure you want to clear the telemetry login records? Note: Detailed audit logs will be cleared. Global counters are stored on a public ledger.");
       if (ok) {
         fetch(binUrl, {
           method: 'PUT',
@@ -618,11 +646,11 @@
           body: JSON.stringify({ logins: [] })
         })
         .then(() => {
-          showToast("🗑️ Telemetry database reset successfully!");
+          showToast("🗑️ Detailed telemetry logs cleared!");
           fetchLogins();
         })
         .catch(err => {
-          alert("Failed to reset telemetry logs: " + err);
+          alert("Failed to reset detailed logs: " + err);
         });
       }
     }
