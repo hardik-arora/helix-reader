@@ -3469,9 +3469,13 @@
           <label for="oauth-custom-name" id="oauth-custom-name-label">Display Name</label>
           <input type="text" id="oauth-custom-name" placeholder="E.g. Your Name" required />
         </div>
-        <div class="auth-input-group" style="margin-bottom:1.2rem">
+        <div class="auth-input-group" style="margin-bottom:0.8rem">
           <label for="oauth-custom-id" id="oauth-custom-id-label">Email Address</label>
           <input type="text" id="oauth-custom-id" placeholder="E.g. email@example.com" required />
+        </div>
+        <div class="auth-input-group" style="margin-bottom:1.2rem">
+          <label for="oauth-custom-pin">Account Passcode / PIN</label>
+          <input type="password" id="oauth-custom-pin" placeholder="••••" required />
         </div>
         <button type="submit" class="auth-btn-submit" style="margin-top:0">Continue</button>
       </form>
@@ -4190,8 +4194,14 @@ function openOAuthModal(provider) {
   if (nameLabel) nameLabel.textContent = `Display Name`;
   if (idLabel) idLabel.textContent = provider === 'apple' ? 'Apple ID / Email' : (provider === 'github' ? 'GitHub Username' : 'Email Address');
   
+  const pinLabel = document.querySelector('label[for="oauth-custom-pin"]');
+  if (pinLabel) {
+    pinLabel.textContent = isRegister ? 'Choose Account Passcode / PIN' : 'Enter Account Passcode / PIN';
+  }
+  
   document.getElementById('oauth-custom-name').value = '';
   document.getElementById('oauth-custom-id').value = '';
+  document.getElementById('oauth-custom-pin').value = '';
   
   document.getElementById('oauth-step-select').style.display = 'block';
   document.getElementById('oauth-step-progress').style.display = 'none';
@@ -4220,10 +4230,17 @@ function handleCustomOAuthSubmit(event) {
   event.preventDefault();
   const name = document.getElementById('oauth-custom-name').value.trim();
   const email = document.getElementById('oauth-custom-id').value.trim();
-  triggerOAuthProgress(name, email);
+  const pin = document.getElementById('oauth-custom-pin').value;
+  
+  if (pin.length < 4) {
+    showNotification('❌ Passcode must be at least 4 characters!');
+    return;
+  }
+  
+  triggerOAuthProgress(name, email, pin);
 }
 
-function triggerOAuthProgress(name, email) {
+function triggerOAuthProgress(name, email, pin) {
   document.getElementById('oauth-step-select').style.display = 'none';
   document.getElementById('oauth-step-progress').style.display = 'block';
   
@@ -4240,8 +4257,15 @@ function triggerOAuthProgress(name, email) {
     
     let u = userDb.findUser(username);
     if (!u) {
-      userDb.registerUser(username, '');
+      userDb.registerUser(username, pin);
       u = userDb.findUser(username);
+    } else {
+      // Validate PIN
+      if (u.password && u.password !== pin) {
+        closeOAuthModal();
+        showNotification('❌ Incorrect passcode for this profile!');
+        return;
+      }
     }
     
     currentUser = u.username;
@@ -7246,4 +7270,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-07-06T11:22:00Z -->
+<!-- Build Force Timestamp: 2026-07-06T15:14:00Z -->
