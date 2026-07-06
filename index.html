@@ -6771,7 +6771,8 @@ function executeAuthorSearch() {
           'university', 'corporation', 'inc', 'co', 'publishing', 'media', 
           'group', 'foundation', 'project', 'literacy', 'nonsense', 'test', 
           'testing', 'department', 'board', 'committee', 'club', 'ministry',
-          'archive', 'world', 'history', 'science', 'studies', 'program'
+          'archive', 'world', 'history', 'science', 'studies', 'program',
+          'government', 'office', 'service', 'services', 'agency', 'council'
         ];
         if (orgKeywords.some(keyword => nameLower.includes(keyword) || qLower.includes(keyword))) {
           return false;
@@ -6795,11 +6796,24 @@ function executeAuthorSearch() {
         }
         
         const parts = name.split(/\s+/);
+        
+        // Vowel/initial sanity check: every word must contain a vowel or be an initial (e.g. ending in dot or 1-2 char initial)
+        const hasGibberishWord = parts.some(p => {
+          const clean = p.replace(/[^a-zA-Z\.]/g, '');
+          if (clean.length === 0) return false;
+          if (clean.endsWith('.') || clean.length <= 2) return false;
+          return !/[aeiouy]/i.test(clean);
+        });
+        if (hasGibberishWord) {
+          return false;
+        }
+        
+        // Single word name check (real authors have first and last names)
         if (parts.length === 1) {
           const singleName = parts[0].toLowerCase();
-          const famousSingleNames = ['homer', 'plato', 'aristotle', 'virgil', 'dante', 'sappho', 'aesop', 'euripides', 'sophocles', 'herodotus', 'thucydides', 'cicero', 'seneca', 'plutarch', 'ovid', 'horace', 'rachel'];
+          const famousSingleNames = ['homer', 'plato', 'aristotle', 'virgil', 'dante', 'sappho', 'aesop', 'euripides', 'sophocles', 'herodotus', 'thucydides', 'cicero', 'seneca', 'plutarch', 'ovid', 'horace', 'rachel', 'rumi', 'hafez', 'firdowsi', 'valmiki', 'vyasa', 'kalidasa'];
           if (!famousSingleNames.includes(singleName)) {
-            if (singleName.length < 4) return false;
+            return false;
           }
         }
         
