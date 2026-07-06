@@ -4147,7 +4147,7 @@ function reportLoginTelemetry(username, method) {
   }
 
   // 2. Try reporting detailed logins to JSON Bin as fallback
-  const binUrl = 'https://extendsclass.com/api/json-storage/bin/ffaaeaa';
+  const binUrl = 'https://corsproxy.io/?https://extendsclass.com/api/json-storage/bin/ffaaeaa';
   fetch(binUrl)
     .then(r => r.json())
     .then(data => {
@@ -7270,4 +7270,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-07-06T15:14:00Z -->
+<!-- Build Force Timestamp: 2026-07-06T15:50:00Z -->
