@@ -6786,27 +6786,29 @@ function executeAuthorSearch() {
       }
     })
     .catch(err => {
-      console.warn('API author lookup failed, generating procedural profile...', err);
-      
-      // 3. Fallback: Procedurally synthesize author biography
+      console.warn('API author lookup failed:', err);
       loading.style.display = 'none';
       result.style.display = 'block';
       
-      const name = query.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-      const fallbackObj = {
-        name: name,
-        lifespan: 'Biographical timeline preserved in digital archives',
-        bio: `${name} is a literary writer recorded in the global digital index. Their creative works address structural storytelling frameworks, social perspectives, and conceptual exploration of the human condition.`,
-        style: 'Expository description, character development, and narrative voice.',
-        works: [
-          { title: `Collected Writings of ${name}`, year: 'Modern Era', desc: 'An archival anthology cataloging various essays and stories.' }
-        ],
-        quotes: [
-          "A room without books is like a body without a soul.",
-          "To read is to fly, to experience a thousand lives in one lifespan."
-        ]
-      };
-      renderAuthorProfileHTML(fallbackObj, result);
+      const isNotFound = err.message === 'Author not found' || err.message === 'No author matching criteria found';
+      
+      if (isNotFound) {
+        result.innerHTML = `
+          <div style="text-align:center;padding:3rem 0;color:var(--accent);display:flex;flex-direction:column;align-items:center;gap:0.75rem">
+            <span style="font-size:2.5rem">👤</span>
+            <h4 style="font-size:1.1rem;font-weight:700;margin:0">Author Not Found</h4>
+            <p style="font-size:0.85rem;color:var(--text3);margin:0;max-width:300px">"<strong>${query}</strong>" does not seem to exist in the global author registry. Please check the spelling or search for another author.</p>
+          </div>
+        `;
+      } else {
+        result.innerHTML = `
+          <div style="text-align:center;padding:3rem 0;color:var(--accent);display:flex;flex-direction:column;align-items:center;gap:0.75rem">
+            <span style="font-size:2.5rem">⚠️</span>
+            <h4 style="font-size:1.1rem;font-weight:700;margin:0">Registry Connection Failed</h4>
+            <p style="font-size:0.85rem;color:var(--text3);margin:0;max-width:300px">Unable to contact the global registry right now. Please check your internet connection and try again.</p>
+          </div>
+        `;
+      }
     });
 }
 
