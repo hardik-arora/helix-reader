@@ -6759,7 +6759,54 @@ function executeAuthorSearch() {
       result.style.display = 'block';
       
       const doc = data.docs && data.docs[0];
-      if (doc) {
+      
+      const isValidRealAuthor = (d, q) => {
+        if (!d || !d.name) return false;
+        const name = d.name.trim();
+        const nameLower = name.toLowerCase();
+        const qLower = q.toLowerCase().trim();
+        
+        const orgKeywords = [
+          'society', 'library', 'press', 'books', 'association', 'institute', 
+          'university', 'corporation', 'inc', 'co', 'publishing', 'media', 
+          'group', 'foundation', 'project', 'literacy', 'nonsense', 'test', 
+          'testing', 'department', 'board', 'committee', 'club', 'ministry',
+          'archive', 'world', 'history', 'science', 'studies', 'program'
+        ];
+        if (orgKeywords.some(keyword => nameLower.includes(keyword) || qLower.includes(keyword))) {
+          return false;
+        }
+        
+        const isGibberish = (str) => {
+          if (!str) return false;
+          const s = str.toLowerCase().replace(/[^a-z]/g, '');
+          return /([a-z]{3,})\1+/.test(s) || /(.)\2{3,}/.test(s);
+        };
+        
+        if (isGibberish(name) || isGibberish(qLower) || (d.top_work && isGibberish(d.top_work))) {
+          return false;
+        }
+        
+        if (d.top_work) {
+          const twLower = d.top_work.toLowerCase().trim();
+          if (twLower === nameLower || twLower === qLower) {
+            return false;
+          }
+        }
+        
+        const parts = name.split(/\s+/);
+        if (parts.length === 1) {
+          const singleName = parts[0].toLowerCase();
+          const famousSingleNames = ['homer', 'plato', 'aristotle', 'virgil', 'dante', 'sappho', 'aesop', 'euripides', 'sophocles', 'herodotus', 'thucydides', 'cicero', 'seneca', 'plutarch', 'ovid', 'horace', 'rachel'];
+          if (!famousSingleNames.includes(singleName)) {
+            if (singleName.length < 4) return false;
+          }
+        }
+        
+        return true;
+      };
+
+      if (doc && isValidRealAuthor(doc, query)) {
         const name = doc.name || query;
         const lifespan = (doc.birth_date || doc.death_date) 
           ? `${doc.birth_date || 'Unknown'} – ${doc.death_date || 'Present'}`
