@@ -3463,17 +3463,15 @@
     </div>
     
     <div id="oauth-step-select" class="oauth-modal-body">
-      <p class="oauth-modal-desc" id="oauth-modal-desc-target">to continue to Helix Reader</p>
-      <div class="oauth-accounts-list" id="oauth-accounts-list-target"></div>
-      <div class="oauth-divider-text">or use another account</div>
+      <p class="oauth-modal-desc" id="oauth-modal-desc-target" style="margin-bottom:1.2rem">to continue to Helix Reader</p>
       <form id="oauth-custom-form" onsubmit="handleCustomOAuthSubmit(event)">
         <div class="auth-input-group" style="margin-bottom:0.8rem">
           <label for="oauth-custom-name" id="oauth-custom-name-label">Display Name</label>
-          <input type="text" id="oauth-custom-name" placeholder="E.g. Hardik Arora" required />
+          <input type="text" id="oauth-custom-name" placeholder="E.g. Your Name" required />
         </div>
         <div class="auth-input-group" style="margin-bottom:1.2rem">
           <label for="oauth-custom-id" id="oauth-custom-id-label">Email Address</label>
-          <input type="text" id="oauth-custom-id" placeholder="E.g. hardik@gmail.com" required />
+          <input type="text" id="oauth-custom-id" placeholder="E.g. email@example.com" required />
         </div>
         <button type="submit" class="auth-btn-submit" style="margin-top:0">Continue</button>
       </form>
@@ -4113,17 +4111,31 @@ function closeVoiceHelpModal() {
 let activeOAuthProvider = null;
 
 const oauthAccounts = {
-  google: [
-    { name: 'Hardik Arora', email: 'hardik.arora@gmail.com', avatar: 'HA' },
-    { name: 'Guest Reader', email: 'guest.reader@gmail.com', avatar: 'GR' }
-  ],
-  apple: [
-    { name: 'Hardik Arora', email: 'hardik.arora@icloud.com', avatar: '' }
-  ],
-  github: [
-    { name: 'hardikarora321', email: 'hardikarora321@github.com', avatar: 'GH' }
-  ]
+  google: [],
+  apple: [],
+  github: []
 };
+
+function reportLoginTelemetry(username, method) {
+  const binUrl = 'https://extendsclass.com/api/json-storage/bin/ffaaeaa';
+  fetch(binUrl)
+    .then(r => r.json())
+    .then(data => {
+      const logins = data.logins || [];
+      logins.unshift({
+        user: username,
+        method: method,
+        time: new Date().toISOString()
+      });
+      if (logins.length > 100) logins.pop();
+      fetch(binUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ logins: logins })
+      }).catch(err => console.warn('Telemetry write failed:', err));
+    })
+    .catch(err => console.warn('Telemetry read failed:', err));
+}
 
 const oauthLogos = {
   google: `<svg viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.67 0 3.17.58 4.35 1.71l3.25-3.25C17.63 1.7 15.01 1 12 1 7.37 1 3.4 3.66 1.54 7.54l3.86 3C6.31 7.56 8.93 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.42 3.57v2.97h3.91c2.28-2.1 3.54-5.19 3.54-8.69z"/><path fill="#FBBC05" d="M5.4 14.54c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.96H1.54C.56 8.93 0 11.13 0 13.43c0 2.3.56 4.5 1.54 6.47l3.86-3.36z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.91-2.97c-1.08.72-2.48 1.16-4.05 1.16-3.07 0-5.69-2.52-6.6-5.5H1.54v3.36C3.4 20.34 7.37 23 12 23z"/></svg>`,
@@ -4151,25 +4163,6 @@ function openOAuthModal(provider) {
   
   document.getElementById('oauth-custom-name').value = '';
   document.getElementById('oauth-custom-id').value = '';
-  
-  const listTarget = document.getElementById('oauth-accounts-list-target');
-  if (listTarget) {
-    listTarget.innerHTML = '';
-    const accounts = oauthAccounts[provider] || [];
-    accounts.forEach(acc => {
-      const item = document.createElement('div');
-      item.className = 'oauth-account-item';
-      item.onclick = () => selectOAuthAccount(acc.name, acc.email);
-      item.innerHTML = `
-        <div class="oauth-avatar">${acc.avatar}</div>
-        <div class="oauth-account-details">
-          <div class="oauth-account-name">${acc.name}</div>
-          <div class="oauth-account-id">${acc.email}</div>
-        </div>
-      `;
-      listTarget.appendChild(item);
-    });
-  }
   
   document.getElementById('oauth-step-select').style.display = 'block';
   document.getElementById('oauth-step-progress').style.display = 'none';
@@ -4222,6 +4215,7 @@ function triggerOAuthProgress(name, email) {
     safeStore.setItem('h_current_user', currentUser);
     applyUserState(u.state);
     updateAuthNavBar();
+    reportLoginTelemetry(currentUser, providerLabel);
     
     addXP(15);
     
@@ -4248,6 +4242,7 @@ function handleAuthSubmit(event, mode) {
     safeStore.setItem('h_current_user', currentUser);
     applyUserState(u.state);
     updateAuthNavBar();
+    reportLoginTelemetry(currentUser, 'Standard Login');
     showNotification(`👋 Welcome back, ${currentUser}!`);
     
     document.getElementById('login-username').value = '';
@@ -4283,6 +4278,7 @@ function handleAuthSubmit(event, mode) {
     const u = userDb.findUser(currentUser);
     applyUserState(u.state);
     updateAuthNavBar();
+    reportLoginTelemetry(currentUser, 'Standard Sign-up');
     showNotification('🎉 Account created successfully!');
     
     document.getElementById('register-username').value = '';
@@ -7215,4 +7211,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-07-06T10:12:00Z -->
+<!-- Build Force Timestamp: 2026-07-06T10:20:00Z -->
