@@ -2480,6 +2480,9 @@
       to { transform: rotate(360deg); }
     }
   </style>
+  <!-- Firebase SDK (v9 compat version for direct script access on single pages) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
 <body>
 
@@ -4049,6 +4052,33 @@ const userDb = {
   }
 };
 
+// ════════════════════════════════════════
+// FIREBASE CONFIGURATION & INITIALIZATION
+// ════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+const isFirebaseEnabled = () => {
+  return FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.startsWith("YOUR_");
+};
+
+let authInstance = null;
+if (isFirebaseEnabled()) {
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    authInstance = firebase.auth();
+    console.log("🔥 Firebase initialized successfully!");
+  } catch (error) {
+    console.error("❌ Failed to initialize Firebase:", error);
+  }
+}
+
 let currentUser = safeStore.getItem('h_current_user') || null;
 
 // Guest default fallback states
@@ -4237,6 +4267,13 @@ window.addEventListener('click', () => {
 });
 
 function logoutUser() {
+  if (isFirebaseEnabled()) {
+    try {
+      authInstance.signOut();
+    } catch (e) {
+      console.warn("Firebase signout failed", e);
+    }
+  }
   currentUser = null;
   safeStore.setItem('h_current_user', '');
   
@@ -4449,6 +4486,47 @@ function handleAuthSubmit(event, mode) {
     const userVal = document.getElementById('login-username').value.trim();
     const passVal = document.getElementById('login-password').value;
     
+    if (isFirebaseEnabled()) {
+      let loginEmail = userVal;
+      if (!loginEmail.includes('@')) {
+        const matchedUser = userDb.findUser(loginEmail);
+        if (matchedUser && matchedUser.email) {
+          loginEmail = matchedUser.email;
+        } else {
+          showNotification('❌ Username not found locally! For Firebase, please use your registered email address.');
+          return;
+        }
+      }
+      
+      authInstance.signInWithEmailAndPassword(loginEmail, passVal)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          const username = user.displayName || user.email.split('@')[0];
+          
+          currentUser = username;
+          safeStore.setItem('h_current_user', currentUser);
+          
+          // Verify/setup local state container
+          let u = userDb.findUser(currentUser);
+          if (!u) {
+            userDb.registerUser(currentUser, passVal, user.email);
+            u = userDb.findUser(currentUser);
+          }
+          applyUserState(u.state);
+          updateAuthNavBar();
+          reportLoginTelemetry(currentUser, 'Firebase Login');
+          showNotification(`👋 Welcome back, ${currentUser}!`);
+          
+          document.getElementById('login-username').value = '';
+          document.getElementById('login-password').value = '';
+          navigate('home');
+        })
+        .catch((error) => {
+          showNotification(`❌ Firebase Error: ${error.message}`);
+        });
+      return;
+    }
+    
     let u = userDb.findUser(userVal);
     if (!u) {
       u = userDb.findUserByEmail(userVal);
@@ -4490,6 +4568,35 @@ function handleAuthSubmit(event, mode) {
     }
     if (passVal !== confirmVal) {
       showNotification('❌ Passwords do not match!');
+      return;
+    }
+    
+    if (isFirebaseEnabled()) {
+      authInstance.createUserWithEmailAndPassword(emailVal, passVal)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          user.updateProfile({ displayName: userVal })
+            .then(() => {
+              userDb.registerUser(userVal, passVal, emailVal);
+              
+              currentUser = userVal;
+              safeStore.setItem('h_current_user', currentUser);
+              const u = userDb.findUser(currentUser);
+              applyUserState(u.state);
+              updateAuthNavBar();
+              reportLoginTelemetry(currentUser, 'Firebase Sign-up');
+              showNotification('🎉 Firebase account created successfully!');
+              
+              document.getElementById('register-username').value = '';
+              document.getElementById('register-email').value = '';
+              document.getElementById('register-password').value = '';
+              document.getElementById('register-confirm-password').value = '';
+              navigate('home');
+            });
+        })
+        .catch((error) => {
+          showNotification(`❌ Firebase Error: ${error.message}`);
+        });
       return;
     }
     
@@ -7484,4 +7591,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-07-08T14:48:00Z -->
+<!-- Build Force Timestamp: 2026-07-08T15:00:00Z -->
