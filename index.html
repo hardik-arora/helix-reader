@@ -2677,8 +2677,8 @@
       <!-- Sign In Form -->
       <form id="auth-login-form" class="auth-form-wrap" onsubmit="handleAuthSubmit(event, 'login')">
         <div class="auth-input-group">
-          <label for="login-username">Username</label>
-          <input type="text" id="login-username" placeholder="Enter your username" required autocomplete="username" />
+          <label for="login-username">Username or Email</label>
+          <input type="text" id="login-username" placeholder="Enter your username or email" required autocomplete="username" />
         </div>
         <div class="auth-input-group">
           <label for="login-password">Password</label>
@@ -2695,6 +2695,10 @@
         <div class="auth-input-group">
           <label for="register-username">Username</label>
           <input type="text" id="register-username" placeholder="Choose a username" required autocomplete="username" />
+        </div>
+        <div class="auth-input-group">
+          <label for="register-email">Email Address</label>
+          <input type="email" id="register-email" placeholder="Enter your email address" required autocomplete="email" />
         </div>
         <div class="auth-input-group">
           <label for="register-password">Password</label>
@@ -3861,12 +3865,19 @@ const userDb = {
     const users = this.getUsers();
     return users.find(u => u.username.toLowerCase() === username.toLowerCase());
   },
-  registerUser(username, password) {
+  findUserByEmail(email) {
+    if (!email) return null;
+    const users = this.getUsers();
+    return users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase().trim());
+  },
+  registerUser(username, password, email) {
     if (this.findUser(username)) return { success: false, message: 'Username already exists' };
+    if (email && this.findUserByEmail(email)) return { success: false, message: 'Email address already in use' };
     const users = this.getUsers();
     const newUser = {
       username,
       password,
+      email: email ? email.toLowerCase().trim() : '',
       state: {
         theme: 'old-money',
         favorites: [],
@@ -4262,7 +4273,20 @@ function triggerOAuthProgress(name, email, pin) {
     
     let u = userDb.findUser(username);
     if (!u) {
-      userDb.registerUser(username, pin);
+      if (email) {
+        const existingEmailUser = userDb.findUserByEmail(email);
+        if (existingEmailUser) {
+          closeOAuthModal();
+          showNotification(`❌ Email already registered under profile: ${existingEmailUser.username}`);
+          return;
+        }
+      }
+      const reg = userDb.registerUser(username, pin, email);
+      if (!reg.success) {
+        closeOAuthModal();
+        showNotification(`❌ ${reg.message}`);
+        return;
+      }
       u = userDb.findUser(username);
     } else {
       // Validate PIN
@@ -4296,9 +4320,13 @@ function handleAuthSubmit(event, mode) {
     const userVal = document.getElementById('login-username').value.trim();
     const passVal = document.getElementById('login-password').value;
     
-    const u = userDb.findUser(userVal);
+    let u = userDb.findUser(userVal);
+    if (!u) {
+      u = userDb.findUserByEmail(userVal);
+    }
+    
     if (!u || u.password !== passVal) {
-      showNotification('❌ Invalid username or password!');
+      showNotification('❌ Invalid username, email, or password!');
       return;
     }
     
@@ -4315,11 +4343,16 @@ function handleAuthSubmit(event, mode) {
     navigate('home');
   } else {
     const userVal = document.getElementById('register-username').value.trim();
+    const emailVal = document.getElementById('register-email').value.trim();
     const passVal = document.getElementById('register-password').value;
     const confirmVal = document.getElementById('register-confirm-password').value;
     
     if (userVal.length < 3) {
       showNotification('❌ Username must be at least 3 characters!');
+      return;
+    }
+    if (!emailVal || !emailVal.includes('@')) {
+      showNotification('❌ Please enter a valid email address!');
       return;
     }
     if (passVal.length < 4) {
@@ -4331,7 +4364,7 @@ function handleAuthSubmit(event, mode) {
       return;
     }
     
-    const reg = userDb.registerUser(userVal, passVal);
+    const reg = userDb.registerUser(userVal, passVal, emailVal);
     if (!reg.success) {
       showNotification(`❌ ${reg.message}`);
       return;
@@ -4346,6 +4379,7 @@ function handleAuthSubmit(event, mode) {
     showNotification('🎉 Account created successfully!');
     
     document.getElementById('register-username').value = '';
+    document.getElementById('register-email').value = '';
     document.getElementById('register-password').value = '';
     document.getElementById('register-confirm-password').value = '';
     
@@ -7281,4 +7315,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-07-08T10:50:00Z -->
+<!-- Build Force Timestamp: 2026-07-08T14:25:00Z -->
