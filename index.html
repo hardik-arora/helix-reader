@@ -2484,6 +2484,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -4072,11 +4073,13 @@ const isFirebaseEnabled = () => {
 
 let authInstance = null;
 let analyticsInstance = null;
+let dbInstance = null;
 if (isFirebaseEnabled()) {
   try {
     firebase.initializeApp(FIREBASE_CONFIG);
     authInstance = firebase.auth();
     analyticsInstance = firebase.analytics();
+    dbInstance = firebase.database();
     console.log("🔥 Firebase initialized successfully!");
   } catch (error) {
     console.error("❌ Failed to initialize Firebase:", error);
@@ -4310,6 +4313,22 @@ const oauthAccounts = {
   github: []
 };
 
+function syncUserProfileToFirebase(username, email) {
+  if (dbInstance) {
+    try {
+      dbInstance.ref('users/' + username.replace(/[.#$[\]]/g, '_')).set({
+        username: username,
+        email: email || '',
+        registeredAt: new Date().toISOString()
+      }).catch(err => {
+        console.warn("Firebase Realtime DB sync failed:", err);
+      });
+    } catch(e) {
+      console.warn("Firebase Realtime DB sync failed:", e);
+    }
+  }
+}
+
 function reportLoginTelemetry(username, method) {
   // 1. Increment CounterAPI counters (CORS safe, highly responsive, no-cache forced)
   const fetchOpts = { cache: 'no-store' };
@@ -4351,6 +4370,21 @@ function reportLoginTelemetry(username, method) {
       }).catch(err => console.warn('Telemetry write failed:', err));
     })
     .catch(err => console.warn('Telemetry read failed:', err));
+
+  // 3. Log event to Firebase Realtime Database
+  if (dbInstance) {
+    try {
+      dbInstance.ref('logins').push({
+        username: username,
+        method: method,
+        time: new Date().toISOString()
+      }).catch(err => {
+        console.warn("Firebase Realtime DB log push failed:", err);
+      });
+    } catch(e) {
+      console.warn("Firebase Realtime DB log push failed:", e);
+    }
+  }
 }
 
 const oauthLogos = {
@@ -4473,6 +4507,7 @@ function triggerOAuthProgress(name, email, pin) {
     updateAuthNavBar();
     
     const telemetryMethod = isRegister ? `${providerLabel} Sign-up` : providerLabel;
+    syncUserProfileToFirebase(currentUser, u.email);
     reportLoginTelemetry(currentUser, telemetryMethod);
     
     addXP(15);
@@ -4553,6 +4588,7 @@ function handleAuthSubmit(event, mode) {
           }
           applyUserState(u.state);
           updateAuthNavBar();
+          syncUserProfileToFirebase(username, user.email);
           reportLoginTelemetry(currentUser, 'Firebase Login');
           showNotification(`👋 Welcome back, ${currentUser}!`);
           
@@ -4640,6 +4676,7 @@ function handleAuthSubmit(event, mode) {
               const u = userDb.findUser(currentUser);
               applyUserState(u.state);
               updateAuthNavBar();
+              syncUserProfileToFirebase(userVal, emailVal);
               reportLoginTelemetry(currentUser, 'Firebase Sign-up');
               showNotification('🎉 Firebase account created successfully!');
               
@@ -7647,4 +7684,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-07-08T15:25:00Z -->
+<!-- Build Force Timestamp: 2026-07-08T15:37:00Z -->
