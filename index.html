@@ -2484,7 +2484,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -4073,14 +4073,14 @@ const isFirebaseEnabled = () => {
 
 let authInstance = null;
 let analyticsInstance = null;
-let dbInstance = null;
+let firestoreInstance = null;
 if (isFirebaseEnabled()) {
   try {
     firebase.initializeApp(FIREBASE_CONFIG);
     authInstance = firebase.auth();
     analyticsInstance = firebase.analytics();
-    dbInstance = firebase.database();
-    console.log("🔥 Firebase initialized successfully!");
+    firestoreInstance = firebase.firestore();
+    console.log("🔥 Firebase Firestore initialized successfully!");
   } catch (error) {
     console.error("❌ Failed to initialize Firebase:", error);
   }
@@ -4314,17 +4314,17 @@ const oauthAccounts = {
 };
 
 function syncUserProfileToFirebase(username, email) {
-  if (dbInstance) {
+  if (firestoreInstance) {
     try {
-      dbInstance.ref('users/' + username.replace(/[.#$[\]]/g, '_')).set({
+      firestoreInstance.collection('users').doc(username.replace(/\//g, '_')).set({
         username: username,
         email: email || '',
         registeredAt: new Date().toISOString()
       }).catch(err => {
-        console.warn("Firebase Realtime DB sync failed:", err);
+        console.warn("Firestore sync failed:", err);
       });
     } catch(e) {
-      console.warn("Firebase Realtime DB sync failed:", e);
+      console.warn("Firestore sync failed:", e);
     }
   }
 }
@@ -4371,18 +4371,18 @@ function reportLoginTelemetry(username, method) {
     })
     .catch(err => console.warn('Telemetry read failed:', err));
 
-  // 3. Log event to Firebase Realtime Database
-  if (dbInstance) {
+  // 3. Log event to Firebase Firestore Database
+  if (firestoreInstance) {
     try {
-      dbInstance.ref('logins').push({
+      firestoreInstance.collection('logins').add({
         username: username,
         method: method,
         time: new Date().toISOString()
       }).catch(err => {
-        console.warn("Firebase Realtime DB log push failed:", err);
+        console.warn("Firestore log add failed:", err);
       });
     } catch(e) {
-      console.warn("Firebase Realtime DB log push failed:", e);
+      console.warn("Firestore log add failed:", e);
     }
   }
 }
@@ -7684,4 +7684,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-07-08T15:37:00Z -->
+<!-- Build Force Timestamp: 2026-07-08T15:53:00Z -->
