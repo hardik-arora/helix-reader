@@ -2024,6 +2024,106 @@
     }
     .auth-guest-btn:hover { color: var(--teal); transform: translateX(2px); }
 
+    /* Immersive Split-Screen Layout Styles */
+    .auth-brand-side {
+      flex: 1.2;
+      background: var(--bg2);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 4rem;
+      position: relative;
+      overflow: hidden;
+      border-right: 1px solid var(--border);
+      box-sizing: border-box;
+    }
+    @media (max-width: 900px) {
+      .auth-brand-side { display: none; }
+    }
+    .auth-brand-content {
+      position: relative;
+      z-index: 5;
+      max-width: 520px;
+    }
+    .auth-brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-family: var(--heading-font);
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 2.5rem;
+    }
+    .auth-brand-headline {
+      font-family: var(--heading-font);
+      font-size: 2.8rem;
+      font-weight: 900;
+      line-height: 1.2;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--teal) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1.5rem;
+      letter-spacing: -1px;
+    }
+    .auth-brand-tagline {
+      font-size: 1.05rem;
+      color: var(--text2);
+      line-height: 1.6;
+      margin-bottom: 3rem;
+    }
+    .auth-quote-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .auth-quote-card p {
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--text);
+      line-height: 1.5;
+      margin-bottom: 0.5rem;
+      transition: opacity 0.4s ease;
+    }
+    .auth-quote-card span {
+      font-size: 0.8rem;
+      color: var(--accent);
+      font-weight: 700;
+      transition: opacity 0.4s ease;
+    }
+    .auth-form-side {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      background: var(--bg);
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+    .auth-mobile-logo {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 900px) {
+      .auth-mobile-logo { display: flex; }
+      .auth-form-side { padding: 1.5rem; }
+    }
+    .auth-form-title {
+      font-family: var(--heading-font);
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+      letter-spacing: -0.5px;
+    }
+
     /* Nav bar Profile button and dropdown */
     .profile-dropdown-wrap { position: relative; flex-shrink: 0; }
     #nav-auth-section { flex-shrink: 0; }
@@ -2657,16 +2757,41 @@
 <!-- ════════════════════════════════════════
      AUTHENTICATION PAGE (LOGIN / SIGN UP)
      ════════════════════════════════════════ -->
-<div id="auth-page" class="page page-wrap">
-  <div class="auth-bg">
-    <!-- Floating background aesthetic elements -->
-    <div style="position:absolute; top:-20%; left:-10%; width:400px; height:400px; background:radial-gradient(circle, var(--accent) 0%, transparent 70%); opacity:0.12; filter:blur(60px); pointer-events:none;"></div>
-    <div style="position:absolute; bottom:-10%; right:-5%; width:500px; height:500px; background:radial-gradient(circle, var(--teal) 0%, transparent 70%); opacity:0.12; filter:blur(60px); pointer-events:none;"></div>
+<div id="auth-page" class="page page-wrap" style="padding: 0; min-height: 100vh; display: flex;">
+  <!-- Left Column: Immersive Brand Spotlight (Desktop only) -->
+  <div class="auth-brand-side">
+    <div style="position:absolute; inset:0; background:radial-gradient(circle at 20% 30%, var(--accent-glow) 0%, transparent 60%); opacity:0.3; pointer-events:none;"></div>
+    <div class="auth-brand-content">
+      <div class="auth-brand-logo">
+        <svg viewBox="0 0 24 24" width="44" height="44" fill="var(--accent)"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/><path d="M22 9L12 3 2 9l10 5.45z"/><path d="M12 21.5c-3.1 0-5.7-1.8-7-4.5l-1.7.9c1.6 3.4 5 5.6 8.7 5.6s7.1-2.2 8.7-5.6l-1.7-.9c-1.3 2.7-3.9 4.5-7 4.5z"/></svg>
+        <span>Helix Reader</span>
+      </div>
+      <h1 class="auth-brand-headline">Immerse Yourself in World Classics</h1>
+      <p class="auth-brand-tagline">Access thousands of literary masterpieces, track your reading achievements, and explore interactive AI insights on a platform tailored for true book lovers.</p>
+      
+      <!-- Quote Card Component -->
+      <div class="auth-quote-card">
+        <p id="auth-quote-text">"A room without books is like a body without a soul."</p>
+        <span id="auth-quote-author">— Marcus Tullius Cicero</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Login Card -->
+  <div class="auth-form-side">
+    <!-- Floating background elements -->
+    <div style="position:absolute; top:-20%; left:-10%; width:400px; height:400px; background:radial-gradient(circle, var(--accent) 0%, transparent 70%); opacity:0.08; filter:blur(60px); pointer-events:none;"></div>
+    <div style="position:absolute; bottom:-10%; right:-5%; width:500px; height:500px; background:radial-gradient(circle, var(--teal) 0%, transparent 70%); opacity:0.08; filter:blur(60px); pointer-events:none;"></div>
 
     <div class="auth-card">
-      <div>
-        <h1 class="auth-title">Welcome to Helix</h1>
-        <p class="auth-subtitle">Immerse yourself in world classics</p>
+      <div style="text-align: center; margin-bottom: 0.5rem;">
+        <!-- Mobile Logo (shows only when left column is hidden) -->
+        <div class="auth-mobile-logo">
+          <svg viewBox="0 0 24 24" width="36" height="36" fill="var(--accent)"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/><path d="M22 9L12 3 2 9l10 5.45z"/><path d="M12 21.5c-3.1 0-5.7-1.8-7-4.5l-1.7.9c1.6 3.4 5 5.6 8.7 5.6s7.1-2.2 8.7-5.6l-1.7-.9c-1.3 2.7-3.9 4.5-7 4.5z"/></svg>
+          <span style="font-weight: 800; font-family: var(--heading-font); font-size: 1.4rem; color: var(--text); margin-left: 0.4rem;">Helix</span>
+        </div>
+        <h2 class="auth-form-title">Welcome to Helix</h2>
+        <p class="auth-subtitle">Sign in or create your profile to start reading</p>
       </div>
 
       <div class="auth-tabs">
@@ -4403,6 +4528,18 @@ function navigate(pageId) {
   } else if (!currentUser && bypassed && pageId !== 'home' && pageId !== 'auth') {
     showNotification('🔒 Guest Access: Please sign in or create an account to unlock this page!');
     pageId = 'home';
+  }
+
+  // Hide/Show main nav bar based on auth page state
+  const mainNav = document.querySelector('nav');
+  if (mainNav) {
+    if (pageId === 'auth') {
+      mainNav.style.display = 'none';
+      document.body.style.paddingTop = '0';
+    } else {
+      mainNav.style.display = 'flex';
+      document.body.style.paddingTop = '';
+    }
   }
 
   // Hide all panels
@@ -7277,6 +7414,31 @@ function showNotification(msg) {
   }, 2500);
 }
 
+// Brand quotes array
+const AUTH_QUOTES = [
+  { text: "A room without books is like a body without a soul.", author: "— Marcus Tullius Cicero" },
+  { text: "Reading is to the mind what exercise is to the body.", author: "— Joseph Addison" },
+  { text: "I have always imagined that Paradise will be a kind of library.", author: "— Jorge Luis Borges" },
+  { text: "There is no friend as loyal as a book.", author: "— Ernest Hemingway" },
+  { text: "The only true wisdom is in knowing you know nothing.", author: "— Socrates" }
+];
+let currentQuoteIdx = 0;
+function rotateAuthQuote() {
+  const textEl = document.getElementById('auth-quote-text');
+  const authorEl = document.getElementById('auth-quote-author');
+  if (textEl && authorEl) {
+    currentQuoteIdx = (currentQuoteIdx + 1) % AUTH_QUOTES.length;
+    textEl.style.opacity = 0;
+    authorEl.style.opacity = 0;
+    setTimeout(() => {
+      textEl.textContent = `"${AUTH_QUOTES[currentQuoteIdx].text}"`;
+      authorEl.textContent = AUTH_QUOTES[currentQuoteIdx].author;
+      textEl.style.opacity = 1;
+      authorEl.style.opacity = 1;
+    }, 450);
+  }
+}
+
 // ════════════════════════════════════════
 // INITIALIZATION
 // ════════════════════════════════════════
@@ -7298,6 +7460,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Setup navbar profile display
   updateAuthNavBar();
   
+  // Start brand quote rotation
+  setInterval(rotateAuthQuote, 7000);
+  
   // Check if guest bypassed auth in current session
   let bypassed = false;
   try {
@@ -7315,4 +7480,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-07-08T14:25:00Z -->
+<!-- Build Force Timestamp: 2026-07-08T14:35:00Z -->
