@@ -4483,6 +4483,27 @@ function triggerOAuthProgress(name, email, pin) {
   }, 1500);
 }
 
+// Translate raw Firebase error codes into friendly user-facing messages
+function firebaseErrorMessage(code) {
+  const messages = {
+    'auth/invalid-email':            'Please enter a valid email address.',
+    'auth/user-disabled':            'This account has been disabled. Please contact support.',
+    'auth/user-not-found':           'No account found with this email. Please sign up first.',
+    'auth/wrong-password':           'Incorrect password. Please try again.',
+    'auth/invalid-credential':       'Incorrect email or password. Please try again.',
+    'auth/email-already-in-use':     'This email is already registered. Please sign in instead.',
+    'auth/weak-password':            'Password must be at least 6 characters.',
+    'auth/network-request-failed':   'Network error. Please check your connection and try again.',
+    'auth/too-many-requests':        'Too many failed attempts. Please wait a moment and try again.',
+    'auth/operation-not-allowed':    'Email/password sign-in is not enabled. Please contact support.',
+    'auth/popup-closed-by-user':     'Sign-in popup was closed. Please try again.',
+    'auth/cancelled-popup-request':  'Sign-in was cancelled. Please try again.',
+    'auth/unauthorized-domain':      'This domain is not authorized. Please contact support.',
+    'auth/requires-recent-login':    'Please log out and sign in again to continue.',
+  };
+  return messages[code] || 'Something went wrong. Please try again.';
+}
+
 function handleAuthSubmit(event, mode) {
   event.preventDefault();
   
@@ -4497,7 +4518,21 @@ function handleAuthSubmit(event, mode) {
         if (matchedUser && matchedUser.email) {
           loginEmail = matchedUser.email;
         } else {
-          showNotification('❌ Username not found locally! For Firebase, please use your registered email address.');
+          // No local email found — try local-only auth as fallback for pre-Firebase accounts
+          let localUser = userDb.findUser(userVal);
+          if (localUser && localUser.password === passVal) {
+            currentUser = localUser.username;
+            safeStore.setItem('h_current_user', currentUser);
+            applyUserState(localUser.state);
+            updateAuthNavBar();
+            reportLoginTelemetry(currentUser, 'Local Login (legacy)');
+            showNotification(`👋 Welcome back, ${currentUser}!`);
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+            navigate('home');
+          } else {
+            showNotification('❌ Account not found. Please sign up or use your email address to sign in.');
+          }
           return;
         }
       }
@@ -4526,7 +4561,24 @@ function handleAuthSubmit(event, mode) {
           navigate('home');
         })
         .catch((error) => {
-          showNotification(`❌ Firebase Error: ${error.message}`);
+          // If user doesn't exist in Firebase, try local fallback for pre-Firebase accounts
+          if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+            let localUser = userDb.findUserByEmail(loginEmail);
+            if (!localUser) localUser = userDb.findUser(userVal);
+            if (localUser && localUser.password === passVal) {
+              currentUser = localUser.username;
+              safeStore.setItem('h_current_user', currentUser);
+              applyUserState(localUser.state);
+              updateAuthNavBar();
+              reportLoginTelemetry(currentUser, 'Local Login (legacy)');
+              showNotification(`👋 Welcome back, ${currentUser}!`);
+              document.getElementById('login-username').value = '';
+              document.getElementById('login-password').value = '';
+              navigate('home');
+              return;
+            }
+          }
+          showNotification(`❌ ${firebaseErrorMessage(error.code)}`);
         });
       return;
     }
@@ -4599,7 +4651,7 @@ function handleAuthSubmit(event, mode) {
             });
         })
         .catch((error) => {
-          showNotification(`❌ Firebase Error: ${error.message}`);
+          showNotification(`❌ ${firebaseErrorMessage(error.code)}`);
         });
       return;
     }
@@ -7595,4 +7647,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-07-08T15:08:00Z -->
+<!-- Build Force Timestamp: 2026-07-08T15:25:00Z -->
