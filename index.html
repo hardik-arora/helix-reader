@@ -2483,6 +2483,7 @@
   <!-- Firebase SDK (v9 compat version for direct script access on single pages) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
 </head>
 <body>
 
@@ -4056,12 +4057,13 @@ const userDb = {
 // FIREBASE CONFIGURATION & INITIALIZATION
 // ════════════════════════════════════════
 const FIREBASE_CONFIG = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyB1ggjM7wu0-V2z8U2w5TeEJ-rSmz_NUXU",
+  authDomain: "helix-reader-8dba9.firebaseapp.com",
+  projectId: "helix-reader-8dba9",
+  storageBucket: "helix-reader-8dba9.firebasestorage.app",
+  messagingSenderId: "864408222399",
+  appId: "1:864408222399:web:dde4097dbdbccb99b7a40a",
+  measurementId: "G-89XP6N45MB"
 };
 
 const isFirebaseEnabled = () => {
@@ -4069,10 +4071,12 @@ const isFirebaseEnabled = () => {
 };
 
 let authInstance = null;
+let analyticsInstance = null;
 if (isFirebaseEnabled()) {
   try {
     firebase.initializeApp(FIREBASE_CONFIG);
     authInstance = firebase.auth();
+    analyticsInstance = firebase.analytics();
     console.log("🔥 Firebase initialized successfully!");
   } catch (error) {
     console.error("❌ Failed to initialize Firebase:", error);
@@ -7591,4 +7595,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-07-08T15:00:00Z -->
+<!-- Build Force Timestamp: 2026-07-08T15:08:00Z -->
