@@ -1847,6 +1847,10 @@
       width: 110px; height: 110px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
       font-family: var(--heading-font); font-size: 2.5rem; font-weight: 900; color: #fff;
       margin: 0 auto 1rem; box-shadow: var(--shadow); transition: transform var(--transition);
+      position: relative; overflow: hidden; border: 2px solid var(--border2); box-sizing: border-box;
+    }
+    .author-portrait img {
+      width: 100%; height: 100%; object-fit: cover;
     }
     .author-item:hover .author-portrait { transform: translateY(-4px) rotate(2deg); }
 
@@ -4848,12 +4852,12 @@ function renderBookCard(book) {
 // DISCOVER PAGE LOADING
 // ════════════════════════════════════════
 const FAMOUS_AUTHORS = [
-  {name:'Leo Tolstoy', initials:'LT', bio:'Russian titan known for epic realism and moral philosophical essays.', color:'#1e3a8a'},
-  {name:'Fyodor Dostoevsky', initials:'FD', bio:'Russian master of depth psychology and existential spiritual dialogues.', color:'#7c2d12'},
-  {name:'Marcus Aurelius', initials:'MA', bio:'Roman emperor and philosopher who penned timeless Stoic guidebooks.', color:'#14532d'},
-  {name:'Plato', initials:'PL', bio:'Classical Athenian thinker who founded Western academic metaphysics.', color:'#701a75'},
-  {name:'Stephen Hawking', initials:'SH', bio:'Theoretical physicist who solved black hole radiation and cosmology.', color:'#0369a1'},
-  {name:'Carl Sagan', initials:'CS', bio:'Astronomer and voice of science communication, exploring Cosmos.', color:'#a21caf'}
+  {name:'Leo Tolstoy', initials:'LT', bio:'Russian titan known for epic realism and moral philosophical essays.', color:'#1e3a8a', image:'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/L.N.Tolstoy_Prokudin-Gorsky.jpg/240px-L.N.Tolstoy_Prokudin-Gorsky.jpg'},
+  {name:'Fyodor Dostoevsky', initials:'FD', bio:'Russian master of depth psychology and existential spiritual dialogues.', color:'#7c2d12', image:'https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Dostoevsky_1872.jpg/240px-Dostoevsky_1872.jpg'},
+  {name:'Marcus Aurelius', initials:'MA', bio:'Roman emperor and philosopher who penned timeless Stoic guidebooks.', color:'#14532d', image:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Marcus_Aurelius_Glyptothek_Munich_330_restored.jpg/240px-Marcus_Aurelius_Glyptothek_Munich_330_restored.jpg'},
+  {name:'Plato', initials:'PL', bio:'Classical Athenian thinker who founded Western academic metaphysics.', color:'#701a75', image:'https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Plato_Silanion_Musei_Capitolini_MC1390.jpg/240px-Plato_Silanion_Musei_Capitolini_MC1390.jpg'},
+  {name:'Stephen Hawking', initials:'SH', bio:'Theoretical physicist who solved black hole radiation and cosmology.', color:'#0369a1', image:'https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Stephen_Hawking.StarChild.jpg/240px-Stephen_Hawking.StarChild.jpg'},
+  {name:'Carl Sagan', initials:'CS', bio:'Astronomer and voice of science communication, exploring Cosmos.', color:'#a21caf', image:'https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Carl_Sagan_Planetary_Society.jpg/240px-Carl_Sagan_Planetary_Society.jpg'}
 ];
 
 function renderDiscoverPage() {
@@ -4884,7 +4888,10 @@ function renderDiscoverPage() {
   const authorShelf = document.getElementById('shelf-authors');
   authorShelf.innerHTML = FAMOUS_AUTHORS.map(aut => `
     <div class="author-item" onclick="openAuthorProfile('${aut.name}')" style="width:180px;flex-shrink:0;text-align:center;cursor:pointer">
-      <div class="author-portrait" style="background:${aut.color}">${aut.initials}</div>
+      <div class="author-portrait" style="background:${aut.color}">
+        <img src="${aut.image}" alt="${aut.name}" onerror="this.style.display='none'" />
+        <span style="position:absolute;z-index:-1">${aut.initials}</span>
+      </div>
       <div style="font-weight:700;font-size:0.9rem">${aut.name}</div>
       <div style="font-size:0.75rem;color:var(--text3);margin-top:0.25rem">${aut.bio.substring(0, 50)}...</div>
     </div>
@@ -6193,7 +6200,10 @@ function openAuthorProfile(name) {
     <button onclick="navigate('home')" style="color:var(--text3);margin-bottom:1.5rem;font-size:0.85rem">← Back to Discover</button>
     <div class="detail-card">
       <div class="detail-cover-area" style="align-items:center">
-        <div class="author-portrait" style="background:${author.color};width:140px;height:140px;font-size:3.5rem">${author.initials}</div>
+        <div class="author-portrait" style="background:${author.color};width:140px;height:140px;font-size:3.5rem">
+          <img src="${author.image || ''}" alt="${author.name}" onerror="this.style.display='none'" />
+          <span style="position:absolute;z-index:-1">${author.initials}</span>
+        </div>
       </div>
       <div class="detail-info-area">
         <div>
@@ -7271,4 +7281,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-07-08T10:30:00Z -->
+<!-- Build Force Timestamp: 2026-07-08T10:35:00Z -->
