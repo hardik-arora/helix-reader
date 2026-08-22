@@ -5,6 +5,8 @@ A premium, feature-rich, Kindle-inspired digital library application providing a
 ## 🚀 Live & Local Links
 
 - 🌐 **Live Website Link:** **[https://hardik-arora.github.io/helix-reader/](https://hardik-arora.github.io/helix-reader/)**
+- 📄 **Presentation PDF Deck:** **[https://hardik-arora.github.io/helix-reader/helix_reader_presentation.pdf](https://hardik-arora.github.io/helix-reader/helix_reader_presentation.pdf)**
+- 📊 **Presentation PowerPoint (PPTX):** **[https://hardik-arora.github.io/helix-reader/helix_reader_presentation.pptx](https://hardik-arora.github.io/helix-reader/helix_reader_presentation.pptx)**
 - 🎨 **Canva Slide Presentation:** **[https://canva.link/l2a26shp0bnrokw](https://canva.link/l2a26shp0bnrokw)**
 
 ---
@@ -14,9 +16,8 @@ A premium, feature-rich, Kindle-inspired digital library application providing a
 This project combines a premium web interface with a self-contained Python NLP and database backend:
 
 *   **`index.html`**: The Kindle-style digital reader interface with dynamic theme engines, AI Summarizer, and Searchable Dictionary.
-*   **`presentation.html`**: High-end interactive web-based pitch slides with starry backgrounds and custom navigation logic.
-*   **`helix_reader_presentation.pdf`**: Cosmic Space-themed PDF slide deck layout for hackathon presentation rounds.
-*   **`helix_reader_presentation.pptx`**: PowerPoint slide deck file featuring editable vector elements and custom speaker notes.
+*   **[`helix_reader_presentation.pdf`](./helix_reader_presentation.pdf)**: Cosmic Space-themed PDF slide deck layout for hackathon presentation rounds.
+*   **[`helix_reader_presentation.pptx`](./helix_reader_presentation.pptx)**: PowerPoint slide deck file featuring editable vector elements and custom speaker notes.
 *   **`app.py`**: Streamlit-based backup dashboard interface.
 *   **`generate_data.py`**: Generates the initial CSV books catalog database.
 *   **`db_setup.py`**: Seeds `library.db` and configures SQL indexes.
