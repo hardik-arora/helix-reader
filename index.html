@@ -4596,15 +4596,23 @@ const oauthAccounts = {
 };
 
 function syncUserProfileToFirebase(username, email) {
-  if (firestoreInstance) {
+  if (firestoreInstance && email) {
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanUsername = username.replace(/\//g, '_');
     try {
-      firestoreInstance.collection('users').doc(username.replace(/\//g, '_')).set({
+      // 1. Save user profile document
+      firestoreInstance.collection('users').doc(cleanUsername).set({
         username: username,
-        email: email || '',
+        email: cleanEmail,
         registeredAt: new Date().toISOString()
-      }).catch(err => {
-        console.warn("Firestore sync failed:", err);
-      });
+      }).catch(err => console.warn("Firestore user sync failed:", err));
+      
+      // 2. Save direct email index document (instant zero-index lookup)
+      firestoreInstance.collection('emails').doc(cleanEmail).set({
+        username: username,
+        email: cleanEmail,
+        registeredAt: new Date().toISOString()
+      }).catch(err => console.warn("Firestore email sync failed:", err));
     } catch(e) {
       console.warn("Firestore sync failed:", e);
     }
@@ -4615,13 +4623,23 @@ async function checkEmailExistsInCloudOrLocal(email) {
   if (!email) return null;
   const cleanEmail = email.toLowerCase().trim();
   
-  // 1. Check local DB cache
+  // 1. Check local DB cache first
   const localMatch = userDb.findUserByEmail(cleanEmail);
   if (localMatch) return localMatch;
   
-  // 2. Query Cloud Firestore across all sessions/devices
+  // 2. Check direct Cloud Firestore email index (instant doc lookup, zero index required)
   if (firestoreInstance) {
     try {
+      const emailDoc = await firestoreInstance.collection('emails').doc(cleanEmail).get();
+      if (emailDoc.exists) {
+        const d = emailDoc.data();
+        if (d && d.username) {
+          userDb.registerUser(d.username, 'cloud-synced', cleanEmail);
+          return userDb.findUserByEmail(cleanEmail) || userDb.findUser(d.username);
+        }
+      }
+      
+      // 3. Fallback query on users collection
       const snapshot = await firestoreInstance.collection('users')
         .where('email', '==', cleanEmail)
         .limit(1)
@@ -4754,9 +4772,7 @@ function loginWithGoogle() {
           if (reg.success) {
             u = userDb.findUser(nameFromGoogle);
           } else {
-            const altName = `${nameFromGoogle}_${Math.floor(100 + Math.random() * 900)}`;
-            userDb.registerUser(altName, 'google-oauth', email);
-            u = userDb.findUser(altName);
+            u = userDb.findUserByEmail(email);
           }
         }
 
@@ -4770,7 +4786,7 @@ function loginWithGoogle() {
           showNotification(`👋 Welcome back, ${currentUser}!`);
           navigate('home');
         } else {
-          showNotification('❌ Could not initialize user profile.');
+          showNotification('❌ An account already exists with this email.');
         }
       })
       .catch((error) => {
@@ -4802,9 +4818,7 @@ function loginWithGitHub() {
           if (reg.success) {
             u = userDb.findUser(nameFromGitHub);
           } else {
-            const altName = `${nameFromGitHub}_${Math.floor(100 + Math.random() * 900)}`;
-            userDb.registerUser(altName, 'github-oauth', email);
-            u = userDb.findUser(altName);
+            u = userDb.findUserByEmail(email);
           }
         }
 
@@ -4818,7 +4832,7 @@ function loginWithGitHub() {
           showNotification(`👋 Welcome back, ${currentUser}!`);
           navigate('home');
         } else {
-          showNotification('❌ Could not initialize user profile.');
+          showNotification('❌ An account already exists with this email.');
         }
       })
       .catch((error) => {
@@ -4915,9 +4929,9 @@ function triggerOAuthProgress(name, email, pin) {
   document.getElementById('oauth-progress-title').textContent = `${verb} ${providerLabel}...`;
   document.getElementById('oauth-progress-subtitle').textContent = subtitle;
   
-  setTimeout(() => {
+  setTimeout(async () => {
     const cleanEmail = email ? email.toLowerCase().trim() : '';
-    let u = cleanEmail ? userDb.findUserByEmail(cleanEmail) : null;
+    let u = await checkEmailExistsInCloudOrLocal(cleanEmail);
     
     if (!u) {
       const username = `${name} (${providerLabel})`;
@@ -8197,4 +8211,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-23T04:50:00Z -->
+<!-- Build Force Timestamp: 2026-08-23T04:54:00Z -->
