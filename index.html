@@ -3289,7 +3289,7 @@
     
     <div style="display:flex;flex-direction:column;gap:0.8rem">
       <!-- Read Online (Free) -->
-      <a id="read-link-online" href="#" target="_blank" onclick="closeReadOptionsModal(); addXP(10)" class="platform-option" style="border: 1px solid var(--accent); background: rgba(0, 255, 187, 0.04);">
+      <a id="read-link-online" href="#" target="_blank" onclick="setTimeout(closeReadOptionsModal, 150); addXP(10);" class="platform-option" style="border: 1px solid var(--accent); background: rgba(0, 255, 187, 0.04);">
         <span class="option-emoji" style="font-size: 1.4rem;">📖</span>
         <div style="text-align:left">
           <div style="font-weight:700; color: var(--accent);">Read Online (Free)</div>
@@ -3298,7 +3298,7 @@
       </a>
       
       <!-- Purchase Book (Best Rates) -->
-      <a id="read-link-purchase" href="#" target="_blank" onclick="closeReadOptionsModal();addXP(10)" class="platform-option" style="border: 1px solid var(--accent2); background: rgba(255, 137, 54, 0.04);">
+      <a id="read-link-purchase" href="#" target="_blank" onclick="setTimeout(closeReadOptionsModal, 150); addXP(10);" class="platform-option" style="border: 1px solid var(--accent2); background: rgba(255, 137, 54, 0.04);">
         <span class="option-emoji" style="font-size: 1.4rem;">🛍️</span>
         <div style="text-align:left">
           <div style="font-weight:700; color: var(--accent2);">Purchase Book (Best Rates)</div>
@@ -8001,4 +8001,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-23T01:35:00Z -->
+<!-- Build Force Timestamp: 2026-08-23T01:40:00Z -->
