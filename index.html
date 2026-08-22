@@ -4354,6 +4354,199 @@ window.addEventListener('click', () => {
   }
 });
 
+let telemetryUnsubscribe = null;
+
+function renderTelemetryLogsTable(logins) {
+  const tableBody = document.getElementById('telemetry-log-table-body');
+  if (!tableBody) return;
+  if (logins.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="3" style="padding: 1.5rem; text-align: center; color: var(--text2);">No audit records found</td></tr>`;
+    return;
+  }
+  
+  tableBody.innerHTML = logins.map(log => {
+    const d = new Date(log.time);
+    const timeStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    let methodBadgeColor = 'var(--text3)';
+    if (log.method.toLowerCase().includes('firebase')) methodBadgeColor = 'var(--accent)';
+    if (log.method.toLowerCase().includes('guest')) methodBadgeColor = 'var(--accent2)';
+    
+    return `
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <td style="padding: 0.75rem 1rem; font-weight: 700; color: var(--text);">${log.user}</td>
+        <td style="padding: 0.75rem 1rem;"><span style="color: ${methodBadgeColor}; font-weight: 700; font-size: 0.72rem; text-transform: uppercase;">${log.method}</span></td>
+        <td style="padding: 0.75rem 1rem; color: var(--text2);">${timeStr}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function runExtendsClassFallback(errContext = '') {
+  console.warn(`Firestore log fetch skipped/failed (${errContext}). Trying ExtendsClass fallback...`);
+  const binUrl = 'https://corsproxy.io/?url=' + encodeURIComponent('https://extendsclass.com/api/json-storage/bin/ffaaeaa');
+  fetch(binUrl)
+    .then(r => r.json())
+    .then(data => {
+      const logins = data.logins || [];
+      renderTelemetryLogsTable(logins);
+    })
+    .catch(err => {
+      const tableBody = document.getElementById('telemetry-log-table-body');
+      if (tableBody) {
+        tableBody.innerHTML = `<tr><td colspan="3" style="padding: 1.5rem; text-align: center; color: #ff6b6b;">Failed to retrieve active log files: ${err.message}</td></tr>`;
+      }
+    });
+}
+
+function refreshTelemetryCounters(triggerSpin = false) {
+  const refreshIcon = document.getElementById('telemetry-refresh-icon');
+  if (triggerSpin && refreshIcon) {
+    refreshIcon.style.transform = 'rotate(360deg)';
+    setTimeout(() => {
+      refreshIcon.style.transform = 'rotate(0deg)';
+    }, 600);
+  }
+
+  // Fetch CounterAPI values
+  fetch('https://api.counterapi.dev/v1/helixreader/logins')
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('telemetry-total-logins').textContent = data.count || 0;
+    })
+    .catch(() => {
+      document.getElementById('telemetry-total-logins').textContent = '—';
+    });
+     
+  fetch('https://api.counterapi.dev/v1/helixreader/signups')
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('telemetry-total-signups').textContent = data.count || 0;
+    })
+    .catch(() => {
+      document.getElementById('telemetry-total-signups').textContent = '—';
+    });
+
+  if (triggerSpin) {
+    showNotification('📡 Telemetry audit counters synchronized!');
+  }
+}
+
+function refreshTelemetryLogs(triggerSpin = false) {
+  refreshTelemetryCounters(triggerSpin);
+  
+  if (firestoreInstance) {
+    const tableBody = document.getElementById('telemetry-log-table-body');
+    if (tableBody) {
+      tableBody.innerHTML = `<tr><td colspan="3" style="padding: 1.5rem; text-align: center; color: var(--text3);">🔄 Re-synchronizing live Firebase event stream...</td></tr>`;
+    }
+    
+    firestoreInstance.collection('logins')
+      .orderBy('time', 'desc')
+      .limit(50)
+      .get()
+      .then(querySnapshot => {
+        const firestoreLogins = [];
+        querySnapshot.forEach(doc => {
+          const d = doc.data();
+          if (d && d.time) {
+            firestoreLogins.push({
+              user: d.username || 'Unknown',
+              method: d.method || 'Standard',
+              time: d.time
+            });
+          }
+        });
+        
+        if (firestoreLogins.length > 0) {
+          renderTelemetryLogsTable(firestoreLogins);
+        } else {
+          runExtendsClassFallback('no firestore entries found');
+        }
+      })
+      .catch(err => {
+        runExtendsClassFallback(err.message);
+      });
+  } else {
+    runExtendsClassFallback('firestore instance not initialized');
+  }
+}
+
+function openAdminTelemetryModal() {
+  const isDev = currentUser && (currentUser.toLowerCase() === 'hardik-arora' || currentUser.toLowerCase() === 'hardik' || currentUser.toLowerCase() === 'admin');
+  const isUnlocked = isDev || localStorage.getItem('h_dev_mode') === 'true';
+  
+  if (!isUnlocked) {
+    showNotification('🔒 Access Denied: Developer clearance required!');
+    return;
+  }
+  
+  const modal = document.getElementById('admin-telemetry-modal');
+  if (modal) {
+    modal.classList.add('show');
+    modal.style.display = 'flex';
+  }
+  
+  // Set current user display
+  const activeUserEl = document.getElementById('telemetry-active-user');
+  if (activeUserEl) {
+    activeUserEl.textContent = currentUser || 'Guest';
+  }
+  
+  // Connect real-time Firebase subscription stream
+  if (firestoreInstance) {
+    if (telemetryUnsubscribe) {
+      telemetryUnsubscribe();
+    }
+    
+    const tableBody = document.getElementById('telemetry-log-table-body');
+    if (tableBody) {
+      tableBody.innerHTML = `<tr><td colspan="3" style="padding: 1.5rem; text-align: center; color: var(--text3);">🔄 Connecting to live Firebase event stream...</td></tr>`;
+    }
+    
+    try {
+      telemetryUnsubscribe = firestoreInstance.collection('logins')
+        .orderBy('time', 'desc')
+        .limit(50)
+        .onSnapshot(querySnapshot => {
+          const firestoreLogins = [];
+          querySnapshot.forEach(doc => {
+            const d = doc.data();
+            if (d && d.time) {
+              firestoreLogins.push({
+                user: d.username || 'Unknown',
+                method: d.method || 'Standard',
+                time: d.time
+              });
+            }
+          });
+          renderTelemetryLogsTable(firestoreLogins);
+        }, err => {
+          console.warn("Firestore snapshot listener failed, falling back:", err);
+          runExtendsClassFallback(err.message);
+        });
+    } catch (e) {
+      console.warn("Firestore listener start failed:", e);
+      runExtendsClassFallback(e.message);
+    }
+  } else {
+    runExtendsClassFallback('firestore instance not initialized');
+  }
+  
+  refreshTelemetryCounters(false);
+}
+
+function closeAdminTelemetryModal() {
+  const modal = document.getElementById('admin-telemetry-modal');
+  if (modal) {
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+  }
+  if (telemetryUnsubscribe) {
+    telemetryUnsubscribe();
+    telemetryUnsubscribe = null;
+  }
+}
+
 function logoutUser() {
   if (isFirebaseEnabled()) {
     try {
@@ -4469,174 +4662,6 @@ function reportLoginTelemetry(username, method) {
   }
 }
 
-function openAdminTelemetryModal() {
-  const isDev = currentUser && (currentUser.toLowerCase() === 'hardik-arora' || currentUser.toLowerCase() === 'hardik' || currentUser.toLowerCase() === 'admin');
-  const isUnlocked = isDev || localStorage.getItem('h_dev_mode') === 'true';
-  
-  if (!isUnlocked) {
-    showNotification('🔒 Access Denied: Developer clearance required!');
-    return;
-  }
-  
-  const modal = document.getElementById('admin-telemetry-modal');
-  if (modal) {
-    modal.classList.add('show');
-    modal.style.display = 'flex';
-  }
-  
-  const activeUserEl = document.getElementById('telemetry-active-user');
-  if (activeUserEl) {
-    activeUserEl.textContent = currentUser || 'Guest';
-  }
-  
-  refreshTelemetryLogs(false);
-}
-
-function refreshTelemetryLogs(triggerSpin = false) {
-  const refreshIcon = document.getElementById('telemetry-refresh-icon');
-  if (triggerSpin && refreshIcon) {
-    refreshIcon.style.transform = 'rotate(360deg)';
-    setTimeout(() => {
-      refreshIcon.style.transform = 'rotate(0deg)';
-    }, 600);
-  }
-
-  const tableBody = document.getElementById('telemetry-log-table-body');
-  if (tableBody) {
-    tableBody.innerHTML = `<tr><td colspan="3" style="padding: 1.5rem; text-align: center; color: var(--text3);">🔄 Synchronizing latest server events...</td></tr>`;
-  }
-
-  // Fetch CounterAPI values
-  fetch('https://api.counterapi.dev/v1/helixreader/logins')
-    .then(r => r.json())
-    .then(data => {
-      document.getElementById('telemetry-total-logins').textContent = data.count || 0;
-    })
-    .catch(() => {
-      document.getElementById('telemetry-total-logins').textContent = '—';
-    });
-     
-  fetch('https://api.counterapi.dev/v1/helixreader/signups')
-    .then(r => r.json())
-    .then(data => {
-      document.getElementById('telemetry-total-signups').textContent = data.count || 0;
-    })
-    .catch(() => {
-      document.getElementById('telemetry-total-signups').textContent = '—';
-    });
-
-  // Render logs utility function
-  function renderLogsTable(logins) {
-    if (!tableBody) return;
-    if (logins.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="3" style="padding: 1.5rem; text-align: center; color: var(--text2);">No audit records found</td></tr>`;
-      return;
-    }
-    
-    tableBody.innerHTML = logins.map(log => {
-      const d = new Date(log.time);
-      const timeStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-      let methodBadgeColor = 'var(--text3)';
-      if (log.method.toLowerCase().includes('firebase')) methodBadgeColor = 'var(--accent)';
-      if (log.method.toLowerCase().includes('guest')) methodBadgeColor = 'var(--accent2)';
-      
-      return `
-        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-          <td style="padding: 0.75rem 1rem; font-weight: 700; color: var(--text);">${log.user}</td>
-          <td style="padding: 0.75rem 1rem;"><span style="color: ${methodBadgeColor}; font-weight: 700; font-size: 0.72rem; text-transform: uppercase;">${log.method}</span></td>
-          <td style="padding: 0.75rem 1rem; color: var(--text2);">${timeStr}</td>
-        </tr>
-      `;
-    }).join('');
-
-    if (triggerSpin) {
-      showNotification('📡 Telemetry audit log updated in real-time!');
-    }
-  }
-
-  // Fallback handler
-  function runExtendsClassFallback(errContext = '') {
-    console.warn(`Firestore log fetch skipped/failed (${errContext}). Trying ExtendsClass fallback...`);
-    const binUrl = 'https://corsproxy.io/?url=' + encodeURIComponent('https://extendsclass.com/api/json-storage/bin/ffaaeaa');
-    fetch(binUrl)
-      .then(r => r.json())
-      .then(data => {
-        const logins = data.logins || [];
-        renderLogsTable(logins);
-      })
-      .catch(err => {
-        if (tableBody) {
-          tableBody.innerHTML = `<tr><td colspan="3" style="padding: 1.5rem; text-align: center; color: #ff6b6b;">Failed to retrieve active log files: ${err.message}</td></tr>`;
-        }
-      });
-  }
-
-  // Check if Firebase Firestore is available
-  if (firestoreInstance) {
-    try {
-      firestoreInstance.collection('logins')
-        .orderBy('time', 'desc')
-        .limit(50)
-        .get()
-        .then(querySnapshot => {
-          const firestoreLogins = [];
-          querySnapshot.forEach(doc => {
-            const d = doc.data();
-            if (d && d.time) {
-              firestoreLogins.push({
-                user: d.username || 'Unknown',
-                method: d.method || 'Standard',
-                time: d.time
-              });
-            }
-          });
-          
-          if (firestoreLogins.length > 0) {
-            renderLogsTable(firestoreLogins);
-          } else {
-            runExtendsClassFallback('no firestore entries found');
-          }
-        })
-        .catch(err => {
-          runExtendsClassFallback(err.message);
-        });
-    } catch (e) {
-      runExtendsClassFallback(e.message);
-    }
-  }
-}
-
-function openAdminTelemetryModal() {
-  const isDev = currentUser && (currentUser.toLowerCase() === 'hardik-arora' || currentUser.toLowerCase() === 'hardik' || currentUser.toLowerCase() === 'admin');
-  const isUnlocked = isDev || localStorage.getItem('h_dev_mode') === 'true';
-  
-  if (!isUnlocked) {
-    showNotification('🔒 Access Denied: Developer clearance required!');
-    return;
-  }
-  
-  const modal = document.getElementById('admin-telemetry-modal');
-  if (modal) {
-    modal.classList.add('show');
-    modal.style.display = 'flex';
-  }
-  
-  // Set current user display
-  const activeUserEl = document.getElementById('telemetry-active-user');
-  if (activeUserEl) {
-    activeUserEl.textContent = currentUser || 'Guest';
-  }
-  
-  refreshTelemetryLogs(false);
-}
-
-function closeAdminTelemetryModal() {
-  const modal = document.getElementById('admin-telemetry-modal');
-  if (modal) {
-    modal.classList.remove('show');
-    modal.style.display = 'none';
-  }
-}
 
 function triggerPasswordReset() {
   const usernameOrEmail = document.getElementById('login-username').value.trim();
@@ -8097,4 +8122,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-23T02:00:00Z -->
+<!-- Build Force Timestamp: 2026-08-23T02:05:00Z -->
