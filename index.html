@@ -3284,7 +3284,7 @@
     
     <div style="display:flex;flex-direction:column;gap:0.8rem">
       <!-- Read Online (Free) -->
-      <a id="read-link-online" href="#" target="_blank" onclick="closeReadOptionsModal();addXP(10)" class="platform-option" style="border: 1px solid var(--accent); background: rgba(0, 255, 187, 0.04);">
+      <a id="read-link-online" href="#" onclick="closeReadOptionsModal(); addXP(10); openReader(activeRedirectBookId); return false;" class="platform-option" style="border: 1px solid var(--accent); background: rgba(0, 255, 187, 0.04);">
         <span class="option-emoji" style="font-size: 1.4rem;">📖</span>
         <div style="text-align:left">
           <div style="font-weight:700; color: var(--accent);">Read Online (Free)</div>
@@ -5373,10 +5373,14 @@ function getOpenLibraryReadUrl(book) {
 // ══════════════════════════════════════════════════════════════
 // INTERACTIVE REDIRECTION TO ANY SITE AVAILABLE (Modal Setup)
 // ══════════════════════════════════════════════════════════════
+let activeRedirectBookId = null;
+
 function triggerPlatformRedirect(bookId) {
   const allBooks = [...MASTER_BOOKS, ...DYNAMIC_SEARCH_CACHE, ...state.customBooks];
   const book = allBooks.find(b => b.id === bookId);
   if (!book) return;
+
+  activeRedirectBookId = bookId;
 
   // Add the book to Reading shelf since they clicked Read
   if (!state.reading.includes(bookId)) {
@@ -5388,15 +5392,8 @@ function triggerPlatformRedirect(bookId) {
   document.getElementById('read-modal-book-title').textContent = `"${book.title}"`;
 
   const query = `${book.title} ${book.author}`;
-  
-  let readUrl = getOpenLibraryReadUrl(book);
-  if (!readUrl || readUrl === '#' || readUrl === 'https://openlibrary.org') {
-    readUrl = `https://www.gutenberg.org/ebooks/search/?query=${encodeURIComponent(query)}`;
-  }
-  
   const buyUrl = `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(book.title + ' book ' + book.author)}`;
 
-  document.getElementById('read-link-online').href = readUrl;
   document.getElementById('read-link-purchase').href = buyUrl;
 
   // Show reading options dialog modal
@@ -6181,9 +6178,7 @@ function flipAndOpenBook(el, bookId) {
 
 function openReader(bookId, skipAnim = false) {
   if (!currentUser) {
-    showNotification('🔒 Guest Access: Please sign in or create an account to read books!');
-    navigate('home');
-    return;
+    showNotification('ℹ️ Guest Trial Mode: Sign in to save your reading progress!');
   }
   if (!skipAnim) {
     const e = window.event;
@@ -7952,4 +7947,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-23T01:15:00Z -->
+<!-- Build Force Timestamp: 2026-08-23T01:25:00Z -->
