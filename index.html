@@ -1786,6 +1786,16 @@
     }
     .reader-content-text p { margin-bottom: 1.8rem; text-align: justify; position: relative; }
     .reader-content-text p.speaking-para { background: var(--accent-glow); border-radius: 4px; box-shadow: 0 0 0 4px var(--accent-glow); }
+    .reader-word.speaking-word {
+      background: var(--accent) !important;
+      color: #ffffff !important;
+      border-radius: 4px;
+      padding: 2px 4px;
+      margin: 0 1px;
+      box-shadow: 0 0 12px var(--accent);
+      font-weight: 700;
+      transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+    }
     
     /* Font control dropdown */
     .font-config-panel {
@@ -6531,16 +6541,80 @@ function closeReader() {
   openBookDetails(readerBook.id);
 }
 
+function wrapWordsWithSpans(pText, paraIdx) {
+  if (!pText) return '';
+  const tokens = pText.split(/(\s+)/);
+  let charPos = 0;
+  
+  return tokens.map(token => {
+    if (/^\s+$/.test(token) || !token) {
+      charPos += token.length;
+      return token;
+    }
+    const cleanLen = token.length;
+    const span = `<span class="reader-word" id="rw-${paraIdx}-${charPos}" data-char="${charPos}" data-len="${cleanLen}">${token}</span>`;
+    charPos += cleanLen;
+    return span;
+  }).join('');
+}
+
+function highlightSpokenWord(paraIdx, charIndex) {
+  document.querySelectorAll('.speaking-word').forEach(el => el.classList.remove('speaking-word'));
+  
+  const activePara = document.getElementById(`r-para-${paraIdx}`);
+  if (!activePara) return;
+  
+  const wordSpans = activePara.querySelectorAll('.reader-word');
+  let currentWordSpan = null;
+  
+  for (let span of wordSpans) {
+    const c = parseInt(span.getAttribute('data-char'), 10);
+    const len = parseInt(span.getAttribute('data-len'), 10);
+    if (charIndex >= c && charIndex < c + len + 1) {
+      currentWordSpan = span;
+      break;
+    }
+  }
+  
+  if (!currentWordSpan && wordSpans.length > 0) {
+    for (let span of wordSpans) {
+      const c = parseInt(span.getAttribute('data-char'), 10);
+      if (c <= charIndex) {
+        currentWordSpan = span;
+      } else {
+        break;
+      }
+    }
+  }
+  
+  if (currentWordSpan) {
+    currentWordSpan.classList.add('speaking-word');
+  }
+}
+
 function renderReaderBodyContent(text) {
   const target = document.getElementById('reader-content-text');
+  if (!target) return;
+  
+  let mainText = text;
+  if (!mainText && readerBook) {
+    mainText = [
+      readerBook.excerpt,
+      readerBook.summary,
+      `Key Themes: This selection explores fundamental questions of ${readerBook.topic ? readerBook.topic.toLowerCase() : 'literature'}.`,
+      ...(readerBook.quotes || []).map(q => `"${q}"`)
+    ].join('\n\n');
+  }
+
   if (easyModeActive) {
-    target.innerHTML = `<p>${easySegments[easyActiveIndex]}</p>`;
+    target.innerHTML = `<p id="r-para-0">${wrapWordsWithSpans(easySegments[easyActiveIndex] || '', 0)}</p>`;
     // Update easy progress indicator
     document.getElementById('easy-page-indicator').textContent = `Segment ${easyActiveIndex + 1} / ${easySegments.length}`;
     document.getElementById('easy-prev-btn').disabled = easyActiveIndex === 0;
     document.getElementById('easy-next-btn').disabled = easyActiveIndex === easySegments.length - 1;
   } else {
-    target.innerHTML = text.split('\n\n').map((p, idx) => `<p id="r-para-${idx}">${p}</p>`).join('');
+    const paras = (mainText || '').split('\n\n').filter(Boolean);
+    target.innerHTML = paras.map((p, idx) => `<p id="r-para-${idx}">${wrapWordsWithSpans(p, idx)}</p>`).join('');
   }
 }
 
@@ -6883,7 +6957,15 @@ function playWebSpeech(text) {
   ttsUtterance.pitch = 1.0;
   ttsUtterance.rate = audioSpeed;
 
+  ttsUtterance.onboundary = (event) => {
+    if (event.name === 'word' || !event.name) {
+      const charIndex = event.charIndex;
+      highlightSpokenWord(activeSpokenIndex, charIndex);
+    }
+  };
+
   ttsUtterance.onend = () => {
+    document.querySelectorAll('.speaking-word').forEach(el => el.classList.remove('speaking-word'));
     if (isAudioPlaying) {
       activeSpokenIndex++;
       speakParagraphSequence();
@@ -6891,6 +6973,7 @@ function playWebSpeech(text) {
   };
 
   ttsUtterance.onerror = (e) => {
+    document.querySelectorAll('.speaking-word').forEach(el => el.classList.remove('speaking-word'));
     console.error("Speech Synthesis Error:", e);
     stopAudio();
   };
@@ -6920,6 +7003,7 @@ function stopAudio() {
   isAudioPaused = false;
   togglePlayPauseButtons(false);
   document.querySelectorAll('.reader-content-text p').forEach(p => p.classList.remove('speaking-para'));
+  document.querySelectorAll('.speaking-word').forEach(el => el.classList.remove('speaking-word'));
 }
 
 function changeAudioSpeed(val) {
@@ -8211,4 +8295,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-23T04:54:00Z -->
+<!-- Build Force Timestamp: 2026-08-23T05:01:00Z -->
