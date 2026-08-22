@@ -4611,6 +4611,36 @@ function syncUserProfileToFirebase(username, email) {
   }
 }
 
+async function checkEmailExistsInCloudOrLocal(email) {
+  if (!email) return null;
+  const cleanEmail = email.toLowerCase().trim();
+  
+  // 1. Check local DB cache
+  const localMatch = userDb.findUserByEmail(cleanEmail);
+  if (localMatch) return localMatch;
+  
+  // 2. Query Cloud Firestore across all sessions/devices
+  if (firestoreInstance) {
+    try {
+      const snapshot = await firestoreInstance.collection('users')
+        .where('email', '==', cleanEmail)
+        .limit(1)
+        .get();
+        
+      if (!snapshot.empty) {
+        const docData = snapshot.docs[0].data();
+        if (docData && docData.username) {
+          userDb.registerUser(docData.username, 'cloud-synced', cleanEmail);
+          return userDb.findUserByEmail(cleanEmail) || userDb.findUser(docData.username);
+        }
+      }
+    } catch(e) {
+      console.warn("Cloud email check failed:", e);
+    }
+  }
+  return null;
+}
+
 function reportLoginTelemetry(username, method) {
   // 1. Increment CounterAPI counters (CORS safe, highly responsive, no-cache forced)
   const fetchOpts = { cache: 'no-store' };
@@ -4709,13 +4739,13 @@ function loginWithGoogle() {
     showNotification('⏳ Opening Google Sign-In...');
     const provider = new firebase.auth.GoogleAuthProvider();
     authInstance.signInWithPopup(provider)
-      .then((result) => {
+      .then(async (result) => {
         const user = result.user;
         const email = user.email ? user.email.toLowerCase().trim() : '';
         const nameFromGoogle = user.displayName || (email ? email.split('@')[0] : 'Google User');
         
-        let u = email ? userDb.findUserByEmail(email) : null;
-        if (!u) {
+        let u = await checkEmailExistsInCloudOrLocal(email);
+        if (!u && nameFromGoogle) {
           u = userDb.findUser(nameFromGoogle);
         }
         
@@ -4757,13 +4787,13 @@ function loginWithGitHub() {
     showNotification('⏳ Opening GitHub Sign-In...');
     const provider = new firebase.auth.GithubAuthProvider();
     authInstance.signInWithPopup(provider)
-      .then((result) => {
+      .then(async (result) => {
         const user = result.user;
         const email = user.email ? user.email.toLowerCase().trim() : '';
         const nameFromGitHub = user.displayName || (email ? email.split('@')[0] : 'GitHub User');
         
-        let u = email ? userDb.findUserByEmail(email) : null;
-        if (!u) {
+        let u = await checkEmailExistsInCloudOrLocal(email);
+        if (!u && nameFromGitHub) {
           u = userDb.findUser(nameFromGitHub);
         }
         
@@ -5073,71 +5103,76 @@ function handleAuthSubmit(event, mode) {
       showNotification('❌ Username already exists!');
       return;
     }
-    if (userDb.findUserByEmail(emailVal)) {
-      showNotification('❌ Account already exists with this email! Switching to Sign In...');
-      switchAuthTab('login');
-      const loginInput = document.getElementById('login-username');
-      if (loginInput) loginInput.value = emailVal;
-      return;
-    }
     
-    if (isFirebaseEnabled()) {
-      authInstance.createUserWithEmailAndPassword(emailVal, passVal)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          user.updateProfile({ displayName: userVal })
-            .then(() => {
-              userDb.registerUser(userVal, passVal, emailVal);
-              
-              currentUser = userVal;
-              safeStore.setItem('h_current_user', currentUser);
-              const u = userDb.findUser(currentUser);
-              applyUserState(u.state);
-              updateAuthNavBar();
-              syncUserProfileToFirebase(userVal, emailVal);
-              reportLoginTelemetry(currentUser, 'Firebase Sign-up');
-              showNotification('🎉 Firebase account created successfully!');
-              
-              document.getElementById('register-username').value = '';
-              document.getElementById('register-email').value = '';
-              document.getElementById('register-password').value = '';
-              document.getElementById('register-confirm-password').value = '';
-              navigate('home');
-            });
-        })
-        .catch((error) => {
-          if (error.code === 'auth/email-already-in-use') {
-            showNotification('❌ This email is already registered! Switching to Sign In...');
-            switchAuthTab('login');
-            const loginInput = document.getElementById('login-username');
-            if (loginInput) loginInput.value = emailVal;
-            return;
-          }
-          showNotification(`❌ ${firebaseErrorMessage(error.code)}`);
-        });
-      return;
-    }
+    showNotification('⏳ Verifying registration details...');
     
-    const reg = userDb.registerUser(userVal, passVal, emailVal);
-    if (!reg.success) {
-      showNotification(`❌ ${reg.message}`);
-      return;
-    }
-    
-    currentUser = userVal;
-    safeStore.setItem('h_current_user', currentUser);
-    const u = userDb.findUser(currentUser);
-    applyUserState(u.state);
-    updateAuthNavBar();
-    reportLoginTelemetry(currentUser, 'Standard Sign-up');
-    showNotification('🎉 Account created successfully!');
-    
-    document.getElementById('register-username').value = '';
-    document.getElementById('register-email').value = '';
-    document.getElementById('register-password').value = '';
-    document.getElementById('register-confirm-password').value = '';
-    
-    navigate('home');
+    checkEmailExistsInCloudOrLocal(emailVal).then((existingAccount) => {
+      if (existingAccount || userDb.findUserByEmail(emailVal)) {
+        showNotification('❌ Account already exists with this email! Switching to Sign In...');
+        switchAuthTab('login');
+        const loginInput = document.getElementById('login-username');
+        if (loginInput) loginInput.value = emailVal;
+        return;
+      }
+      
+      if (isFirebaseEnabled()) {
+        authInstance.createUserWithEmailAndPassword(emailVal, passVal)
+          .then((userCredential) => {
+            const user = userCredential.user;
+            user.updateProfile({ displayName: userVal })
+              .then(() => {
+                userDb.registerUser(userVal, passVal, emailVal);
+                
+                currentUser = userVal;
+                safeStore.setItem('h_current_user', currentUser);
+                const u = userDb.findUser(currentUser);
+                applyUserState(u ? u.state : defaultGuestState);
+                updateAuthNavBar();
+                syncUserProfileToFirebase(userVal, emailVal);
+                reportLoginTelemetry(currentUser, 'Firebase Sign-up');
+                showNotification('🎉 Account created successfully!');
+                
+                document.getElementById('register-username').value = '';
+                document.getElementById('register-email').value = '';
+                document.getElementById('register-password').value = '';
+                document.getElementById('register-confirm-password').value = '';
+                navigate('home');
+              });
+          })
+          .catch((error) => {
+            if (error.code === 'auth/email-already-in-use') {
+              showNotification('❌ Account already exists with this email! Switching to Sign In...');
+              switchAuthTab('login');
+              const loginInput = document.getElementById('login-username');
+              if (loginInput) loginInput.value = emailVal;
+              return;
+            }
+            showNotification(`❌ ${firebaseErrorMessage(error.code)}`);
+          });
+        return;
+      }
+      
+      const reg = userDb.registerUser(userVal, passVal, emailVal);
+      if (!reg.success) {
+        showNotification(`❌ ${reg.message}`);
+        return;
+      }
+      
+      currentUser = userVal;
+      safeStore.setItem('h_current_user', currentUser);
+      const u = userDb.findUser(currentUser);
+      applyUserState(u ? u.state : defaultGuestState);
+      updateAuthNavBar();
+      reportLoginTelemetry(currentUser, 'Standard Sign-up');
+      showNotification('🎉 Account created successfully!');
+      
+      document.getElementById('register-username').value = '';
+      document.getElementById('register-email').value = '';
+      document.getElementById('register-password').value = '';
+      document.getElementById('register-confirm-password').value = '';
+      
+      navigate('home');
+    });
   }
 }
 
@@ -8162,4 +8197,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-23T04:47:00Z -->
+<!-- Build Force Timestamp: 2026-08-23T04:50:00Z -->
