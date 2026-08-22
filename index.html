@@ -2507,6 +2507,8 @@
     <button class="nav-btn" id="nav-search" onclick="navigate('search')">Browse</button>
     <button class="nav-btn" id="nav-library" onclick="navigate('library')">My Library</button>
     <button class="nav-btn" id="nav-tools" onclick="navigate('tools')">AI Tools</button>
+    <a href="presentation.html" class="nav-btn" style="text-decoration:none; display:inline-block; line-height:2.4rem;">Presentation</a>
+    <a href="https://github.com/hardik-arora/helix-reader" target="_blank" class="nav-btn" style="text-decoration:none; display:inline-block; line-height:2.4rem; color:var(--accent) !important;">🐱 GitHub</a>
     
     <div class="theme-dropdown-wrap">
       <button class="theme-select-btn" onclick="toggleThemeDropdown(event)" title="Toggle Theme">
@@ -2869,6 +2871,12 @@
       </div>
 
       <div class="auth-guest-btn" onclick="continueAsGuest()">Continue as Guest &rarr;</div>
+      
+      <div class="auth-presentation-link" style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem;">
+        <a href="presentation.html" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; justify-content: center; width: 100%;">
+          📊 View Presentation Pitch & Future Ideas &rarr;
+        </a>
+      </div>
     </div>
   </div>
 </div>
@@ -4105,7 +4113,7 @@ const defaultGuestState = {
 };
 
 // Initial state creation
-const state = { ...defaultGuestState };
+const state = { ...defaultGuestState, currentPage: 'auth' };
 
 if (currentUser) {
   const u = userDb.findUser(currentUser);
@@ -4663,6 +4671,15 @@ function handleAuthSubmit(event, mode) {
       return;
     }
     
+    if (userDb.findUser(userVal)) {
+      showNotification('❌ Username already exists!');
+      return;
+    }
+    if (userDb.findUserByEmail(emailVal)) {
+      showNotification('❌ Email address already in use!');
+      return;
+    }
+    
     if (isFirebaseEnabled()) {
       authInstance.createUserWithEmailAndPassword(emailVal, passVal)
         .then((userCredential) => {
@@ -4768,6 +4785,7 @@ function navigate(pageId) {
   const targetChanged = state.currentPage !== pageId;
   state.currentPage = pageId;
   saveState();
+  applyTheme(state.theme);
   
   // Execute page loaders
   if (pageId === 'library') renderLibraryPage();
@@ -4825,8 +4843,13 @@ function closeMobileThemeSheet() {
 function applyTheme(themeName) {
   document.body.classList.remove('light-theme', 'sepia-theme', 'midnight-theme', 'emerald-theme', 'amethyst-theme', 'old-money-theme', 'mahogany-theme', 'matcha-theme', 'autumn-theme', 'cyberpunk-theme', 'sakura-theme', 'solarized-theme', 'quartz-theme', 'ember-theme', 'synthwave-theme', 'forest-gold-theme', 'cappuccino-theme', 'eclipse-theme', 'nordic-frost-theme', 'nebula-theme', 'sunset-theme', 'matrix-theme', 'candy-theme', 'supernova-theme', 'glacial-theme', 'saturn-theme', 'holographic-theme', 'obsidian-theme', 'bloodmoon-theme', 'toxic-theme', 'deepsea-theme', 'phantom-theme', 'alien-theme', 'magma-theme', 'peacock-theme', 'glitch-theme', 'quantum-theme', 'timewarp-theme', 'acidcyber-theme', 'singularity-theme', 'jadedynasty-theme', 'galacticrust-theme', 'plasmastorm-theme');
   state.theme = themeName;
-  if (themeName !== 'dark') {
-    document.body.classList.add(`${themeName}-theme`);
+  
+  if (state.currentPage === 'auth') {
+    document.body.classList.add('jadedynasty-theme');
+  } else {
+    if (themeName !== 'dark') {
+      document.body.classList.add(`${themeName}-theme`);
+    }
   }
   saveState();
   
@@ -7684,4 +7707,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-07-08T15:53:00Z -->
+<!-- Build Force Timestamp: 2026-08-22T23:38:00Z -->
