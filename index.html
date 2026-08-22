@@ -4711,22 +4711,37 @@ function loginWithGoogle() {
     authInstance.signInWithPopup(provider)
       .then((result) => {
         const user = result.user;
-        const username = user.displayName || user.email.split('@')[0];
+        const email = user.email ? user.email.toLowerCase().trim() : '';
+        const nameFromGoogle = user.displayName || (email ? email.split('@')[0] : 'Google User');
         
-        currentUser = username;
-        safeStore.setItem('h_current_user', currentUser);
-        
-        let u = userDb.findUser(currentUser);
+        let u = email ? userDb.findUserByEmail(email) : null;
         if (!u) {
-          userDb.registerUser(currentUser, 'google-oauth', user.email);
-          u = userDb.findUser(currentUser);
+          u = userDb.findUser(nameFromGoogle);
         }
-        applyUserState(u.state);
-        updateAuthNavBar();
-        syncUserProfileToFirebase(username, user.email);
-        reportLoginTelemetry(currentUser, 'Google OAuth');
-        showNotification(`👋 Welcome, ${currentUser}!`);
-        navigate('home');
+        
+        if (!u) {
+          const reg = userDb.registerUser(nameFromGoogle, 'google-oauth', email);
+          if (reg.success) {
+            u = userDb.findUser(nameFromGoogle);
+          } else {
+            const altName = `${nameFromGoogle}_${Math.floor(100 + Math.random() * 900)}`;
+            userDb.registerUser(altName, 'google-oauth', email);
+            u = userDb.findUser(altName);
+          }
+        }
+
+        if (u) {
+          currentUser = u.username;
+          safeStore.setItem('h_current_user', currentUser);
+          applyUserState(u.state);
+          updateAuthNavBar();
+          syncUserProfileToFirebase(u.username, email);
+          reportLoginTelemetry(currentUser, 'Google OAuth');
+          showNotification(`👋 Welcome back, ${currentUser}!`);
+          navigate('home');
+        } else {
+          showNotification('❌ Could not initialize user profile.');
+        }
       })
       .catch((error) => {
         console.error("Google Auth failed:", error);
@@ -4744,22 +4759,37 @@ function loginWithGitHub() {
     authInstance.signInWithPopup(provider)
       .then((result) => {
         const user = result.user;
-        const username = user.displayName || user.email.split('@')[0];
+        const email = user.email ? user.email.toLowerCase().trim() : '';
+        const nameFromGitHub = user.displayName || (email ? email.split('@')[0] : 'GitHub User');
         
-        currentUser = username;
-        safeStore.setItem('h_current_user', currentUser);
-        
-        let u = userDb.findUser(currentUser);
+        let u = email ? userDb.findUserByEmail(email) : null;
         if (!u) {
-          userDb.registerUser(currentUser, 'github-oauth', user.email);
-          u = userDb.findUser(currentUser);
+          u = userDb.findUser(nameFromGitHub);
         }
-        applyUserState(u.state);
-        updateAuthNavBar();
-        syncUserProfileToFirebase(username, user.email);
-        reportLoginTelemetry(currentUser, 'GitHub OAuth');
-        showNotification(`👋 Welcome, ${currentUser}!`);
-        navigate('home');
+        
+        if (!u) {
+          const reg = userDb.registerUser(nameFromGitHub, 'github-oauth', email);
+          if (reg.success) {
+            u = userDb.findUser(nameFromGitHub);
+          } else {
+            const altName = `${nameFromGitHub}_${Math.floor(100 + Math.random() * 900)}`;
+            userDb.registerUser(altName, 'github-oauth', email);
+            u = userDb.findUser(altName);
+          }
+        }
+
+        if (u) {
+          currentUser = u.username;
+          safeStore.setItem('h_current_user', currentUser);
+          applyUserState(u.state);
+          updateAuthNavBar();
+          syncUserProfileToFirebase(u.username, email);
+          reportLoginTelemetry(currentUser, 'GitHub OAuth');
+          showNotification(`👋 Welcome back, ${currentUser}!`);
+          navigate('home');
+        } else {
+          showNotification('❌ Could not initialize user profile.');
+        }
       })
       .catch((error) => {
         console.error("GitHub Auth failed:", error);
@@ -4856,28 +4886,21 @@ function triggerOAuthProgress(name, email, pin) {
   document.getElementById('oauth-progress-subtitle').textContent = subtitle;
   
   setTimeout(() => {
-    const username = `${name} (${providerLabel})`;
+    const cleanEmail = email ? email.toLowerCase().trim() : '';
+    let u = cleanEmail ? userDb.findUserByEmail(cleanEmail) : null;
     
-    let u = userDb.findUser(username);
     if (!u) {
-      if (email) {
-        const existingEmailUser = userDb.findUserByEmail(email);
-        if (existingEmailUser) {
+      const username = `${name} (${providerLabel})`;
+      u = userDb.findUser(username);
+      if (!u) {
+        const reg = userDb.registerUser(username, pin, cleanEmail);
+        if (!reg.success) {
           closeOAuthModal();
-          showNotification(`❌ Email already registered under profile: ${existingEmailUser.username}`);
+          showNotification(`❌ ${reg.message}`);
           return;
         }
-      }
-      const reg = userDb.registerUser(username, pin, email);
-      if (!reg.success) {
-        closeOAuthModal();
-        showNotification(`❌ ${reg.message}`);
-        return;
-      }
-      u = userDb.findUser(username);
-    } else {
-      // Validate PIN
-      if (u.password && u.password !== pin) {
+        u = userDb.findUser(username);
+      } else if (u.password && u.password !== pin) {
         closeOAuthModal();
         showNotification('❌ Incorrect passcode for this profile!');
         return;
@@ -5051,7 +5074,10 @@ function handleAuthSubmit(event, mode) {
       return;
     }
     if (userDb.findUserByEmail(emailVal)) {
-      showNotification('❌ Email address already in use!');
+      showNotification('❌ Account already exists with this email! Switching to Sign In...');
+      switchAuthTab('login');
+      const loginInput = document.getElementById('login-username');
+      if (loginInput) loginInput.value = emailVal;
       return;
     }
     
@@ -5080,6 +5106,13 @@ function handleAuthSubmit(event, mode) {
             });
         })
         .catch((error) => {
+          if (error.code === 'auth/email-already-in-use') {
+            showNotification('❌ This email is already registered! Switching to Sign In...');
+            switchAuthTab('login');
+            const loginInput = document.getElementById('login-username');
+            if (loginInput) loginInput.value = emailVal;
+            return;
+          }
           showNotification(`❌ ${firebaseErrorMessage(error.code)}`);
         });
       return;
@@ -8129,4 +8162,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-23T04:41:00Z -->
+<!-- Build Force Timestamp: 2026-08-23T04:47:00Z -->
