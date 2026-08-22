@@ -6773,14 +6773,13 @@ function startAudio() {
 
   stopAudio();
 
-  const mainText = [
-    readerBook.excerpt,
-    readerBook.summary,
-    `Key Themes: This selection explores fundamental questions of ${readerBook.topic.toLowerCase()}.`,
-    ...(readerBook.quotes || []).map(q => `"${q}"`)
-  ].join('\n\n');
+  const paraElements = document.querySelectorAll('#reader-content-text p');
+  if (!paraElements || paraElements.length === 0) {
+    showNotification('⚠️ No reader text available to read.');
+    return;
+  }
 
-  spokenParagraphs = mainText.split('\n\n').filter(Boolean);
+  spokenParagraphs = Array.from(paraElements).map(p => p.innerText.trim()).filter(Boolean);
   activeSpokenIndex = 0;
   speakParagraphSequence();
 }
@@ -8295,4 +8294,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-23T05:01:00Z -->
+<!-- Build Force Timestamp: 2026-08-23T05:05:00Z -->
