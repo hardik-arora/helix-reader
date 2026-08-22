@@ -3284,7 +3284,7 @@
     
     <div style="display:flex;flex-direction:column;gap:0.8rem">
       <!-- Read Online (Free) -->
-      <a id="read-link-online" href="#" onclick="closeReadOptionsModal(); addXP(10); openReader(activeRedirectBookId); return false;" class="platform-option" style="border: 1px solid var(--accent); background: rgba(0, 255, 187, 0.04);">
+      <a id="read-link-online" href="#" target="_blank" onclick="closeReadOptionsModal(); addXP(10)" class="platform-option" style="border: 1px solid var(--accent); background: rgba(0, 255, 187, 0.04);">
         <span class="option-emoji" style="font-size: 1.4rem;">📖</span>
         <div style="text-align:left">
           <div style="font-weight:700; color: var(--accent);">Read Online (Free)</div>
@@ -5375,6 +5375,54 @@ function getOpenLibraryReadUrl(book) {
 // ══════════════════════════════════════════════════════════════
 let activeRedirectBookId = null;
 
+function getDirectFullBookUrl(book) {
+  const title = book.title.toLowerCase();
+  
+  const gutenbergMap = {
+    'pride and prejudice': '1342',
+    'the adventures of sherlock holmes': '1661',
+    'adventures of sherlock holmes': '1661',
+    'alice in wonderland': '11',
+    'alice\'s adventures in wonderland': '11',
+    'frankenstein': '84',
+    'dracula': '345',
+    'the great gatsby': '64317',
+    'moby dick': '2701',
+    'moby-dick': '2701',
+    'the odyssey': '16452',
+    'hamlet': '1524',
+    'the metamorphosis': '5200',
+    'metamorphosis': '5200',
+    'crime and punishment': '2554',
+    'emma': '158',
+    'sense and sensibility': '161',
+    'wuthering heights': '768',
+    'the picture of dorian gray': '174',
+    'picture of dorian gray': '174',
+    'heart of darkness': '219',
+    'great expectations': '1400',
+    'jane eyre': '1260',
+    'ulysses': '4300'
+  };
+
+  for (const [key, id] of Object.entries(gutenbergMap)) {
+    if (title.includes(key)) {
+      return `https://www.gutenberg.org/ebooks/${id}.html.images`;
+    }
+  }
+
+  const cacheKey = book.id;
+  if (state.olLinks[cacheKey] && state.olLinks[cacheKey] !== 'none' && !state.olLinks[cacheKey].includes('search')) {
+    const olUrl = state.olLinks[cacheKey];
+    if (olUrl.includes('/works/') || olUrl.includes('/books/')) {
+      return olUrl.endsWith('/read') ? olUrl : `${olUrl}/read`;
+    }
+    return olUrl;
+  }
+
+  return `https://openlibrary.org/search?q=${encodeURIComponent(book.title + ' ' + book.author)}&has_fulltext=true`;
+}
+
 function triggerPlatformRedirect(bookId) {
   const allBooks = [...MASTER_BOOKS, ...DYNAMIC_SEARCH_CACHE, ...state.customBooks];
   const book = allBooks.find(b => b.id === bookId);
@@ -5391,9 +5439,10 @@ function triggerPlatformRedirect(bookId) {
   // Set modal text
   document.getElementById('read-modal-book-title').textContent = `"${book.title}"`;
 
-  const query = `${book.title} ${book.author}`;
+  const readUrl = getDirectFullBookUrl(book);
   const buyUrl = `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(book.title + ' book ' + book.author)}`;
 
+  document.getElementById('read-link-online').href = readUrl;
   document.getElementById('read-link-purchase').href = buyUrl;
 
   // Show reading options dialog modal
@@ -7947,4 +7996,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-23T01:25:00Z -->
+<!-- Build Force Timestamp: 2026-08-23T01:30:00Z -->
