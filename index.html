@@ -2824,6 +2824,9 @@
             <button type="button" onclick="togglePasswordVisibility('login-password', this)" style="position:absolute; right:0.8rem; background:none; border:none; color:var(--text3); cursor:pointer; font-size:1.15rem; padding:0; outline:none; display:flex; align-items:center;" title="Show Password">👁️</button>
           </div>
         </div>
+        <div style="text-align: right; margin-top: -0.8rem; margin-bottom: 0.2rem;">
+          <span style="font-size: 0.72rem; color: var(--accent2); cursor: pointer; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;" onclick="triggerPasswordReset()">Forgot Password?</span>
+        </div>
         <button type="submit" class="auth-btn-submit">Sign In</button>
       </form>
 
@@ -4513,6 +4516,40 @@ function closeAdminTelemetryModal() {
   if (modal) {
     modal.classList.remove('show');
     modal.style.display = 'none';
+  }
+}
+
+function triggerPasswordReset() {
+  const usernameOrEmail = document.getElementById('login-username').value.trim();
+  if (!usernameOrEmail) {
+    showNotification('ℹ️ Please type your Email address in the Username field first!');
+    return;
+  }
+  
+  if (!usernameOrEmail.includes('@')) {
+    const u = userDb.findUser(usernameOrEmail);
+    if (u && u.email) {
+      sendFirebasePasswordReset(u.email);
+    } else {
+      showNotification('❌ Please enter your email address to request a reset link.');
+    }
+  } else {
+    sendFirebasePasswordReset(usernameOrEmail);
+  }
+}
+
+function sendFirebasePasswordReset(email) {
+  if (isFirebaseEnabled() && authInstance) {
+    showNotification('⏳ Requesting password reset link...');
+    authInstance.sendPasswordResetEmail(email)
+      .then(() => {
+        showNotification('📨 Password reset link sent to your email!');
+      })
+      .catch((error) => {
+        showNotification(`❌ ${firebaseErrorMessage(error.code)}`);
+      });
+  } else {
+    showNotification('❌ Firebase is not active. Reset links cannot be sent.');
   }
 }
 
@@ -7828,4 +7865,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-22T23:55:00Z -->
+<!-- Build Force Timestamp: 2026-08-23T00:05:00Z -->
