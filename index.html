@@ -3630,11 +3630,16 @@
 <!-- Admin Telemetry Modal -->
 <div id="admin-telemetry-modal" class="mobile-theme-overlay" onclick="closeAdminTelemetryModal()">
   <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width: 600px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
-    <div class="oauth-modal-header" style="border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem; flex-shrink: 0;">
+    <div class="oauth-modal-header" style="border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;">
       <h3 style="margin: 0; color: var(--accent); display: flex; align-items: center; gap: 0.5rem; font-size: 1.25rem;">
         📊 Live Telemetry & Login Audit Log
       </h3>
-      <button class="close-sheet-btn" onclick="closeAdminTelemetryModal()">✕</button>
+      <div style="display: flex; align-items: center; gap: 0.8rem;">
+        <button onclick="refreshTelemetryLogs(true)" style="background: none; border: none; color: var(--text3); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; transition: color var(--transition); outline: none;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text3)'" title="Refresh logs">
+          <span id="telemetry-refresh-icon" style="display: inline-block; transition: transform 0.6s ease;">🔄</span>
+        </button>
+        <button class="close-sheet-btn" style="position: static; transform: none;" onclick="closeAdminTelemetryModal()">✕</button>
+      </div>
     </div>
     <div class="oauth-modal-body" style="overflow-y: auto; padding-right: 0.5rem; flex: 1;">
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.2rem;">
@@ -4479,12 +4484,28 @@ function openAdminTelemetryModal() {
     modal.style.display = 'flex';
   }
   
-  // Set current user display
   const activeUserEl = document.getElementById('telemetry-active-user');
   if (activeUserEl) {
     activeUserEl.textContent = currentUser || 'Guest';
   }
   
+  refreshTelemetryLogs(false);
+}
+
+function refreshTelemetryLogs(triggerSpin = false) {
+  const refreshIcon = document.getElementById('telemetry-refresh-icon');
+  if (triggerSpin && refreshIcon) {
+    refreshIcon.style.transform = 'rotate(360deg)';
+    setTimeout(() => {
+      refreshIcon.style.transform = 'rotate(0deg)';
+    }, 600);
+  }
+
+  const tableBody = document.getElementById('telemetry-log-table-body');
+  if (tableBody) {
+    tableBody.innerHTML = `<tr><td colspan="3" style="padding: 1.5rem; text-align: center; color: var(--text3);">🔄 Synchronizing latest server events...</td></tr>`;
+  }
+
   // Fetch CounterAPI values
   fetch('https://api.counterapi.dev/v1/helixreader/logins')
     .then(r => r.json())
@@ -4494,7 +4515,7 @@ function openAdminTelemetryModal() {
     .catch(() => {
       document.getElementById('telemetry-total-logins').textContent = '—';
     });
-    
+     
   fetch('https://api.counterapi.dev/v1/helixreader/signups')
     .then(r => r.json())
     .then(data => {
@@ -4506,12 +4527,13 @@ function openAdminTelemetryModal() {
 
   // Fetch ExtendsClass logins bin
   const binUrl = 'https://corsproxy.io/?url=' + encodeURIComponent('https://extendsclass.com/api/json-storage/bin/ffaaeaa');
-  const tableBody = document.getElementById('telemetry-log-table-body');
   
   fetch(binUrl)
     .then(r => r.json())
     .then(data => {
       const logins = data.logins || [];
+      if (!tableBody) return;
+      
       if (logins.length === 0) {
         tableBody.innerHTML = `<tr><td colspan="3" style="padding: 1.5rem; text-align: center; color: var(--text2);">No audit records found</td></tr>`;
         return;
@@ -4525,17 +4547,47 @@ function openAdminTelemetryModal() {
         if (log.method.includes('Guest')) methodBadgeColor = 'var(--accent2)';
         
         return `
-          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); hover: background: rgba(255,255,255,0.01);">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
             <td style="padding: 0.75rem 1rem; font-weight: 700; color: var(--text);">${log.user}</td>
             <td style="padding: 0.75rem 1rem;"><span style="color: ${methodBadgeColor}; font-weight: 700; font-size: 0.72rem; text-transform: uppercase;">${log.method}</span></td>
             <td style="padding: 0.75rem 1rem; color: var(--text2);">${timeStr}</td>
           </tr>
         `;
       }).join('');
+      
+      if (triggerSpin) {
+        showNotification('📡 Telemetry audit log updated in real-time!');
+      }
     })
     .catch(err => {
-      tableBody.innerHTML = `<tr><td colspan="3" style="padding: 1.5rem; text-align: center; color: #ff6b6b;">Failed to retrieve active log files: ${err.message}</td></tr>`;
+      if (tableBody) {
+        tableBody.innerHTML = `<tr><td colspan="3" style="padding: 1.5rem; text-align: center; color: #ff6b6b;">Failed to retrieve active log files: ${err.message}</td></tr>`;
+      }
     });
+}
+
+function openAdminTelemetryModal() {
+  const isDev = currentUser && (currentUser.toLowerCase() === 'hardik-arora' || currentUser.toLowerCase() === 'hardik' || currentUser.toLowerCase() === 'admin');
+  const isUnlocked = isDev || localStorage.getItem('h_dev_mode') === 'true';
+  
+  if (!isUnlocked) {
+    showNotification('🔒 Access Denied: Developer clearance required!');
+    return;
+  }
+  
+  const modal = document.getElementById('admin-telemetry-modal');
+  if (modal) {
+    modal.classList.add('show');
+    modal.style.display = 'flex';
+  }
+  
+  // Set current user display
+  const activeUserEl = document.getElementById('telemetry-active-user');
+  if (activeUserEl) {
+    activeUserEl.textContent = currentUser || 'Guest';
+  }
+  
+  refreshTelemetryLogs(false);
 }
 
 function closeAdminTelemetryModal() {
@@ -8005,4 +8057,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-23T01:50:00Z -->
+<!-- Build Force Timestamp: 2026-08-23T01:55:00Z -->
