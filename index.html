@@ -6281,12 +6281,16 @@ function openReader(bookId, skipAnim = false) {
   document.getElementById('reader-display-title').textContent = readerBook.title;
   
   // Set reader panel
+  const quotesBlock = (readerBook.quotes && readerBook.quotes.length > 0)
+    ? readerBook.quotes.map(q => `   "${q}"`).join('\n\n')
+    : '';
+
   const mainText = [
-    readerBook.excerpt,
-    readerBook.summary,
-    `Key Themes: This selection explores fundamental questions of ${readerBook.topic.toLowerCase()}.`,
-    ...(readerBook.quotes || []).map(q => `"${q}"`)
-  ].join('\n\n');
+    `📚 PREFACE: NARRATIVE OVERVIEW\n\n${readerBook.summary || 'No summary available.'}`,
+    `📖 CHAPTER I: THE INAUGURAL EXCERPT\n\n${readerBook.excerpt || 'No excerpt available.'}`,
+    `✨ NOTABLE QUOTES & FAMOUS PHRASES\n\n${quotesBlock || 'No quotes archived for this edition.'}`,
+    `🎯 CRITICAL ANALYSIS & KEY THEMES\n\nThis selection explores fundamental questions of ${readerBook.topic ? readerBook.topic.toLowerCase() : 'literature'}, focusing on its cultural impact, historical context, and thematic depth.`
+  ].join('\n\n════════════════════════════════\n\n');
 
   // Parse easy segments
   easySegments = mainText.split('\n\n').filter(Boolean);
@@ -8001,4 +8005,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-23T01:45:00Z -->
+<!-- Build Force Timestamp: 2026-08-23T01:50:00Z -->
