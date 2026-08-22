@@ -6,15 +6,6 @@ A premium, feature-rich, Kindle-inspired digital library application providing a
 
 - 🌐 **Live Website Link:** **[https://hardik-arora.github.io/helix-reader/](https://hardik-arora.github.io/helix-reader/)**
 - 🎨 **Canva Slide Presentation:** **[https://canva.link/l2a26shp0bnrokw](https://canva.link/l2a26shp0bnrokw)**
-- 📊 **Interactive Slide Deck:** **[https://hardik-arora.github.io/helix-reader/presentation.html](https://hardik-arora.github.io/helix-reader/presentation.html)**
-- 📄 **Pitch Deck PDF:** **[https://hardik-arora.github.io/helix-reader/helix_reader_presentation.pdf](https://hardik-arora.github.io/helix-reader/helix_reader_presentation.pdf)**
-- 🏠 **Local Server Link:** **[http://localhost:8000](http://localhost:8000)**
-
-If you need to start the server again manually in the future, run:
-```bash
-python3 -m http.server 8000
-```
-from inside the `helix-reader` folder.
 
 ---
 
