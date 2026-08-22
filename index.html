@@ -4323,9 +4323,8 @@ function updateAuthNavBar() {
     if (profileWrap) profileWrap.style.display = 'none';
   }
   
-  // Developer Mode display sync
-  const isDev = currentUser && (currentUser.toLowerCase() === 'hardik-arora' || currentUser.toLowerCase() === 'hardik' || currentUser.toLowerCase() === 'admin');
-  const isUnlocked = isDev || localStorage.getItem('h_dev_mode') === 'true';
+  // Developer Mode display sync — ONLY unlocked via the secret passcode
+  const isUnlocked = localStorage.getItem('h_dev_mode') === 'true';
   
   const devPres = document.getElementById('nav-dev-presentation');
   const devGit = document.getElementById('nav-dev-github');
@@ -4475,8 +4474,8 @@ function refreshTelemetryLogs(triggerSpin = false) {
 }
 
 function openAdminTelemetryModal() {
-  const isDev = currentUser && (currentUser.toLowerCase() === 'hardik-arora' || currentUser.toLowerCase() === 'hardik' || currentUser.toLowerCase() === 'admin');
-  const isUnlocked = isDev || localStorage.getItem('h_dev_mode') === 'true';
+  // ONLY accessible after entering the developer passcode
+  const isUnlocked = localStorage.getItem('h_dev_mode') === 'true';
   
   if (!isUnlocked) {
     showNotification('🔒 Access Denied: Developer clearance required!');
@@ -8139,4 +8138,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-23T03:16:00Z -->
+<!-- Build Force Timestamp: 2026-08-23T03:32:00Z -->
