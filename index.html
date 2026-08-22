@@ -3657,7 +3657,10 @@
         </div>
       </div>
       
-      <h4 style="margin-bottom: 0.6rem; color: var(--text); font-size: 0.9rem; font-weight: 800;">Real-Time Activity Audit (ExtendsClass + Firestore Fallback)</h4>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;">
+        <h4 style="margin: 0; color: var(--text); font-size: 0.9rem; font-weight: 800;">Real-Time Activity Audit</h4>
+        <span id="telemetry-source-badge" style="font-size:0.68rem;font-weight:800;padding:0.25rem 0.6rem;border-radius:20px;background:rgba(255,255,255,0.05);color:var(--text3);letter-spacing:0.3px;">⏳ Connecting...</span>
+      </div>
       <div style="overflow-x: auto; background: var(--bg2); border-radius: 8px; border: 1px solid var(--border);">
         <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.78rem;">
           <thead>
@@ -4492,20 +4495,28 @@ function openAdminTelemetryModal() {
     activeUserEl.textContent = currentUser || 'Guest';
   }
   
-  // Connect real-time Firebase subscription stream
+  // Connect real-time Firebase Firestore subscription stream
+  const setSourceBadge = (label, color) => {
+    const badge = document.getElementById('telemetry-source-badge');
+    if (badge) { badge.textContent = label; badge.style.color = color; }
+  };
+
   if (firestoreInstance) {
     if (telemetryUnsubscribe) {
       telemetryUnsubscribe();
+      telemetryUnsubscribe = null;
     }
     
     const tableBody = document.getElementById('telemetry-log-table-body');
     if (tableBody) {
-      tableBody.innerHTML = `<tr><td colspan="3" style="padding: 1.5rem; text-align: center; color: var(--text3);">🔄 Connecting to live Firebase event stream...</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="3" style="padding: 1.5rem; text-align: center; color: var(--text3);">🔄 Connecting to Firebase live stream...</td></tr>`;
     }
+    setSourceBadge('⏳ Connecting...', 'var(--text3)');
     
     try {
+      // Use snapshot WITHOUT orderBy to avoid composite index requirement.
+      // Sort client-side after receiving docs.
       telemetryUnsubscribe = firestoreInstance.collection('logins')
-        .orderBy('time', 'desc')
         .limit(50)
         .onSnapshot(querySnapshot => {
           const firestoreLogins = [];
@@ -4519,17 +4530,23 @@ function openAdminTelemetryModal() {
               });
             }
           });
+          // Sort newest first client-side
+          firestoreLogins.sort((a, b) => new Date(b.time) - new Date(a.time));
           renderTelemetryLogsTable(firestoreLogins);
+          setSourceBadge('🔴 Firebase Live', 'var(--accent)');
         }, err => {
-          console.warn("Firestore snapshot listener failed, falling back:", err);
+          console.warn('Firestore onSnapshot failed:', err);
+          setSourceBadge('🟡 Fallback Mode', 'var(--accent2)');
           runExtendsClassFallback(err.message);
         });
     } catch (e) {
-      console.warn("Firestore listener start failed:", e);
+      console.warn('Firestore listener start failed:', e);
+      setSourceBadge('🟡 Fallback Mode', 'var(--accent2)');
       runExtendsClassFallback(e.message);
     }
   } else {
-    runExtendsClassFallback('firestore instance not initialized');
+    setSourceBadge('⚪ Firestore Offline', 'var(--text3)');
+    runExtendsClassFallback('firestoreInstance not initialized');
   }
   
   refreshTelemetryCounters(false);
@@ -8122,4 +8139,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-23T02:05:00Z -->
+<!-- Build Force Timestamp: 2026-08-23T02:10:00Z -->
