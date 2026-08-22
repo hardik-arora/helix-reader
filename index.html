@@ -2507,7 +2507,6 @@
     <button class="nav-btn" id="nav-search" onclick="navigate('search')">Browse</button>
     <button class="nav-btn" id="nav-library" onclick="navigate('library')">My Library</button>
     <button class="nav-btn" id="nav-tools" onclick="navigate('tools')">AI Tools</button>
-    <a id="nav-dev-presentation" href="presentation.html" class="nav-btn" style="text-decoration:none; display:none; line-height:2.4rem;">Presentation</a>
     <a id="nav-dev-github" href="https://github.com/hardik-arora/helix-reader" target="_blank" class="nav-btn" style="text-decoration:none; display:none; line-height:2.4rem; color:var(--accent) !important;">🐱 GitHub</a>
     
     <div class="theme-dropdown-wrap">
@@ -2872,11 +2871,7 @@
 
       <div class="auth-guest-btn" onclick="continueAsGuest()">Continue as Guest &rarr;</div>
       
-      <div id="auth-dev-presentation" class="auth-presentation-link" style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; display: none;">
-        <a href="presentation.html" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; justify-content: center; width: 100%;">
-          📊 View Presentation Pitch & Future Ideas &rarr;
-        </a>
-      </div>
+
     </div>
   </div>
 </div>
@@ -4326,18 +4321,14 @@ function updateAuthNavBar() {
   // Developer Mode display sync — ONLY unlocked via the secret passcode
   const isUnlocked = localStorage.getItem('h_dev_mode') === 'true';
   
-  const devPres = document.getElementById('nav-dev-presentation');
   const devGit = document.getElementById('nav-dev-github');
   const devTelem = document.getElementById('nav-dev-telemetry');
-  const authDevPres = document.getElementById('auth-dev-presentation');
   
   const devDisplay = isUnlocked ? 'inline-block' : 'none';
   const telemDisplay = isUnlocked ? 'block' : 'none';
   
-  if (devPres) devPres.style.display = devDisplay;
   if (devGit) devGit.style.display = devDisplay;
   if (devTelem) devTelem.style.display = telemDisplay;
-  if (authDevPres) authDevPres.style.display = isUnlocked ? 'block' : 'none';
 }
 
 function toggleProfileDropdown(event) {
@@ -8138,4 +8129,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-23T03:32:00Z -->
+<!-- Build Force Timestamp: 2026-08-23T04:41:00Z -->
