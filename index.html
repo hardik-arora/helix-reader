@@ -2760,6 +2760,7 @@
         <div class="profile-xp" id="profile-xp">0 XP</div>
         <div class="profile-provider" id="profile-provider" style="font-size: 0.72rem; color: var(--text3); margin-top: 0.25rem; font-weight: 700;"></div>
       </div>
+      <button class="profile-logout-btn" style="background: rgba(0, 255, 187, 0.12); color: var(--accent); border: 1px solid var(--border); margin-bottom: 0.5rem;" onclick="openAdminTelemetryModal()">📊 Telemetry Log</button>
       <button class="profile-logout-btn" onclick="logoutUser()">🚪 Log Out</button>
     </div>
   </div>
@@ -3640,6 +3641,52 @@
   </div>
 </div>
 
+<!-- Admin Telemetry Modal -->
+<div id="admin-telemetry-modal" class="mobile-theme-overlay" onclick="closeAdminTelemetryModal()">
+  <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width: 600px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="oauth-modal-header" style="border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem; flex-shrink: 0;">
+      <h3 style="margin: 0; color: var(--accent); display: flex; align-items: center; gap: 0.5rem; font-size: 1.25rem;">
+        📊 Live Telemetry & Login Audit Log
+      </h3>
+      <button class="close-sheet-btn" onclick="closeAdminTelemetryModal()">✕</button>
+    </div>
+    <div class="oauth-modal-body" style="overflow-y: auto; padding-right: 0.5rem; flex: 1;">
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.2rem;">
+        <div style="background: var(--surface); border: 1px solid var(--border); padding: 0.75rem; border-radius: 8px; text-align: center;">
+          <div style="font-size: 0.68rem; text-transform: uppercase; color: var(--text3); font-weight: 800; letter-spacing: 0.5px;">Total Logins</div>
+          <div id="telemetry-total-logins" style="font-size: 1.6rem; font-weight: 900; color: var(--text); margin-top: 0.25rem;">Loading...</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); padding: 0.75rem; border-radius: 8px; text-align: center;">
+          <div style="font-size: 0.68rem; text-transform: uppercase; color: var(--text3); font-weight: 800; letter-spacing: 0.5px;">Total Signups</div>
+          <div id="telemetry-total-signups" style="font-size: 1.6rem; font-weight: 900; color: var(--text); margin-top: 0.25rem;">Loading...</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); padding: 0.75rem; border-radius: 8px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+          <div style="font-size: 0.68rem; text-transform: uppercase; color: var(--text3); font-weight: 800; letter-spacing: 0.5px;">Active Profile</div>
+          <div id="telemetry-active-user" style="font-size: 0.85rem; font-weight: 700; color: var(--accent2); margin-top: 0.25rem; word-break: break-all;">Guest</div>
+        </div>
+      </div>
+      
+      <h4 style="margin-bottom: 0.6rem; color: var(--text); font-size: 0.9rem; font-weight: 800;">Real-Time Activity Audit (ExtendsClass + Firestore Fallback)</h4>
+      <div style="overflow-x: auto; background: var(--bg2); border-radius: 8px; border: 1px solid var(--border);">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.78rem;">
+          <thead>
+            <tr style="border-bottom: 1.5px solid var(--border); background: rgba(255,255,255,0.02);">
+              <th style="padding: 0.6rem 0.85rem; color: var(--text3); font-weight: 800; text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.5px;">User</th>
+              <th style="padding: 0.6rem 0.85rem; color: var(--text3); font-weight: 800; text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.5px;">Method</th>
+              <th style="padding: 0.6rem 0.85rem; color: var(--text3); font-weight: 800; text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.5px;">Timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="telemetry-log-table-body">
+            <tr>
+              <td colspan="3" style="padding: 1.2rem; text-align: center; color: var(--text2);">Retrieving live security event logs...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // ══════════════════════════════════════════════════════════════
 // DATA: 75 Famous Books Database
@@ -4392,6 +4439,80 @@ function reportLoginTelemetry(username, method) {
     } catch(e) {
       console.warn("Firestore log add failed:", e);
     }
+  }
+}
+
+function openAdminTelemetryModal() {
+  const modal = document.getElementById('admin-telemetry-modal');
+  if (modal) {
+    modal.classList.add('show');
+    modal.style.display = 'flex';
+  }
+  
+  // Set current user display
+  const activeUserEl = document.getElementById('telemetry-active-user');
+  if (activeUserEl) {
+    activeUserEl.textContent = currentUser || 'Guest';
+  }
+  
+  // Fetch CounterAPI values
+  fetch('https://api.counterapi.dev/v1/helixreader/logins')
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('telemetry-total-logins').textContent = data.count || 0;
+    })
+    .catch(() => {
+      document.getElementById('telemetry-total-logins').textContent = '—';
+    });
+    
+  fetch('https://api.counterapi.dev/v1/helixreader/signups')
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('telemetry-total-signups').textContent = data.count || 0;
+    })
+    .catch(() => {
+      document.getElementById('telemetry-total-signups').textContent = '—';
+    });
+
+  // Fetch ExtendsClass logins bin
+  const binUrl = 'https://corsproxy.io/?url=' + encodeURIComponent('https://extendsclass.com/api/json-storage/bin/ffaaeaa');
+  const tableBody = document.getElementById('telemetry-log-table-body');
+  
+  fetch(binUrl)
+    .then(r => r.json())
+    .then(data => {
+      const logins = data.logins || [];
+      if (logins.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="3" style="padding: 1.5rem; text-align: center; color: var(--text2);">No audit records found</td></tr>`;
+        return;
+      }
+      
+      tableBody.innerHTML = logins.map(log => {
+        const d = new Date(log.time);
+        const timeStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        let methodBadgeColor = 'var(--text3)';
+        if (log.method.includes('Firebase')) methodBadgeColor = 'var(--accent)';
+        if (log.method.includes('Guest')) methodBadgeColor = 'var(--accent2)';
+        
+        return `
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); hover: background: rgba(255,255,255,0.01);">
+            <td style="padding: 0.75rem 1rem; font-weight: 700; color: var(--text);">${log.user}</td>
+            <td style="padding: 0.75rem 1rem;"><span style="color: ${methodBadgeColor}; font-weight: 700; font-size: 0.72rem; text-transform: uppercase;">${log.method}</span></td>
+            <td style="padding: 0.75rem 1rem; color: var(--text2);">${timeStr}</td>
+          </tr>
+        `;
+      }).join('');
+    })
+    .catch(err => {
+      tableBody.innerHTML = `<tr><td colspan="3" style="padding: 1.5rem; text-align: center; color: #ff6b6b;">Failed to retrieve active log files: ${err.message}</td></tr>`;
+    });
+}
+
+function closeAdminTelemetryModal() {
+  const modal = document.getElementById('admin-telemetry-modal');
+  if (modal) {
+    modal.classList.remove('show');
+    modal.style.display = 'none';
   }
 }
 
@@ -7707,4 +7828,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-22T23:38:00Z -->
+<!-- Build Force Timestamp: 2026-08-22T23:55:00Z -->
