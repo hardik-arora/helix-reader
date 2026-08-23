@@ -7,24 +7,25 @@ A premium, feature-rich, Kindle-inspired digital library application providing a
 - 🌐 **Live Website Link:** **[https://hardik-arora.github.io/helix-reader/](https://hardik-arora.github.io/helix-reader/)**
 - 📄 **Presentation PDF Deck:** **[https://hardik-arora.github.io/helix-reader/helix_reader_presentation.pdf](https://hardik-arora.github.io/helix-reader/helix_reader_presentation.pdf)**
 - 📊 **Presentation PowerPoint (PPTX):** **[https://hardik-arora.github.io/helix-reader/helix_reader_presentation.pptx](https://hardik-arora.github.io/helix-reader/helix_reader_presentation.pptx)**
-- 🎨 **Canva Slide Presentation:** **[https://canva.link/l2a26shp0bnrokw](https://canva.link/l2a26shp0bnrokw)**
 
 ---
 
 ## 📂 Repository File Directory
 
-This project combines a premium web interface with a self-contained Python NLP and database backend:
+This repository contains the complete frontend, database backend, NLP engines, and presentation materials for Helix Reader:
 
-*   **`index.html`**: The Kindle-style digital reader interface with dynamic theme engines, AI Summarizer, and Searchable Dictionary.
-*   **[`helix_reader_presentation.pdf`](./helix_reader_presentation.pdf)**: Cosmic Space-themed PDF slide deck layout for hackathon presentation rounds.
-*   **[`helix_reader_presentation.pptx`](./helix_reader_presentation.pptx)**: PowerPoint slide deck file featuring editable vector elements and custom speaker notes.
-*   **`app.py`**: Streamlit-based backup dashboard interface.
-*   **`generate_data.py`**: Generates the initial CSV books catalog database.
-*   **`db_setup.py`**: Seeds `library.db` and configures SQL indexes.
-*   **`search.py`**: Matches terms across title/author/keywords using LIKE queries.
-*   **`reading_support.py`**: NLP syllables analysis, readability score calculator, and advice compiler.
-*   **`library.db`**: Pre-configured SQLite relational database.
-*   **`verify_flow.py`**: Integration testing validation script.
+*   **[`index.html`](./index.html)**: The main Kindle-style digital reader web app featuring 28 themes, real-time TTS voice reading with word highlights, floating dictionary, and Firebase sync.
+*   **[`helix_reader_presentation.pdf`](./helix_reader_presentation.pdf)**: Official Hackathon presentation slide deck (PDF format).
+*   **[`helix_reader_presentation.pptx`](./helix_reader_presentation.pptx)**: Official Hackathon presentation slide deck (editable PowerPoint format).
+*   **[`app.py`](./app.py)**: Streamlit-based analytics dashboard and fallback reader interface.
+*   **[`search.py`](./search.py)**: Multi-field search engine matching titles, authors, and keywords across catalogs.
+*   **[`reading_support.py`](./reading_support.py)**: NLP readability engine for syllable count, reading difficulty scores, and focus advice.
+*   **[`ai_tools.py`](./ai_tools.py)**: AI tools helper module for dictionary definitions, AI summaries, and quiz generators.
+*   **[`db_setup.py`](./db_setup.py)**: Seeds the local SQLite database (`library.db`) and configures full-text search indexes.
+*   **[`generate_data.py`](./generate_data.py)**: Dataset generator building the initial catalog of classic literature and global authors.
+*   **[`digital_library_starter.csv`](./digital_library_starter.csv)**: Starter dataset containing 15,000+ cataloged works and metadata.
+*   **[`monitor.html`](./monitor.html)**: System health and telemetry monitoring page.
+*   **[`verify_flow.py`](./verify_flow.py)**: Automated verification test script for end-to-end user flows.
 
 
 ---
