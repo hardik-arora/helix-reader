@@ -9483,22 +9483,66 @@ function executeVoiceCommand(cmd) {
   }
 }
 
+function evaluateSpokenMath(q) {
+  const numberWordMap = {
+    'zero': 0, 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+    'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
+    'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14, 'fifteen': 15,
+    'sixteen': 16, 'seventeen': 17, 'eighteen': 18, 'nineteen': 19, 'twenty': 20,
+    'thirty': 30, 'forty': 40, 'fifty': 50, 'sixty': 60, 'seventy': 70, 'eighty': 80, 'ninety': 90,
+    'hundred': 100
+  };
+
+  let norm = q.toLowerCase();
+  norm = norm.replace(/\bin to\b/g, 'into').replace(/\bmultiplied by\b/g, 'into').replace(/\bby\b/g, 'into');
+
+  for (const [w, val] of Object.entries(numberWordMap)) {
+    const reg = new RegExp(`\\b${w}\\b`, 'g');
+    norm = norm.replace(reg, val);
+  }
+
+  // 1. Match "5 into 20", "5 times 20", "5 x 20", "5 * 20"
+  const multMatch = norm.match(/(?:what is|calculate|evaluate|how much is)?\s*(\d+(?:\.\d+)?)\s*(?:into|times|\*|x|multiplied by)\s*(\d+(?:\.\d+)?)/i);
+  if (multMatch) {
+    const n1 = parseFloat(multMatch[1]);
+    const n2 = parseFloat(multMatch[2]);
+    return `${n1} times ${n2} is ${n1 * n2}.`;
+  }
+
+  // 2. Match "5 plus 20", "5 + 20"
+  const addMatch = norm.match(/(?:what is|calculate|evaluate|how much is)?\s*(\d+(?:\.\d+)?)\s*(?:plus|\+)\s*(\d+(?:\.\d+)?)/i);
+  if (addMatch) {
+    const n1 = parseFloat(addMatch[1]);
+    const n2 = parseFloat(addMatch[2]);
+    return `${n1} plus ${n2} is ${n1 + n2}.`;
+  }
+
+  // 3. Match "20 minus 5", "20 - 5"
+  const subMatch = norm.match(/(?:what is|calculate|evaluate|how much is)?\s*(\d+(?:\.\d+)?)\s*(?:minus|\-)\s*(\d+(?:\.\d+)?)/i);
+  if (subMatch) {
+    const n1 = parseFloat(subMatch[1]);
+    const n2 = parseFloat(subMatch[2]);
+    return `${n1} minus ${n2} is ${n1 - n2}.`;
+  }
+
+  // 4. Match "20 divided by 5", "20 / 5"
+  const divMatch = norm.match(/(?:what is|calculate|evaluate|how much is)?\s*(\d+(?:\.\d+)?)\s*(?:divided by|\/)\s*(\d+(?:\.\d+)?)/i);
+  if (divMatch) {
+    const n1 = parseFloat(divMatch[1]);
+    const n2 = parseFloat(divMatch[2]);
+    return n2 !== 0 ? `${n1} divided by ${n2} is ${n1 / n2}.` : "Division by zero is undefined.";
+  }
+
+  return null;
+}
+
 async function askHelixAI(query) {
   const q = query.toLowerCase().trim();
   
-  // 1. Math Evaluator (e.g. "what is 25 times 4", "calculate 150 plus 200")
-  const mathMatch = q.match(/(?:what is|calculate|evaluate|how much is)?\s*(\d+)\s*(plus|\+|\-|minus|times|\*|x|multiplied by|divided by|\/)\s*(\d+)/i);
-  if (mathMatch) {
-    const num1 = parseFloat(mathMatch[1]);
-    const op = mathMatch[2].toLowerCase();
-    const num2 = parseFloat(mathMatch[3]);
-    let ans = 0;
-    if (op === 'plus' || op === '+') ans = num1 + num2;
-    else if (op === 'minus' || op === '-') ans = num1 - num2;
-    else if (op === 'times' || op === '*' || op === 'x' || op === 'multiplied by') ans = num1 * num2;
-    else if (op === 'divided by' || op === '/') ans = num2 !== 0 ? (num1 / num2) : 'infinity';
-    
-    speakSiriResponse(`The answer is ${ans}.`);
+  // 1. Natural Spoken Math Evaluator (e.g. "5 into 20", "five into twenty", "100 plus 50")
+  const mathResult = evaluateSpokenMath(q);
+  if (mathResult) {
+    speakSiriResponse(mathResult);
     return;
   }
 
@@ -9651,4 +9695,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T01:25:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T01:31:00Z -->
