@@ -1797,12 +1797,27 @@
       transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
     }
     .reader-focus-ruler {
-      position: fixed; left: 0; width: 100vw; height: 46px;
-      background: rgba(79, 70, 229, 0.12);
-      border-top: 2px solid var(--accent); border-bottom: 2px solid var(--accent);
+      position: fixed; left: 0; right: 0; top: 0; width: 100vw; height: 56px;
+      background: linear-gradient(90deg, rgba(99,102,241,0.08) 0%, rgba(168,85,247,0.16) 50%, rgba(6,182,212,0.08) 100%);
+      border-top: 2px solid rgba(99, 102, 241, 0.75);
+      border-bottom: 2px solid rgba(168, 85, 247, 0.75);
       pointer-events: none; z-index: 9999;
-      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
-      transition: top 0.05s ease-out; display: none;
+      box-shadow: 0 0 24px rgba(99, 102, 241, 0.35), inset 0 0 15px rgba(168, 85, 247, 0.2);
+      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+      display: none; will-change: transform;
+      transform: translate3d(0, 0, 0);
+    }
+    .reader-focus-ruler::before {
+      content: ''; position: absolute; left: 2.5rem; top: 50%; transform: translateY(-50%);
+      width: 10px; height: 10px; border-radius: 50%; background: #06b6d4;
+      box-shadow: 0 0 10px #06b6d4, 0 0 20px #6366f1;
+    }
+    .reader-focus-ruler::after {
+      content: '⚡ LASER FOCUS LENS'; position: absolute; right: 2.5rem; top: 50%; transform: translateY(-50%);
+      font-size: 0.62rem; font-weight: 900; letter-spacing: 1.5px;
+      background: linear-gradient(135deg, #a855f7, #06b6d4);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      opacity: 0.85;
     }
     .heatmap-grid {
       display: grid; grid-template-columns: repeat(20, 1fr); gap: 4px; margin-top: 0.8rem;
@@ -8753,10 +8768,20 @@ function toggleFocusRuler() {
   }
 }
 
+let rulerRafPending = false;
+let lastMouseY = 0;
+
 function updateFocusRulerPos(e) {
-  const ruler = document.getElementById('reader-focus-ruler');
-  if (ruler && focusRulerActive) {
-    ruler.style.top = `${e.clientY - 22}px`;
+  lastMouseY = e.clientY;
+  if (!rulerRafPending && focusRulerActive) {
+    rulerRafPending = true;
+    requestAnimationFrame(() => {
+      const ruler = document.getElementById('reader-focus-ruler');
+      if (ruler && focusRulerActive) {
+        ruler.style.transform = `translate3d(0, ${lastMouseY - 28}px, 0)`;
+      }
+      rulerRafPending = false;
+    });
   }
 }
 
@@ -9139,32 +9164,32 @@ function renderCustomCommandsList() {
 function runCustomAction(act) {
   if (act === 'scroll_down') { window.scrollBy({top: 450, behavior: 'smooth'}); speakSiriResponse('Scrolling down.'); }
   else if (act === 'scroll_up') { window.scrollBy({top: -450, behavior: 'smooth'}); speakSiriResponse('Scrolling up.'); }
-  else if (act === 'start_read') { speakSiriResponse('Starting voice reading.'); startAudio(); }
-  else if (act === 'pause_read') { speakSiriResponse('Paused audio.'); stopAudio(); }
-  else if (act === 'theme_dark') { speakSiriResponse('Applying Midnight theme.'); applyTheme('midnight-velvet'); }
-  else if (act === 'theme_oldmoney') { speakSiriResponse('Applying Old Money theme.'); applyTheme('old-money'); }
-  else if (act === 'theme_cyberpunk') { speakSiriResponse('Applying Cyberpunk theme.'); applyTheme('cyberpunk'); }
-  else if (act === 'bionic_mode') { speakSiriResponse('Toggling Bionic text.'); toggleBionicReading(); }
-  else if (act === 'focus_ruler') { speakSiriResponse('Toggling reading ruler.'); toggleFocusRuler(); }
-  else if (act === 'open_citations') { speakSiriResponse('Opening citations.'); openCitationModal(); }
-  else if (act === 'open_analytics') { speakSiriResponse('Opening analytics.'); openAnalyticsModal(); }
-  else if (act === 'open_importer') { speakSiriResponse('Opening document importer.'); openImportModal(); }
-  else if (act === 'open_author_chat') { speakSiriResponse('Opening author chat.'); openPersonaChatModal(); }
+  else if (act === 'start_read') { speakSiriResponse('Reading out loud.'); startAudio(); }
+  else if (act === 'pause_read') { speakSiriResponse('Paused.'); stopAudio(); }
+  else if (act === 'theme_dark') { speakSiriResponse('Switched to Dark mode.'); applyTheme('midnight-velvet'); }
+  else if (act === 'theme_oldmoney') { speakSiriResponse('Old Money theme applied.'); applyTheme('old-money'); }
+  else if (act === 'theme_cyberpunk') { speakSiriResponse('Cyberpunk theme applied.'); applyTheme('cyberpunk'); }
+  else if (act === 'bionic_mode') { speakSiriResponse('Toggling Bionic mode.'); toggleBionicReading(); }
+  else if (act === 'focus_ruler') { speakSiriResponse('Toggling ruler.'); toggleFocusRuler(); }
+  else if (act === 'open_citations') { speakSiriResponse('Opening Citations.'); openCitationModal(); }
+  else if (act === 'open_analytics') { speakSiriResponse('Opening Analytics.'); openAnalyticsModal(); }
+  else if (act === 'open_importer') { speakSiriResponse('Opening Importer.'); openImportModal(); }
+  else if (act === 'open_author_chat') { speakSiriResponse('Opening Author Chat.'); openPersonaChatModal(); }
 }
 
 function speakSiriResponse(text) {
   const siriAudioToggle = document.getElementById('set-siri-audio-toggle');
   const allowAudio = !siriAudioToggle || siriAudioToggle.checked;
 
-  showNotification(`🤖 Siri AI: "${text}"`);
+  showNotification(`🤖 Siri: "${text}"`);
   const orbText = document.getElementById('siri-orb-text');
   if (orbText) orbText.textContent = text;
   
   if (allowAudio && window.speechSynthesis) {
     window.speechSynthesis.cancel();
     const synthUtterance = new SpeechSynthesisUtterance(text);
-    synthUtterance.rate = 1.05;
-    synthUtterance.pitch = 1.1;
+    synthUtterance.rate = 1.0;
+    synthUtterance.pitch = 1.05;
     window.speechSynthesis.speak(synthUtterance);
   }
 }
@@ -9202,7 +9227,7 @@ function toggleVoiceCommands() {
     if (navBtn) navBtn.classList.add('active');
     if (readerBtn) readerBtn.classList.add('active');
     if (orb) orb.style.display = 'flex';
-    speakSiriResponse("Siri AI listening. What can I do for you?");
+    speakSiriResponse("Siri AI listening.");
   };
 
   voiceCmdRecognition.onresult = (event) => {
@@ -9241,42 +9266,42 @@ function executeVoiceCommand(cmd) {
 
   // 2. Navigation & Page Controls
   if (cmd.includes('home') || cmd.includes('discover') || cmd.includes('catalog')) {
-    speakSiriResponse("Opening Discover home page.");
+    speakSiriResponse("Opening Discover.");
     navigate('discover');
 
   } else if (cmd.includes('search') || cmd.includes('browse') || cmd.includes('library')) {
-    speakSiriResponse("Opening Library catalog search.");
+    speakSiriResponse("Opening Search.");
     navigate('search');
 
   } else if (cmd.includes('dashboard') || cmd.includes('stats') || cmd.includes('profile')) {
-    speakSiriResponse("Opening your Reading Dashboard.");
+    speakSiriResponse("Opening Dashboard.");
     navigate('dashboard');
 
   } else if (cmd.includes('settings') || cmd.includes('preferences') || cmd.includes('config')) {
-    speakSiriResponse("Opening Site Settings modal.");
+    speakSiriResponse("Opening Settings.");
     openSiteSettingsModal();
 
   } else if (cmd.includes('telemetry') || cmd.includes('audit') || cmd.includes('security log')) {
-    speakSiriResponse("Opening Telemetry Security Audit logs.");
+    speakSiriResponse("Opening Security Logs.");
     openAdminTelemetryModal();
 
   // 3. Audio & Reading Controls
   } else if (cmd.includes('read') || cmd.includes('play') || cmd.includes('listen') || cmd.includes('speak') || cmd.includes('audio')) {
-    speakSiriResponse("Starting voice reading now.");
+    speakSiriResponse("Reading out loud.");
     startAudio();
 
   } else if (cmd.includes('pause') || cmd.includes('stop') || cmd.includes('mute') || cmd.includes('quiet')) {
-    speakSiriResponse("Paused voice reading.");
+    speakSiriResponse("Paused.");
     stopAudio();
 
   // 4. Scrolling Controls
   } else if (cmd.includes('down') || cmd.includes('scroll down') || cmd.includes('next paragraph') || cmd.includes('next page') || cmd.includes('forward')) {
     window.scrollBy({top: 450, behavior: 'smooth'});
-    speakSiriResponse("Scrolling down text.");
+    speakSiriResponse("Scrolling down.");
 
   } else if (cmd.includes('up') || cmd.includes('scroll up') || cmd.includes('previous paragraph') || cmd.includes('previous page') || cmd.includes('back')) {
     window.scrollBy({top: -450, behavior: 'smooth'});
-    speakSiriResponse("Scrolling up text.");
+    speakSiriResponse("Scrolling up.");
 
   // 5. Soundscapes
   } else if (cmd.includes('rain')) {
@@ -9284,7 +9309,7 @@ function executeVoiceCommand(cmd) {
     changeSoundscape('rain');
 
   } else if (cmd.includes('cafe') || cmd.includes('coffee')) {
-    speakSiriResponse("Playing Cozy Cafe soundscape.");
+    speakSiriResponse("Playing Cafe soundscape.");
     changeSoundscape('cafe');
 
   } else if (cmd.includes('fire') || cmd.includes('fireplace')) {
@@ -9292,80 +9317,81 @@ function executeVoiceCommand(cmd) {
     changeSoundscape('fireplace');
 
   } else if (cmd.includes('lofi') || cmd.includes('synth') || cmd.includes('cosmic')) {
-    speakSiriResponse("Playing Cosmic Lofi Synth soundscape.");
+    speakSiriResponse("Playing Lofi Synth.");
     changeSoundscape('lofi');
 
   // 6. Font Size Controls
   } else if (cmd.includes('bigger') || cmd.includes('increase font') || cmd.includes('larger text')) {
-    speakSiriResponse("Increasing reading font size.");
+    speakSiriResponse("Increasing text size.");
     changeFontSize(2);
 
   } else if (cmd.includes('smaller') || cmd.includes('decrease font') || cmd.includes('tiny text')) {
-    speakSiriResponse("Decreasing reading font size.");
+    speakSiriResponse("Decreasing text size.");
     changeFontSize(-2);
 
   // 7. Accessibility Reading Guides
   } else if (cmd.includes('bionic')) {
     const newState = !bionicModeActive;
-    speakSiriResponse(newState ? "Enabling Bionic reading mode." : "Disabling Bionic reading mode.");
+    speakSiriResponse(newState ? "Bionic mode on." : "Bionic mode off.");
     toggleBionicReading();
 
   } else if (cmd.includes('ruler') || cmd.includes('focus')) {
-    speakSiriResponse("Toggling reading ruler guide.");
+    speakSiriResponse("Toggling reading ruler.");
     toggleFocusRuler();
 
   // 8. Themes
   } else if (cmd.includes('dark') || cmd.includes('night') || cmd.includes('midnight')) {
-    speakSiriResponse("Switching to Midnight Velvet theme.");
+    speakSiriResponse("Switched to Dark mode.");
     applyTheme('midnight-velvet');
 
   } else if (cmd.includes('old money')) {
-    speakSiriResponse("Applying Old Money theme.");
+    speakSiriResponse("Old Money theme applied.");
     applyTheme('old-money');
 
   } else if (cmd.includes('cyberpunk')) {
-    speakSiriResponse("Applying Cyberpunk theme.");
+    speakSiriResponse("Cyberpunk theme applied.");
     applyTheme('cyberpunk');
 
   } else if (cmd.includes('nordic') || cmd.includes('frost')) {
-    speakSiriResponse("Applying Nordic Frost theme.");
+    speakSiriResponse("Nordic Frost theme applied.");
     applyTheme('nordic-frost');
 
   } else if (cmd.includes('sepia')) {
-    speakSiriResponse("Applying Warm Sepia theme.");
+    speakSiriResponse("Warm Sepia theme applied.");
     applyTheme('sepia');
 
   // 9. Modals & Tools
   } else if (cmd.includes('citation') || cmd.includes('cite') || cmd.includes('bibliography')) {
-    speakSiriResponse("Opening academic citation generator.");
+    speakSiriResponse("Opening Citations.");
     openCitationModal();
 
   } else if (cmd.includes('analytics') || cmd.includes('speed') || cmd.includes('insights') || cmd.includes('wpm')) {
-    speakSiriResponse("Opening reading insights dashboard.");
+    speakSiriResponse("Opening Analytics.");
     openAnalyticsModal();
 
   } else if (cmd.includes('author') || cmd.includes('persona') || cmd.includes('chat')) {
-    speakSiriResponse("Opening AI Author persona chat.");
+    speakSiriResponse("Opening Author Chat.");
     openPersonaChatModal();
 
   } else if (cmd.includes('import') || cmd.includes('file') || cmd.includes('upload') || cmd.includes('epub') || cmd.includes('pdf')) {
-    speakSiriResponse("Opening document importer.");
+    speakSiriResponse("Opening File Importer.");
     openImportModal();
 
   // 10. AI Information Queries
   } else if (cmd.includes('who wrote') || cmd.includes('author of this')) {
     const author = readerBook ? readerBook.author : "the author";
-    speakSiriResponse(`This book is written by ${author}.`);
+    speakSiriResponse(`Written by ${author}.`);
 
   } else if (cmd.includes('time') || cmd.includes('clock')) {
-    speakSiriResponse(`The current time is ${new Date().toLocaleTimeString()}.`);
+    speakSiriResponse(`It's ${new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}.`);
 
   } else if (cmd.includes('summarize') || cmd.includes('summary') || cmd.includes('about')) {
-    const summary = readerBook ? readerBook.summary.slice(0, 120) : "No summary available for this item";
-    speakSiriResponse(`Here is the summary: ${summary}...`);
+    const summary = readerBook ? readerBook.summary.slice(0, 100) : "No summary available";
+    speakSiriResponse(`Here is the summary: ${summary}.`);
 
   } else {
-    speakSiriResponse(`Recognized command: "${cmd}". Executing query.`);
+    const orbText = document.getElementById('siri-orb-text');
+    if (orbText) orbText.textContent = `Listening... ("${cmd.slice(0, 20)}")`;
   }
 }
 
@@ -9410,4 +9436,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T00:42:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T00:46:00Z -->
