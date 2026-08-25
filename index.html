@@ -1829,24 +1829,29 @@
     .heatmap-cell.level-2 { background: rgba(79, 70, 229, 0.6); }
     .heatmap-cell.level-3 { background: var(--accent); }
     
-    /* Siri AI Voice Assistant Orb Widget */
+    /* Siri AI Voice Assistant Orb Widget - Dynamic Theme Integration */
     .siri-orb-container {
       position: fixed; bottom: 2rem; right: 2rem; z-index: 10000;
-      display: flex; align-items: center; gap: 0.75rem; background: rgba(15, 23, 42, 0.92);
+      display: flex; align-items: center; gap: 0.75rem; background: var(--bg2);
       border: 1.5px solid var(--accent); border-radius: 40px; padding: 0.5rem 1.1rem 0.5rem 0.6rem;
-      box-shadow: 0 8px 32px rgba(79, 70, 229, 0.45); backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px var(--accent-glow); backdrop-filter: blur(12px);
       cursor: pointer; transition: all 0.3s ease;
+    }
+    .siri-orb-container:hover {
+      transform: translateY(-2px) scale(1.03);
+      border-color: var(--accent2);
+      box-shadow: 0 12px 36px var(--accent-glow);
     }
     .siri-orb {
       width: 32px; height: 32px; border-radius: 50%;
-      background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899, #06b6d4);
+      background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent));
       background-size: 200% 200%;
       animation: siriGlow 2s ease infinite alternate, siriSpin 4s linear infinite;
-      box-shadow: 0 0 15px #6366f1;
+      box-shadow: 0 0 15px var(--accent);
     }
     @keyframes siriGlow {
-      0% { transform: scale(0.92); box-shadow: 0 0 10px #6366f1; }
-      100% { transform: scale(1.18); box-shadow: 0 0 24px #ec4899; }
+      0% { transform: scale(0.92); box-shadow: 0 0 10px var(--accent); }
+      100% { transform: scale(1.18); box-shadow: 0 0 24px var(--accent2); }
     }
     @keyframes siriSpin {
       0% { background-position: 0% 50%; }
@@ -1854,7 +1859,29 @@
       100% { background-position: 0% 50%; }
     }
     .siri-badge {
-      font-size: 0.82rem; font-weight: 700; color: #ffffff; letter-spacing: 0.3px;
+      font-size: 0.82rem; font-weight: 700; color: var(--text); letter-spacing: 0.3px;
+    }
+    
+    /* Navbar Siri AI Button Dynamic Theme Styling */
+    #nav-siri-ai {
+      background: linear-gradient(135deg, var(--accent), var(--accent2)) !important;
+      color: #ffffff !important;
+      border: 1px solid var(--border) !important;
+      font-weight: 700 !important;
+      box-shadow: 0 4px 14px var(--accent-glow) !important;
+      transition: all 0.3s ease !important;
+    }
+    #nav-siri-ai:hover {
+      transform: translateY(-1px) scale(1.04);
+      box-shadow: 0 6px 20px var(--accent-glow) !important;
+      filter: brightness(1.1);
+    }
+    #nav-siri-ai.listening {
+      animation: siriPulse 1.2s ease infinite alternate !important;
+    }
+    @keyframes siriPulse {
+      0% { box-shadow: 0 0 8px var(--accent); }
+      100% { box-shadow: 0 0 22px var(--accent2), 0 0 35px var(--accent); }
     }
     
     .persona-chat-thread {
@@ -2831,7 +2858,7 @@
 
   <!-- Global Siri AI & Settings Buttons -->
   <div style="display: flex; align-items: center; gap: 0.4rem; margin-left: 0.5rem;">
-    <button class="nav-btn" id="nav-siri-ai" onclick="toggleVoiceCommands()" title="Activate Helix Siri AI Assistant" style="background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899); color: #ffffff; border: none; font-weight: 700; box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);">
+    <button class="nav-btn" id="nav-siri-ai" onclick="toggleVoiceCommands()" title="Activate Helix Siri AI Assistant">
       ⚡ Helix Siri
     </button>
     <button class="nav-btn" id="nav-settings" onclick="openSiteSettingsModal()" title="Global Site Settings & Commands Manager" style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border-radius: 50%;">
@@ -9553,4 +9580,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T02:22:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T02:26:00Z -->
