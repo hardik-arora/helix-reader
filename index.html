@@ -9253,6 +9253,50 @@ function toggleVoiceCommands() {
   }
 }
 
+function findBookFromSpeech(cmd) {
+  const allBooks = [...MASTER_BOOKS, ...(typeof DYNAMIC_SEARCH_CACHE !== 'undefined' ? DYNAMIC_SEARCH_CACHE : []), ...((state && state.customBooks) ? state.customBooks : [])];
+  
+  const cleanCmd = cmd.toLowerCase().replace(/[^\w\s]/g, ' ').trim();
+  const cmdWords = cleanCmd.split(/\s+/).filter(w => w.length > 2);
+
+  // 1. Exact or Substring match
+  for (const b of allBooks) {
+    const rawTitle = b.title.toLowerCase();
+    const normTitle = rawTitle.replace(/^the\s+/i, '').replace(/^a\s+/i, '').trim();
+    const rawAuthor = b.author.toLowerCase();
+    
+    if (cleanCmd.includes(rawTitle) || cleanCmd.includes(normTitle) || cleanCmd.includes(rawAuthor)) {
+      return b;
+    }
+  }
+
+  // 2. Multi-word Token Overlap Match
+  for (const b of allBooks) {
+    const normTitle = b.title.toLowerCase().replace(/^the\s+/i, '').replace(/^a\s+/i, '').replace(/[^\w\s]/g, ' ');
+    const titleWords = normTitle.split(/\s+/).filter(w => w.length > 2);
+    const authorWords = b.author.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+
+    let titleMatchCount = 0;
+    for (const tw of titleWords) {
+      if (cleanCmd.includes(tw)) {
+        titleMatchCount++;
+      }
+    }
+
+    if (titleWords.length > 0 && titleMatchCount / titleWords.length >= 0.5) {
+      return b;
+    }
+
+    for (const aw of authorWords) {
+      if (cleanCmd.includes(aw)) {
+        return b;
+      }
+    }
+  }
+
+  return null;
+}
+
 function executeVoiceCommand(cmd) {
   console.log(`Siri AI Command Received: ${cmd}`);
 
@@ -9265,34 +9309,24 @@ function executeVoiceCommand(cmd) {
   }
 
   // 2. Smart Book Opening & Reading Commands
-  if (cmd.includes('open book') || cmd.includes('read book') || cmd.includes('open excerpt') || cmd.includes('show book') || cmd.includes('open ') || cmd.includes('read ')) {
-    const allBooks = [...MASTER_BOOKS, ...(typeof DYNAMIC_SEARCH_CACHE !== 'undefined' ? DYNAMIC_SEARCH_CACHE : []), ...((state && state.customBooks) ? state.customBooks : [])];
-    
-    let matched = null;
-    for (const b of allBooks) {
-      const t = b.title.toLowerCase();
-      const a = b.author.toLowerCase();
-      if (cmd.includes(t) || (t.length > 4 && cmd.includes(t.slice(0, 5))) || cmd.includes(a)) {
-        matched = b;
-        break;
-      }
+  const matchedBook = findBookFromSpeech(cmd);
+  if (matchedBook) {
+    if (cmd.includes('excerpt') || cmd.includes('read') || cmd.includes('text') || cmd.includes('page')) {
+      openReader(matchedBook.id);
+      speakSiriResponse(`Opening excerpt for ${matchedBook.title}.`);
+    } else {
+      openBookDetails(matchedBook.id);
+      speakSiriResponse(`Opening ${matchedBook.title}.`);
     }
+    return;
+  }
 
-    if (matched) {
-      if (cmd.includes('excerpt') || cmd.includes('read')) {
-        openReader(matched.id);
-        speakSiriResponse(`Opening excerpt for ${matched.title}.`);
-      } else {
-        openBookDetails(matched.id);
-        speakSiriResponse(`Opening ${matched.title}.`);
-      }
-      return;
-    } else if (cmd.includes('open book') || cmd.includes('read book') || cmd.includes('open excerpt')) {
-      const targetId = activeBookId || (readerBook ? readerBook.id : (MASTER_BOOKS[0] ? MASTER_BOOKS[0].id : 'b1'));
-      openReader(targetId);
-      speakSiriResponse("Opening book excerpt.");
-      return;
-    }
+  // Fallback for general 'open book' / 'read book' without specific title
+  if (cmd.includes('open book') || cmd.includes('read book') || cmd.includes('open excerpt') || cmd.includes('show book')) {
+    const targetId = activeBookId || (readerBook ? readerBook.id : (MASTER_BOOKS[0] ? MASTER_BOOKS[0].id : 'b1'));
+    openReader(targetId);
+    speakSiriResponse("Opening book excerpt.");
+    return;
   }
 
   // 3. Catalog Browsing & Search Queries
@@ -9489,4 +9523,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T00:52:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T01:05:00Z -->
