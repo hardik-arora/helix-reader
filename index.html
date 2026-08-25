@@ -9177,10 +9177,16 @@ function toggleVoiceCommands() {
   }
 
   const orb = document.getElementById('siri-voice-orb');
+  const navBtn = document.getElementById('nav-siri-ai');
+  const readerBtn = document.getElementById('btn-voice-cmd');
+
   if (isVoiceCmdActive) {
-    if (voiceCmdRecognition) voiceCmdRecognition.stop();
+    if (voiceCmdRecognition) {
+      try { voiceCmdRecognition.stop(); } catch(e){}
+    }
     isVoiceCmdActive = false;
-    document.getElementById('btn-voice-cmd').classList.remove('active');
+    if (navBtn) navBtn.classList.remove('active');
+    if (readerBtn) readerBtn.classList.remove('active');
     if (orb) orb.style.display = 'none';
     showNotification('🎙️ Siri AI Voice Assistant deactivated');
     return;
@@ -9193,9 +9199,10 @@ function toggleVoiceCommands() {
 
   voiceCmdRecognition.onstart = () => {
     isVoiceCmdActive = true;
-    document.getElementById('btn-voice-cmd').classList.add('active');
+    if (navBtn) navBtn.classList.add('active');
+    if (readerBtn) readerBtn.classList.add('active');
     if (orb) orb.style.display = 'flex';
-    speakSiriResponse("Siri AI listening. How can I assist your reading?");
+    speakSiriResponse("Siri AI listening. What can I do for you?");
   };
 
   voiceCmdRecognition.onresult = (event) => {
@@ -9206,19 +9213,25 @@ function toggleVoiceCommands() {
     }
   };
 
-  voiceCmdRecognition.onerror = () => {
+  voiceCmdRecognition.onerror = (e) => {
+    console.warn("Speech recognition error:", e);
     isVoiceCmdActive = false;
-    document.getElementById('btn-voice-cmd').classList.remove('active');
+    if (navBtn) navBtn.classList.remove('active');
+    if (readerBtn) readerBtn.classList.remove('active');
     if (orb) orb.style.display = 'none';
   };
 
-  voiceCmdRecognition.start();
+  try {
+    voiceCmdRecognition.start();
+  } catch(e) {
+    console.warn("Speech start failed:", e);
+  }
 }
 
 function executeVoiceCommand(cmd) {
   console.log(`Siri AI Command Received: ${cmd}`);
 
-  // Check Custom Commands Registry
+  // 1. Check Custom Commands Registry first
   for (const custom of customVoiceCommands) {
     if (cmd.includes(custom.trigger.toLowerCase())) {
       runCustomAction(custom.action);
@@ -9226,7 +9239,38 @@ function executeVoiceCommand(cmd) {
     }
   }
 
-  if (cmd.includes('down') || cmd.includes('scroll down') || cmd.includes('next paragraph') || cmd.includes('next page') || cmd.includes('forward')) {
+  // 2. Navigation & Page Controls
+  if (cmd.includes('home') || cmd.includes('discover') || cmd.includes('catalog')) {
+    speakSiriResponse("Opening Discover home page.");
+    navigate('discover');
+
+  } else if (cmd.includes('search') || cmd.includes('browse') || cmd.includes('library')) {
+    speakSiriResponse("Opening Library catalog search.");
+    navigate('search');
+
+  } else if (cmd.includes('dashboard') || cmd.includes('stats') || cmd.includes('profile')) {
+    speakSiriResponse("Opening your Reading Dashboard.");
+    navigate('dashboard');
+
+  } else if (cmd.includes('settings') || cmd.includes('preferences') || cmd.includes('config')) {
+    speakSiriResponse("Opening Site Settings modal.");
+    openSiteSettingsModal();
+
+  } else if (cmd.includes('telemetry') || cmd.includes('audit') || cmd.includes('security log')) {
+    speakSiriResponse("Opening Telemetry Security Audit logs.");
+    openAdminTelemetryModal();
+
+  // 3. Audio & Reading Controls
+  } else if (cmd.includes('read') || cmd.includes('play') || cmd.includes('listen') || cmd.includes('speak') || cmd.includes('audio')) {
+    speakSiriResponse("Starting voice reading now.");
+    startAudio();
+
+  } else if (cmd.includes('pause') || cmd.includes('stop') || cmd.includes('mute') || cmd.includes('quiet')) {
+    speakSiriResponse("Paused voice reading.");
+    stopAudio();
+
+  // 4. Scrolling Controls
+  } else if (cmd.includes('down') || cmd.includes('scroll down') || cmd.includes('next paragraph') || cmd.includes('next page') || cmd.includes('forward')) {
     window.scrollBy({top: 450, behavior: 'smooth'});
     speakSiriResponse("Scrolling down text.");
 
@@ -9234,23 +9278,43 @@ function executeVoiceCommand(cmd) {
     window.scrollBy({top: -450, behavior: 'smooth'});
     speakSiriResponse("Scrolling up text.");
 
-  } else if (cmd.includes('read') || cmd.includes('play') || cmd.includes('listen') || cmd.includes('start audio')) {
-    speakSiriResponse("Starting voice reading now.");
-    startAudio();
+  // 5. Soundscapes
+  } else if (cmd.includes('rain')) {
+    speakSiriResponse("Playing Rain soundscape.");
+    changeSoundscape('rain');
 
-  } else if (cmd.includes('pause') || cmd.includes('stop')) {
-    speakSiriResponse("Paused voice reading.");
-    stopAudio();
+  } else if (cmd.includes('cafe') || cmd.includes('coffee')) {
+    speakSiriResponse("Playing Cozy Cafe soundscape.");
+    changeSoundscape('cafe');
 
+  } else if (cmd.includes('fire') || cmd.includes('fireplace')) {
+    speakSiriResponse("Playing Fireplace soundscape.");
+    changeSoundscape('fireplace');
+
+  } else if (cmd.includes('lofi') || cmd.includes('synth') || cmd.includes('cosmic')) {
+    speakSiriResponse("Playing Cosmic Lofi Synth soundscape.");
+    changeSoundscape('lofi');
+
+  // 6. Font Size Controls
+  } else if (cmd.includes('bigger') || cmd.includes('increase font') || cmd.includes('larger text')) {
+    speakSiriResponse("Increasing reading font size.");
+    changeFontSize(2);
+
+  } else if (cmd.includes('smaller') || cmd.includes('decrease font') || cmd.includes('tiny text')) {
+    speakSiriResponse("Decreasing reading font size.");
+    changeFontSize(-2);
+
+  // 7. Accessibility Reading Guides
   } else if (cmd.includes('bionic')) {
     const newState = !bionicModeActive;
     speakSiriResponse(newState ? "Enabling Bionic reading mode." : "Disabling Bionic reading mode.");
     toggleBionicReading();
 
-  } else if (cmd.includes('ruler') || cmd.includes('focus ruler')) {
+  } else if (cmd.includes('ruler') || cmd.includes('focus')) {
     speakSiriResponse("Toggling reading ruler guide.");
     toggleFocusRuler();
 
+  // 8. Themes
   } else if (cmd.includes('dark') || cmd.includes('night') || cmd.includes('midnight')) {
     speakSiriResponse("Switching to Midnight Velvet theme.");
     applyTheme('midnight-velvet');
@@ -9263,15 +9327,20 @@ function executeVoiceCommand(cmd) {
     speakSiriResponse("Applying Cyberpunk theme.");
     applyTheme('cyberpunk');
 
-  } else if (cmd.includes('nordic')) {
+  } else if (cmd.includes('nordic') || cmd.includes('frost')) {
     speakSiriResponse("Applying Nordic Frost theme.");
     applyTheme('nordic-frost');
 
-  } else if (cmd.includes('citation') || cmd.includes('cite')) {
+  } else if (cmd.includes('sepia')) {
+    speakSiriResponse("Applying Warm Sepia theme.");
+    applyTheme('sepia');
+
+  // 9. Modals & Tools
+  } else if (cmd.includes('citation') || cmd.includes('cite') || cmd.includes('bibliography')) {
     speakSiriResponse("Opening academic citation generator.");
     openCitationModal();
 
-  } else if (cmd.includes('analytics') || cmd.includes('speed') || cmd.includes('insights')) {
+  } else if (cmd.includes('analytics') || cmd.includes('speed') || cmd.includes('insights') || cmd.includes('wpm')) {
     speakSiriResponse("Opening reading insights dashboard.");
     openAnalyticsModal();
 
@@ -9279,23 +9348,24 @@ function executeVoiceCommand(cmd) {
     speakSiriResponse("Opening AI Author persona chat.");
     openPersonaChatModal();
 
-  } else if (cmd.includes('import') || cmd.includes('file') || cmd.includes('upload')) {
+  } else if (cmd.includes('import') || cmd.includes('file') || cmd.includes('upload') || cmd.includes('epub') || cmd.includes('pdf')) {
     speakSiriResponse("Opening document importer.");
     openImportModal();
 
+  // 10. AI Information Queries
   } else if (cmd.includes('who wrote') || cmd.includes('author of this')) {
     const author = readerBook ? readerBook.author : "the author";
     speakSiriResponse(`This book is written by ${author}.`);
 
-  } else if (cmd.includes('time')) {
+  } else if (cmd.includes('time') || cmd.includes('clock')) {
     speakSiriResponse(`The current time is ${new Date().toLocaleTimeString()}.`);
 
-  } else if (cmd.includes('summarize') || cmd.includes('summary')) {
-    const summary = readerBook ? readerBook.summary.slice(0, 100) : "No summary available";
+  } else if (cmd.includes('summarize') || cmd.includes('summary') || cmd.includes('about')) {
+    const summary = readerBook ? readerBook.summary.slice(0, 120) : "No summary available for this item";
     speakSiriResponse(`Here is the summary: ${summary}...`);
 
   } else {
-    speakSiriResponse(`Received command: "${cmd}".`);
+    speakSiriResponse(`Recognized command: "${cmd}". Executing query.`);
   }
 }
 
@@ -9340,4 +9410,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T00:38:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T00:42:00Z -->
