@@ -9502,8 +9502,20 @@ async function askHelixAI(query) {
     return;
   }
 
-  // 2. Emotional & Conversational Empathy (Sharing feelings, mood, personal thoughts)
-  if (q.includes('tired') || q.includes('stressed') || q.includes('sad') || q.includes('bad day') || q.includes('exhausted')) {
+  // 2. Emotional & Conversational Empathy (Sharing feelings, mood, personal thoughts, friendship)
+  if (q.includes('friend') || q.includes('lonely') || q.includes('talk to me') || q.includes('something nice')) {
+    speakSiriResponse("I am always here for you as your loyal friend and assistant. You can talk to me about anything, anytime!");
+    return;
+
+  } else if (q.includes('good morning')) {
+    speakSiriResponse("Good morning! I hope you have a wonderful and productive day ahead. Ready to read or learn something new?");
+    return;
+
+  } else if (q.includes('goodnight') || q.includes('good night') || q.includes('sleep')) {
+    speakSiriResponse("Goodnight! Sleep well and rest up. I'll be right here whenever you come back!");
+    return;
+
+  } else if (q.includes('tired') || q.includes('stressed') || q.includes('sad') || q.includes('bad day') || q.includes('exhausted')) {
     speakSiriResponse("I hear you. Take a deep breath and give yourself a break. Listening to our Rain soundscape or reading a soothing chapter can help you unwind.");
     return;
 
@@ -9639,4 +9651,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T01:21:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T01:25:00Z -->
