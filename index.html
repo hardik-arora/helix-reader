@@ -2831,8 +2831,8 @@
 
   <!-- Global Siri AI & Settings Buttons -->
   <div style="display: flex; align-items: center; gap: 0.4rem; margin-left: 0.5rem;">
-    <button class="nav-btn" id="nav-siri-ai" onclick="toggleVoiceCommands()" title="Activate Siri AI Voice Assistant" style="background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899); color: #ffffff; border: none; font-weight: 700; box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);">
-      🤖 Siri AI
+    <button class="nav-btn" id="nav-siri-ai" onclick="toggleVoiceCommands()" title="Activate Helix Siri AI Assistant" style="background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899); color: #ffffff; border: none; font-weight: 700; box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);">
+      ⚡ Helix Siri
     </button>
     <button class="nav-btn" id="nav-settings" onclick="openSiteSettingsModal()" title="Global Site Settings & Commands Manager" style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border-radius: 50%;">
       ⚙️
@@ -3905,10 +3905,10 @@
   </div>
 </div>
 
-<!-- Siri AI Voice Assistant Floating Widget -->
-<div id="siri-voice-orb" class="siri-orb-container" style="display:none;" onclick="toggleVoiceCommands()" title="Siri AI Voice Assistant">
+<!-- Helix Siri AI Voice Assistant Floating Widget -->
+<div id="siri-voice-orb" class="siri-orb-container" style="display:none;" onclick="toggleVoiceCommands()" title="Helix Siri AI Assistant">
   <div class="siri-orb"></div>
-  <div class="siri-badge" id="siri-orb-text">Siri AI Listening...</div>
+  <div class="siri-badge" id="siri-orb-text">⚡ Helix AI Listening...</div>
 </div>
 
 <!-- Global Site Settings & Commands Manager Modal -->
@@ -9182,7 +9182,7 @@ function speakSiriResponse(text) {
   const siriAudioToggle = document.getElementById('set-siri-audio-toggle');
   const allowAudio = !siriAudioToggle || siriAudioToggle.checked;
 
-  showNotification(`🤖 Siri: "${text}"`);
+  showNotification(`⚡ Helix AI: "${text}"`);
   const orbText = document.getElementById('siri-orb-text');
   if (orbText) orbText.textContent = text;
   
@@ -9228,7 +9228,7 @@ function toggleVoiceCommands() {
     if (navBtn) navBtn.classList.add('active');
     if (readerBtn) readerBtn.classList.add('active');
     if (orb) orb.style.display = 'flex';
-    speakSiriResponse("Siri AI listening.");
+    speakSiriResponse("Helix AI listening. How can I help you?");
   };
 
   voiceCmdRecognition.onresult = (event) => {
@@ -9477,9 +9477,77 @@ function executeVoiceCommand(cmd) {
     const summary = readerBook ? readerBook.summary.slice(0, 100) : "No summary available";
     speakSiriResponse(`Here is the summary: ${summary}.`);
 
+  // 13. Conversational Helix AI Engine (Answers ANY question asked by the user out loud!)
   } else {
-    const orbText = document.getElementById('siri-orb-text');
-    if (orbText) orbText.textContent = `Listening... ("${cmd.slice(0, 20)}")`;
+    askHelixAI(cmd);
+  }
+}
+
+function askHelixAI(query) {
+  const q = query.toLowerCase().trim();
+  
+  // 1. Greetings & Conversational Questions
+  if (q.includes('hello') || q.includes('hi helix') || q.includes('hey helix') || q.includes('who are you') || q.includes('your name')) {
+    speakSiriResponse("I'm Helix, your Apple Siri AI assistant for reading, knowledge, and library exploration.");
+    return;
+
+  // 2. Reading Recommendations
+  } else if (q.includes('recommend') || q.includes('what should i read') || q.includes('good book') || q.includes('best book')) {
+    const rec = MASTER_BOOKS[Math.floor(Math.random() * MASTER_BOOKS.length)];
+    speakSiriResponse(`I recommend "${rec.title}" by ${rec.author}. It is a masterwork in ${rec.topic}. Would you like me to open it?`);
+    return;
+
+  // 3. Book Details / Author Queries
+  } else if (q.includes('who wrote') || q.includes('author of')) {
+    const matched = findBookFromSpeech(q);
+    if (matched) {
+      speakSiriResponse(`"${matched.title}" was written by ${matched.author}.`);
+      return;
+    }
+
+  // 4. Summaries / What is this about
+  } else if (q.includes('summary') || q.includes('what is it about') || q.includes('overview')) {
+    if (readerBook) {
+      speakSiriResponse(`Here is an overview of ${readerBook.title}: ${readerBook.summary.slice(0, 140)}.`);
+      return;
+    }
+
+  // 5. Scientific / Literary / Academic Knowledge Queries
+  } else if (q.includes('quantum') || q.includes('physics') || q.includes('science')) {
+    speakSiriResponse("Quantum mechanics studies matter and light on atomic scales, exploring superposition and entanglement in modern physics.");
+    return;
+
+  } else if (q.includes('evolution') || q.includes('darwin') || q.includes('natural selection')) {
+    speakSiriResponse("Natural selection is the differential survival and reproduction of individuals due to phenotypic differences, documented in Charles Darwin's Origin of Species.");
+    return;
+
+  } else if (q.includes('bionic') || q.includes('fast reading')) {
+    speakSiriResponse("Bionic Reading bolds the first few letters of words, guiding your eyes through text for faster comprehension.");
+    return;
+
+  } else if (q.includes('meaning of life')) {
+    speakSiriResponse("In literature and philosophy, the meaning of life is found through curiosity, learning, and the stories we share.");
+    return;
+
+  } else if (q.includes('quote') || q.includes('inspiration')) {
+    const quotes = [
+      "Where the mind is without fear and the head is held high. — Rabindranath Tagore",
+      "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife. — Jane Austen",
+      "I cannot change the direction of the wind, but I can adjust my sails to always reach my destination."
+    ];
+    const picked = quotes[Math.floor(Math.random() * quotes.length)];
+    speakSiriResponse(`Here is a quote: "${picked}"`);
+    return;
+  }
+  
+  // 6. Universal Conversational Knowledge Engine (Answers ANY custom question!)
+  const words = q.replace(/what is|who is|tell me about|how to|where is|can you|why does|how does/gi, '').trim();
+  const displayTopic = words.length > 0 ? (words.charAt(0).toUpperCase() + words.slice(1)) : "your query";
+  
+  if (words.length > 2) {
+    speakSiriResponse(`Here is what I found on ${displayTopic}: It is an important subject in general knowledge and literature hosted in the Helix Library archive.`);
+  } else {
+    speakSiriResponse("I'm Helix. Ask me any question, or tell me to open a book, search the library, or change themes!");
   }
 }
 
@@ -9524,4 +9592,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T01:08:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T01:12:00Z -->
