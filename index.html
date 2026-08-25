@@ -3242,18 +3242,6 @@
       <button class="reader-btn" onclick="toggleAudioBar()" title="Listen Aloud (TTS)">
         <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
       </button>
-      <button class="reader-btn" onclick="openPersonaChatModal()" title="Chat with Author / Character Persona">
-        💬
-      </button>
-      <button class="reader-btn" onclick="openImportModal()" title="Import Custom PDF / EPUB / TXT File">
-        📂
-      </button>
-      <button class="reader-btn" onclick="openAnalyticsModal()" title="Reading Analytics & WPM Insights">
-        📈
-      </button>
-      <button class="reader-btn" onclick="openCitationModal()" title="1-Click Academic Citations">
-        🎓
-      </button>
       <button class="reader-btn" id="btn-voice-cmd" onclick="toggleVoiceCommands()" title="Hands-Free Voice Controls">
         🎙️
       </button>
@@ -3747,106 +3735,6 @@
       <div class="oauth-spinner"></div>
       <h4 style="margin-top:1.5rem; margin-bottom:0.5rem; font-size:1.1rem; color:var(--text);" id="oauth-progress-title">Connecting to Google...</h4>
       <p style="font-size:0.8rem; color:var(--text3);" id="oauth-progress-subtitle">Securing your session credentials...</p>
-    </div>
-  </div>
-</div>
-
-<!-- AI Author Persona Chat Modal -->
-<div id="persona-chat-modal" class="mobile-theme-overlay" onclick="closePersonaChatModal()">
-  <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width: 520px; width: 92%;">
-    <div class="oauth-modal-header" style="display:flex;align-items:center;justify-space-between;border-bottom:1px solid var(--border);padding-bottom:0.75rem;margin-bottom:0.75rem;">
-      <h3 style="margin:0;color:var(--accent);font-size:1.15rem;display:flex;align-items:center;gap:0.4rem;">
-        💬 Interactive AI Persona Chat
-      </h3>
-      <button class="close-sheet-btn" style="position:static;transform:none;" onclick="closePersonaChatModal()">✕</button>
-    </div>
-    <div style="display:flex;gap:0.4rem;margin-bottom:0.8rem;overflow-x:auto;padding-bottom:0.2rem;">
-      <button class="persona-tab-btn active" id="p-tab-sherlock" onclick="switchPersona('sherlock')">🕵️‍♂️ Sherlock</button>
-      <button class="persona-tab-btn" id="p-tab-tagore" onclick="switchPersona('tagore')">✍️ Tagore</button>
-      <button class="persona-tab-btn" id="p-tab-austen" onclick="switchPersona('austen')">🎭 Austen</button>
-      <button class="persona-tab-btn" id="p-tab-wells" onclick="switchPersona('wells')">🚀 H.G. Wells</button>
-    </div>
-    <div class="persona-chat-thread" id="persona-chat-thread">
-      <!-- Thread populated dynamically -->
-    </div>
-    <form onsubmit="sendPersonaMessage(event)" style="display:flex;gap:0.5rem;margin-top:0.75rem;">
-      <input type="text" id="persona-chat-input" placeholder="Ask author about this text..." style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.6rem 0.8rem;color:var(--text);font-size:0.85rem;outline:none;" />
-      <button type="submit" class="auth-submit-btn" style="width:auto;padding:0.6rem 1.2rem;margin:0;">Send</button>
-    </form>
-  </div>
-</div>
-
-<!-- Custom File Importer Modal -->
-<div id="import-file-modal" class="mobile-theme-overlay" onclick="closeImportModal()">
-  <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width: 480px; width: 92%; text-align:center;">
-    <div class="oauth-modal-header" style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:0.75rem;margin-bottom:0.75rem;">
-      <h3 style="margin:0;color:var(--accent);">📄 Custom Document Importer</h3>
-      <button class="close-sheet-btn" style="position:static;transform:none;" onclick="closeImportModal()">✕</button>
-    </div>
-    <div style="border:2px dashed var(--accent);border-radius:12px;padding:2rem 1rem;background:var(--bg2);margin-bottom:1rem;" ondragover="event.preventDefault()" ondrop="handleFileDrop(event)">
-      <div style="font-size:2.5rem;margin-bottom:0.5rem;">📥</div>
-      <h4 style="margin:0 0 0.4rem 0;color:var(--text)">Drag & Drop your file here</h4>
-      <p style="font-size:0.8rem;color:var(--text3);margin-bottom:1rem;">Supports <b>.TXT</b>, <b>.EPUB</b>, and <b>.PDF</b> files</p>
-      <label class="auth-submit-btn" style="display:inline-block;width:auto;padding:0.6rem 1.5rem;cursor:pointer;margin:0;">
-        Browse File
-        <input type="file" accept=".txt,.epub,.pdf" style="display:none" onchange="handleFileDrop(event)" />
-      </label>
-    </div>
-  </div>
-</div>
-
-<!-- Reading Analytics Modal -->
-<div id="analytics-modal" class="mobile-theme-overlay" onclick="closeAnalyticsModal()">
-  <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width: 520px; width: 92%;">
-    <div class="oauth-modal-header" style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:0.75rem;margin-bottom:0.75rem;">
-      <h3 style="margin:0;color:var(--accent);">📈 Reading Insights & Analytics</h3>
-      <button class="close-sheet-btn" style="position:static;transform:none;" onclick="closeAnalyticsModal()">✕</button>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin-bottom:1.2rem;">
-      <div style="background:var(--surface);border:1px solid var(--border);padding:0.75rem;border-radius:8px;text-align:center;">
-        <div style="font-size:0.68rem;text-transform:uppercase;color:var(--text3);font-weight:800;">Reading Speed</div>
-        <div id="analytics-wpm" style="font-size:1.4rem;font-weight:900;color:var(--accent);margin-top:0.25rem;">240 WPM</div>
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);padding:0.75rem;border-radius:8px;text-align:center;">
-        <div style="font-size:0.68rem;text-transform:uppercase;color:var(--text3);font-weight:800;">Books Explored</div>
-        <div id="analytics-books-count" style="font-size:1.4rem;font-weight:900;color:var(--text);margin-top:0.25rem;">0</div>
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);padding:0.75rem;border-radius:8px;text-align:center;">
-        <div style="font-size:0.68rem;text-transform:uppercase;color:var(--text3);font-weight:800;">Reader XP</div>
-        <div id="analytics-xp" style="font-size:1.4rem;font-weight:900;color:var(--accent2);margin-top:0.25rem;">0 XP</div>
-      </div>
-    </div>
-    <h4 style="margin:0 0 0.4rem 0;color:var(--text);font-size:0.85rem;">Annual Reading Activity Heatmap</h4>
-    <div class="heatmap-grid" id="heatmap-grid"></div>
-  </div>
-</div>
-
-<!-- Academic Citation Modal -->
-<div id="citation-modal" class="mobile-theme-overlay" onclick="closeCitationModal()">
-  <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width: 520px; width: 92%;">
-    <div class="oauth-modal-header" style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:0.75rem;margin-bottom:0.75rem;">
-      <h3 style="margin:0;color:var(--accent);">🎓 Academic Citation Generator</h3>
-      <button class="close-sheet-btn" style="position:static;transform:none;" onclick="closeCitationModal()">✕</button>
-    </div>
-    <button onclick="copyAllCitations()" class="auth-submit-btn" style="margin-bottom:1rem;background:var(--accent);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;gap:0.5rem;">
-      📋 Copy Complete Bibliography (All 3 Formats)
-    </button>
-    <div style="display:flex;flex-direction:column;gap:0.8rem;">
-      <div style="background:var(--bg2);border:1px solid var(--border);padding:0.75rem;border-radius:8px;">
-        <div style="font-size:0.7rem;font-weight:800;color:var(--accent);margin-bottom:0.3rem;">APA Format (7th Edition)</div>
-        <div id="cite-apa" style="font-size:0.8rem;color:var(--text);font-family:monospace;word-break:break-word;">Loading...</div>
-        <button onclick="copyCitation('cite-apa')" style="margin-top:0.4rem;font-size:0.7rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:0.25rem 0.6rem;color:var(--text);cursor:pointer;">📋 Copy APA Only</button>
-      </div>
-      <div style="background:var(--bg2);border:1px solid var(--border);padding:0.75rem;border-radius:8px;">
-        <div style="font-size:0.7rem;font-weight:800;color:var(--accent);margin-bottom:0.3rem;">MLA Format (9th Edition)</div>
-        <div id="cite-mla" style="font-size:0.8rem;color:var(--text);font-family:monospace;word-break:break-word;">Loading...</div>
-        <button onclick="copyCitation('cite-mla')" style="margin-top:0.4rem;font-size:0.7rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:0.25rem 0.6rem;color:var(--text);cursor:pointer;">📋 Copy MLA Only</button>
-      </div>
-      <div style="background:var(--bg2);border:1px solid var(--border);padding:0.75rem;border-radius:8px;">
-        <div style="font-size:0.7rem;font-weight:800;color:var(--accent);margin-bottom:0.3rem;">Chicago Style (17th Edition)</div>
-        <div id="cite-chicago" style="font-size:0.8rem;color:var(--text);font-family:monospace;word-break:break-word;">Loading...</div>
-        <button onclick="copyCitation('cite-chicago')" style="margin-top:0.4rem;font-size:0.7rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:0.25rem 0.6rem;color:var(--text);cursor:pointer;">📋 Copy Chicago Only</button>
-      </div>
     </div>
   </div>
 </div>
@@ -8870,253 +8758,6 @@ function saveSiteSettings() {
 // ════════════════════════════════════════
 // MODULE 3: AI AUTHOR & PERSONA CHAT
 // ════════════════════════════════════════
-const literaryPersonas = {
-  sherlock: {
-    name: "Sherlock Holmes",
-    author: "Arthur Conan Doyle",
-    avatar: "🕵️‍♂️",
-    greeting: "Good day. What intriguing mystery or detail in our text requires deduction?",
-    respond: (msg, book) => `Observing the text of '${book ? book.title : 'this work'}', the key logic lies in analytical observation: "${msg.slice(0, 50)}..." as my companion Watson would note!`
-  },
-  tagore: {
-    name: "Rabindranath Tagore",
-    author: "Gitanjali",
-    avatar: "✍️",
-    greeting: "Greetings, dear seeker. Let us contemplate the melody, poetry, and freedom of the mind.",
-    respond: (msg, book) => `Where the mind is without fear and the head is held high — contemplating '${book ? book.title : 'this creation'}', your thought '${msg.slice(0, 40)}' resonates deeply.`
-  },
-  austen: {
-    name: "Elizabeth Bennet",
-    author: "Jane Austen (Pride & Prejudice)",
-    avatar: "🎭",
-    greeting: "Delighted to converse with a fellow reader of refined sensibility and wit.",
-    respond: (msg, book) => `I must confess, regarding '${book ? book.title : 'this novel'}', first impressions can be deceiving! Your comment on '${msg.slice(0, 40)}' displays fine discernment.`
-  },
-  wells: {
-    name: "H.G. Wells",
-    author: "The Time Machine / War of the Worlds",
-    avatar: "🚀",
-    greeting: "Greetings across time and space! What scientific wonder or future vision shall we explore?",
-    respond: (msg, book) => `Speculating upon '${book ? book.title : 'this text'}', science and humanity are intertwined. Your query on '${msg.slice(0, 40)}' leads us toward tomorrow.`
-  }
-};
-
-let activePersonaKey = 'sherlock';
-
-function openPersonaChatModal() {
-  const modal = document.getElementById('persona-chat-modal');
-  if (modal) {
-    modal.style.display = 'flex';
-    switchPersona('sherlock');
-  }
-}
-
-function closePersonaChatModal() {
-  const modal = document.getElementById('persona-chat-modal');
-  if (modal) modal.style.display = 'none';
-}
-
-function switchPersona(key) {
-  activePersonaKey = key;
-  const p = literaryPersonas[key];
-  if (!p) return;
-  
-  document.querySelectorAll('.persona-tab-btn').forEach(btn => btn.classList.remove('active'));
-  const activeTab = document.getElementById(`p-tab-${key}`);
-  if (activeTab) activeTab.classList.add('active');
-
-  const thread = document.getElementById('persona-chat-thread');
-  thread.innerHTML = `
-    <div class="persona-msg persona">
-      <span class="persona-avatar">${p.avatar}</span>
-      <div class="persona-bubble">
-        <strong>${p.name}</strong> <em>(${p.author})</em><br/>
-        ${p.greeting}
-      </div>
-    </div>
-  `;
-}
-
-function sendPersonaMessage(e) {
-  if (e) e.preventDefault();
-  const input = document.getElementById('persona-chat-input');
-  const text = input.value.trim();
-  if (!text) return;
-
-  const thread = document.getElementById('persona-chat-thread');
-  thread.innerHTML += `
-    <div class="persona-msg user">
-      <div class="persona-bubble user-bubble">${text}</div>
-    </div>
-  `;
-  input.value = '';
-  thread.scrollTop = thread.scrollHeight;
-
-  const p = literaryPersonas[activePersonaKey];
-  setTimeout(() => {
-    const reply = p.respond(text, readerBook);
-    thread.innerHTML += `
-      <div class="persona-msg persona">
-        <span class="persona-avatar">${p.avatar}</span>
-        <div class="persona-bubble">
-          <strong>${p.name}</strong><br/>
-          ${reply}
-        </div>
-      </div>
-    `;
-    thread.scrollTop = thread.scrollHeight;
-  }, 600);
-}
-
-// ════════════════════════════════════════
-// MODULE 4: FILE IMPORTER (.EPUB, .PDF, .TXT)
-// ════════════════════════════════════════
-function openImportModal() {
-  document.getElementById('import-file-modal').style.display = 'flex';
-}
-
-function closeImportModal() {
-  document.getElementById('import-file-modal').style.display = 'none';
-}
-
-function handleFileDrop(e) {
-  e.preventDefault();
-  const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
-  if (files && files.length > 0) {
-    processImportedFile(files[0]);
-  }
-}
-
-function processImportedFile(file) {
-  if (!file) return;
-  const fname = file.name;
-  showNotification(`⏳ Processing file: ${fname}...`);
-
-  const reader = new FileReader();
-  if (fname.toLowerCase().endsWith('.txt')) {
-    reader.onload = (evt) => {
-      const textContent = evt.target.result;
-      createCustomBookFromImport(fname.replace(/\.[^/.]+$/, ""), textContent);
-    };
-    reader.readAsText(file);
-  } else {
-    reader.onload = (evt) => {
-      const rawStr = evt.target.result;
-      const cleanText = typeof rawStr === 'string' ? rawStr : new TextDecoder("utf-8").decode(new Uint8Array(rawStr));
-      const extracted = cleanText.replace(/[^\x20-\x7E\n]/g, " ").replace(/\s+/g, " ");
-      createCustomBookFromImport(fname.replace(/\.[^/.]+$/, ""), extracted.slice(0, 15000));
-    };
-    reader.readAsArrayBuffer(file);
-  }
-}
-
-function createCustomBookFromImport(title, content) {
-  const newBook = {
-    id: `imp-${Date.now()}`,
-    title: title || 'Imported Document',
-    author: 'Personal Upload',
-    year: new Date().getFullYear(),
-    genre: 'Custom Document',
-    topic: 'Custom Document',
-    readTime: `${Math.max(2, Math.ceil(content.length / 800))} min`,
-    excerpt: content.slice(0, 4000),
-    summary: content.slice(0, 500) + '...',
-    quotes: [content.slice(0, 120) + '...']
-  };
-
-  readerBook = newBook;
-  openBookReaderDirect(newBook);
-  closeImportModal();
-  showNotification(`🎉 Loaded '${newBook.title}' into Helix Reader!`);
-}
-
-function openBookReaderDirect(b) {
-  readerBook = b;
-  document.getElementById('reader-book-title').textContent = b.title;
-  document.getElementById('reader-display-title').textContent = b.title;
-  renderReaderBodyContent(b.excerpt);
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('reader-page').classList.add('active');
-}
-
-// ════════════════════════════════════════
-// MODULE 5: ANALYTICS & CITATIONS
-// ════════════════════════════════════════
-function openAnalyticsModal() {
-  const modal = document.getElementById('analytics-modal');
-  if (!modal) return;
-  
-  const totalBooks = (state.completed || []).length + (state.reading || []).length;
-  const xp = state.xp || 0;
-  const wpm = 240 + Math.min(120, Math.floor(xp / 10));
-
-  document.getElementById('analytics-wpm').textContent = `${wpm} WPM`;
-  document.getElementById('analytics-books-count').textContent = totalBooks;
-  document.getElementById('analytics-xp').textContent = `${xp} XP`;
-
-  renderContributionHeatmap();
-  modal.style.display = 'flex';
-}
-
-function closeAnalyticsModal() {
-  document.getElementById('analytics-modal').style.display = 'none';
-}
-
-function renderContributionHeatmap() {
-  const grid = document.getElementById('heatmap-grid');
-  if (!grid) return;
-  grid.innerHTML = '';
-
-  for (let i = 0; i < 60; i++) {
-    const cell = document.createElement('div');
-    cell.className = 'heatmap-cell';
-    const intensity = Math.floor(Math.random() * 4);
-    if (intensity > 0) cell.classList.add(`level-${intensity}`);
-    grid.appendChild(cell);
-  }
-}
-
-function openCitationModal() {
-  if (!readerBook) {
-    showNotification('ℹ️ Open a book to generate citations.');
-    return;
-  }
-  const modal = document.getElementById('citation-modal');
-  if (!modal) return;
-
-  const title = readerBook.title;
-  const author = readerBook.author;
-  const year = readerBook.year || 2026;
-
-  document.getElementById('cite-apa').textContent = `${author}. (${year}). ${title}. Helix Digital Library Repository.`;
-  document.getElementById('cite-mla').textContent = `${author}. "${title}." Helix Reader Digital Archives, ${year}.`;
-  document.getElementById('cite-chicago').textContent = `${author}. ${title}. Digital Library: Helix Reader, ${year}.`;
-
-  modal.style.display = 'flex';
-}
-
-function closeCitationModal() {
-  document.getElementById('citation-modal').style.display = 'none';
-}
-
-function copyCitation(elementId) {
-  const text = document.getElementById(elementId).textContent;
-  navigator.clipboard.writeText(text);
-  showNotification('📋 Citation copied to clipboard!');
-}
-
-function copyAllCitations() {
-  const apa = document.getElementById('cite-apa').textContent;
-  const mla = document.getElementById('cite-mla').textContent;
-  const chicago = document.getElementById('cite-chicago').textContent;
-  const bookTitle = readerBook ? readerBook.title : 'Helix Book';
-
-  const fullBibliography = `=== ACADEMIC BIBLIOGRAPHY FOR: ${bookTitle.toUpperCase()} ===\n\n[APA 7th Edition]\n${apa}\n\n[MLA 9th Edition]\n${mla}\n\n[Chicago 17th Style]\n${chicago}\n\nRetrieved from Helix Reader Digital Library Repository.`;
-  navigator.clipboard.writeText(fullBibliography);
-  showNotification('📋 Complete Bibliography (All 3 Formats) copied to clipboard!');
-}
-
-// ════════════════════════════════════════
 // MODULE 6: SIRI AI VOICE ASSISTANT
 // ════════════════════════════════════════
 let voiceCmdRecognition = null;
@@ -9221,8 +8862,6 @@ function renderCustomCommandsList() {
     { trigger: 'dark mode / midnight', action: 'Midnight Velvet Theme' },
     { trigger: 'bionic mode', action: 'Toggle Bionic Text' },
     { trigger: 'ruler / focus', action: 'Toggle Reading Ruler' },
-    { trigger: 'show citations', action: 'Open Citations' },
-    { trigger: 'analytics / speed', action: 'Open Analytics' },
     { trigger: 'who wrote this', action: 'Query Book Author' }
   ];
 
@@ -9253,10 +8892,6 @@ function runCustomAction(act) {
   else if (act === 'theme_cyberpunk') { speakSiriResponse('Cyberpunk theme applied.'); applyTheme('cyberpunk'); }
   else if (act === 'bionic_mode') { speakSiriResponse('Toggling Bionic mode.'); toggleBionicReading(); }
   else if (act === 'focus_ruler') { speakSiriResponse('Toggling ruler.'); toggleFocusRuler(); }
-  else if (act === 'open_citations') { speakSiriResponse('Opening Citations.'); openCitationModal(); }
-  else if (act === 'open_analytics') { speakSiriResponse('Opening Analytics.'); openAnalyticsModal(); }
-  else if (act === 'open_importer') { speakSiriResponse('Opening Importer.'); openImportModal(); }
-  else if (act === 'open_author_chat') { speakSiriResponse('Opening Author Chat.'); openPersonaChatModal(); }
 }
 
 function getBestSiriVoice() {
@@ -9592,24 +9227,7 @@ function executeVoiceCommand(cmd) {
     speakSiriResponse("Warm Sepia theme applied.");
     applyTheme('sepia');
 
-  // 11. Modals & Tools
-  } else if (cmd.includes('citation') || cmd.includes('cite') || cmd.includes('bibliography')) {
-    speakSiriResponse("Opening Citations.");
-    openCitationModal();
-
-  } else if (cmd.includes('analytics') || cmd.includes('speed') || cmd.includes('insights') || cmd.includes('wpm')) {
-    speakSiriResponse("Opening Analytics.");
-    openAnalyticsModal();
-
-  } else if (cmd.includes('author') || cmd.includes('persona') || cmd.includes('chat')) {
-    speakSiriResponse("Opening Author Chat.");
-    openPersonaChatModal();
-
-  } else if (cmd.includes('import') || cmd.includes('file') || cmd.includes('upload') || cmd.includes('epub') || cmd.includes('pdf')) {
-    speakSiriResponse("Opening File Importer.");
-    openImportModal();
-
-  // 12. AI Information Queries
+  // 11. AI Information Queries
   } else if (cmd.includes('who wrote') || cmd.includes('author of this')) {
     const author = readerBook ? readerBook.author : "the author";
     speakSiriResponse(`Written by ${author}.`);
@@ -9935,4 +9553,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T02:10:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T02:22:00Z -->
