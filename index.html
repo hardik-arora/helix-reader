@@ -1812,11 +1812,64 @@
       box-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent2);
     }
     .reader-focus-ruler::after {
-      content: '⚡ LASER FOCUS LENS'; position: absolute; right: 2.5rem; top: 50%; transform: translateY(-50%);
+      content: '⚡ LASER FOCUS BEAM'; position: absolute; left: 4rem; top: 50%; transform: translateY(-50%);
       font-size: 0.62rem; font-weight: 900; letter-spacing: 1.5px;
-      background: linear-gradient(135deg, #a855f7, #06b6d4);
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       opacity: 0.85;
+    }
+
+    /* Spacious Floating Focus Ruler Control Dock */
+    .ruler-control-dock {
+      position: fixed; bottom: 5.5rem; right: 2rem; z-index: 10001;
+      background: var(--bg2); border: 1px.5px solid var(--accent);
+      border-radius: 16px; padding: 1rem 1.2rem;
+      box-shadow: 0 12px 36px var(--shadow), 0 0 20px var(--accent-glow);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      width: 310px; max-width: 92vw; display: flex; flex-direction: column; gap: 0.8rem;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: slideUpFade 0.25s ease-out;
+    }
+    .ruler-dock-header {
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;
+    }
+    .ruler-dock-title {
+      font-size: 0.8rem; font-weight: 900; letter-spacing: 0.8px; color: var(--accent);
+      display: flex; align-items: center; gap: 0.4rem; text-transform: uppercase;
+    }
+    .ruler-dock-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+    }
+    .ruler-dock-label {
+      font-size: 0.7rem; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .ruler-step-btn {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      width: 32px; height: 32px; color: var(--text); font-size: 0.95rem; font-weight: bold;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s ease;
+    }
+    .ruler-step-btn:hover {
+      background: var(--accent); color: #ffffff; border-color: var(--accent);
+      transform: scale(1.06); box-shadow: 0 2px 8px var(--accent-glow);
+    }
+    .ruler-preset-chip {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+      padding: 0.35rem 0.6rem; font-size: 0.7rem; font-weight: 700; color: var(--text);
+      cursor: pointer; transition: all 0.15s ease; flex: 1; text-align: center;
+    }
+    .ruler-preset-chip:hover, .ruler-preset-chip.active {
+      background: var(--accent); color: #ffffff; border-color: var(--accent);
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+    .ruler-color-dot {
+      width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+      border: 2px solid transparent; transition: all 0.15s ease;
+    }
+    .ruler-color-dot:hover, .ruler-color-dot.active {
+      transform: scale(1.22); border-color: var(--text);
+      box-shadow: 0 0 10px var(--accent);
     }
     .heatmap-grid {
       display: grid; grid-template-columns: repeat(20, 1fr); gap: 4px; margin-top: 0.8rem;
@@ -8675,6 +8728,7 @@ function convertToBionicHTML(text) {
 }
 
 let focusRulerHeight = parseInt(localStorage.getItem('h_ruler_height') || '48', 10);
+let focusRulerTint = localStorage.getItem('h_ruler_tint') || 'accent';
 
 function updateRulerHeight(val) {
   focusRulerHeight = Math.max(20, Math.min(140, parseInt(val, 10)));
@@ -8690,7 +8744,7 @@ function updateRulerHeight(val) {
   const valPanel = document.getElementById('ruler-height-val-panel');
   if (valPanel) valPanel.textContent = `${focusRulerHeight}px`;
   
-  const valBadge = document.getElementById('ruler-height-val');
+  const valBadge = document.getElementById('ruler-height-val-dock');
   if (valBadge) valBadge.textContent = `${focusRulerHeight}px`;
 }
 
@@ -8699,9 +8753,38 @@ function adjustRulerHeight(delta, e) {
   updateRulerHeight(focusRulerHeight + delta);
 }
 
+function setRulerPreset(px) {
+  updateRulerHeight(px);
+  document.querySelectorAll('.ruler-preset-chip').forEach(c => c.classList.remove('active'));
+  const activeChip = document.getElementById(`ruler-chip-${px}`);
+  if (activeChip) activeChip.classList.add('active');
+}
+
+function setRulerColorTint(colorHex, name) {
+  focusRulerTint = colorHex;
+  try {
+    localStorage.setItem('h_ruler_tint', colorHex);
+  } catch(e){}
+
+  const ruler = document.getElementById('reader-focus-ruler');
+  if (ruler) {
+    if (colorHex === 'accent') {
+      ruler.style.background = 'rgba(99, 102, 241, 0.07)';
+      ruler.style.borderTopColor = 'var(--accent)';
+      ruler.style.borderBottomColor = 'var(--accent)';
+    } else {
+      ruler.style.background = `${colorHex}15`;
+      ruler.style.borderTopColor = colorHex;
+      ruler.style.borderBottomColor = colorHex;
+    }
+  }
+  showNotification(`🎨 Ruler Beam Tint: ${name}`);
+}
+
 function toggleFocusRuler() {
   focusRulerActive = !focusRulerActive;
   let ruler = document.getElementById('reader-focus-ruler');
+  let dock = document.getElementById('ruler-control-dock');
   const btn = document.getElementById('btn-focus-ruler');
   if (btn) btn.classList.toggle('active', focusRulerActive);
 
@@ -8710,27 +8793,60 @@ function toggleFocusRuler() {
       ruler = document.createElement('div');
       ruler.id = 'reader-focus-ruler';
       ruler.className = 'reader-focus-ruler';
-      ruler.innerHTML = `
-        <div class="ruler-badge-controls" style="pointer-events: auto; position: absolute; right: 2rem; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 0.4rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 0.25rem 0.7rem; box-shadow: 0 4px 14px var(--shadow);">
-          <span style="font-size:0.65rem; font-weight:900; letter-spacing:1px; color:var(--accent)">⚡ RULER</span>
-          <button onclick="adjustRulerHeight(-8, event)" style="background:var(--surface); border:1px solid var(--border); border-radius:50%; width:22px; height:22px; color:var(--text); font-size:0.75rem; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;" title="Decrease Height">➖</button>
-          <span id="ruler-height-val" style="font-size:0.75rem; font-weight:800; color:var(--text); min-width:32px; text-align:center;">${focusRulerHeight}px</span>
-          <button onclick="adjustRulerHeight(8, event)" style="background:var(--surface); border:1px solid var(--border); border-radius:50%; width:22px; height:22px; color:var(--text); font-size:0.75rem; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;" title="Increase Height">➕</button>
-        </div>
-      `;
       document.body.appendChild(ruler);
     }
     ruler.style.height = `${focusRulerHeight}px`;
     ruler.style.display = 'block';
+    
+    if (!dock) {
+      dock = document.createElement('div');
+      dock.id = 'ruler-control-dock';
+      dock.className = 'ruler-control-dock';
+      dock.innerHTML = `
+        <div class="ruler-dock-header">
+          <div class="ruler-dock-title">⚡ Focus Ruler Guide</div>
+          <button onclick="toggleFocusRuler()" style="background:none; border:none; color:var(--text3); font-size:1rem; cursor:pointer; font-weight:bold;" title="Close Ruler">✕</button>
+        </div>
+        
+        <!-- Thickness Control Row -->
+        <div class="ruler-dock-row">
+          <span class="ruler-dock-label">Beam Thickness</span>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <button class="ruler-step-btn" onclick="adjustRulerHeight(-8, event)" title="Decrease Height">➖</button>
+            <span id="ruler-height-val-dock" style="font-size:0.85rem; font-weight:800; color:var(--accent); min-width:42px; text-align:center;">${focusRulerHeight}px</span>
+            <button class="ruler-step-btn" onclick="adjustRulerHeight(8, event)" title="Increase Height">➕</button>
+          </div>
+        </div>
+
+        <!-- Quick Presets Row -->
+        <div class="ruler-dock-row" style="gap:0.4rem;">
+          <button class="ruler-preset-chip" id="ruler-chip-28" onclick="setRulerPreset(28)">📐 Line (28px)</button>
+          <button class="ruler-preset-chip" id="ruler-chip-52" onclick="setRulerPreset(52)">📖 Para (52px)</button>
+          <button class="ruler-preset-chip" id="ruler-chip-84" onclick="setRulerPreset(84)">📜 Block (84px)</button>
+        </div>
+
+        <!-- Color Tint Selector Row -->
+        <div class="ruler-dock-row">
+          <span class="ruler-dock-label">Laser Tint</span>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <div class="ruler-color-dot" style="background:#6366f1" onclick="setRulerColorTint('#6366f1', 'Cyber Indigo')" title="Cyber Indigo"></div>
+            <div class="ruler-color-dot" style="background:#06b6d4" onclick="setRulerColorTint('#06b6d4', 'Neon Cyan')" title="Neon Cyan"></div>
+            <div class="ruler-color-dot" style="background:#f59e0b" onclick="setRulerColorTint('#f59e0b', 'Solar Gold')" title="Solar Gold"></div>
+            <div class="ruler-color-dot" style="background:#10b981" onclick="setRulerColorTint('#10b981', 'Emerald')" title="Emerald"></div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(dock);
+    }
+    dock.style.display = 'flex';
     window.addEventListener('mousemove', updateFocusRulerPos);
     
-    // Sync slider panel value
-    const valPanel = document.getElementById('ruler-height-val-panel');
-    if (valPanel) valPanel.textContent = `${focusRulerHeight}px`;
-
-    showNotification(`📏 Focus Ruler enabled (${focusRulerHeight}px height): move mouse over text`);
+    // Sync values
+    updateRulerHeight(focusRulerHeight);
+    showNotification(`📏 Focus Ruler enabled (${focusRulerHeight}px): move mouse over text`);
   } else {
     if (ruler) ruler.style.display = 'none';
+    if (dock) dock.style.display = 'none';
     window.removeEventListener('mousemove', updateFocusRulerPos);
     showNotification('Reading Ruler guide disabled');
   }
@@ -9623,4 +9739,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T02:35:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T02:46:00Z -->
