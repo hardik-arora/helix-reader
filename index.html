@@ -6502,10 +6502,11 @@ function filterByTopic(topic) {
 let activeBookId = null;
 
 function openBookDetails(bookId, skipAnim = false) {
-  if (!currentUser) {
-    showNotification('🔒 Guest Access: Please sign in or create an account to view details!');
-    navigate('home');
-    return;
+  let bypassed = false;
+  try { bypassed = sessionStorage.getItem('h_guest_bypassed') === 'true'; } catch(e){}
+  
+  if (!currentUser && !bypassed) {
+    showNotification('ℹ️ Guest Mode: Viewing book details');
   }
   if (!skipAnim) {
     const e = window.event;
@@ -9312,10 +9313,10 @@ function executeVoiceCommand(cmd) {
   const matchedBook = findBookFromSpeech(cmd);
   if (matchedBook) {
     if (cmd.includes('excerpt') || cmd.includes('read') || cmd.includes('text') || cmd.includes('page')) {
-      openReader(matchedBook.id);
+      openReader(matchedBook.id, true);
       speakSiriResponse(`Opening excerpt for ${matchedBook.title}.`);
     } else {
-      openBookDetails(matchedBook.id);
+      openBookDetails(matchedBook.id, true);
       speakSiriResponse(`Opening ${matchedBook.title}.`);
     }
     return;
@@ -9324,7 +9325,7 @@ function executeVoiceCommand(cmd) {
   // Fallback for general 'open book' / 'read book' without specific title
   if (cmd.includes('open book') || cmd.includes('read book') || cmd.includes('open excerpt') || cmd.includes('show book')) {
     const targetId = activeBookId || (readerBook ? readerBook.id : (MASTER_BOOKS[0] ? MASTER_BOOKS[0].id : 'b1'));
-    openReader(targetId);
+    openReader(targetId, true);
     speakSiriResponse("Opening book excerpt.");
     return;
   }
@@ -9523,4 +9524,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T01:05:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T01:08:00Z -->
