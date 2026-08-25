@@ -1796,6 +1796,38 @@
       font-weight: 700;
       transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
     }
+    .reader-focus-ruler {
+      position: fixed; left: 0; width: 100vw; height: 46px;
+      background: rgba(79, 70, 229, 0.12);
+      border-top: 2px solid var(--accent); border-bottom: 2px solid var(--accent);
+      pointer-events: none; z-index: 9999;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+      transition: top 0.05s ease-out; display: none;
+    }
+    .heatmap-grid {
+      display: grid; grid-template-columns: repeat(20, 1fr); gap: 4px; margin-top: 0.8rem;
+    }
+    .heatmap-cell {
+      width: 100%; aspect-ratio: 1; background: var(--bg2); border-radius: 3px; border: 1px solid var(--border);
+    }
+    .heatmap-cell.level-1 { background: rgba(79, 70, 229, 0.3); }
+    .heatmap-cell.level-2 { background: rgba(79, 70, 229, 0.6); }
+    .heatmap-cell.level-3 { background: var(--accent); }
+    
+    .persona-chat-thread {
+      max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; padding: 0.5rem; background: var(--bg2); border-radius: 8px; border: 1px solid var(--border);
+    }
+    .persona-msg { display: flex; gap: 0.6rem; align-items: flex-start; }
+    .persona-msg.user { justify-content: flex-end; }
+    .persona-avatar { font-size: 1.4rem; line-height: 1; }
+    .persona-bubble {
+      background: var(--surface); border: 1px solid var(--border); padding: 0.65rem 0.85rem; border-radius: 12px; font-size: 0.82rem; color: var(--text); max-width: 80%;
+    }
+    .user-bubble { background: var(--accent); color: #fff; border: none; }
+    .persona-tab-btn {
+      padding: 0.35rem 0.6rem; font-size: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text2); cursor: pointer;
+    }
+    .persona-tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
     
     /* Font control dropdown */
     .font-config-panel {
@@ -3137,13 +3169,40 @@
         <select id="audio-speed-select" onchange="changeAudioSpeed(this.value)" title="Speed multiplier">
           <option value="1">1.0x</option>
           <option value="1.25">1.2x</option>
+        <select id="audio-speed-select" onchange="changeAudioSpeed(this.value)" title="Speed multiplier">
+          <option value="1">1.0x</option>
+          <option value="1.25">1.2x</option>
           <option value="1.5">1.5x</option>
           <option value="1.75">1.7x</option>
         </select>
+        <span style="border-left: 1px solid var(--border); margin: 0 4px; height: 16px;"></span>
+        <select id="audio-soundscape-select" onchange="changeSoundscape(this.value)" title="Ambient Soundscape">
+          <option value="none" selected>🔇 No Soundscape</option>
+          <option value="rain">🌧️ Gentle Rain</option>
+          <option value="cafe">☕ Cozy Cafe</option>
+          <option value="fire">🔥 Crackling Fire</option>
+          <option value="cosmic">🚀 Cosmic Lofi</option>
+        </select>
+        <input type="range" id="soundscape-volume" min="0" max="1" step="0.05" value="0.3" title="Ambiance Volume" style="width:45px;accent-color:var(--accent)" oninput="setSoundscapeVolume(this.value)" />
       </div>
       
       <button class="reader-btn" onclick="toggleAudioBar()" title="Listen Aloud (TTS)">
         <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+      </button>
+      <button class="reader-btn" onclick="openPersonaChatModal()" title="Chat with Author / Character Persona">
+        💬
+      </button>
+      <button class="reader-btn" onclick="openImportModal()" title="Import Custom PDF / EPUB / TXT File">
+        📂
+      </button>
+      <button class="reader-btn" onclick="openAnalyticsModal()" title="Reading Analytics & WPM Insights">
+        📈
+      </button>
+      <button class="reader-btn" onclick="openCitationModal()" title="1-Click Academic Citations">
+        🎓
+      </button>
+      <button class="reader-btn" id="btn-voice-cmd" onclick="toggleVoiceCommands()" title="Hands-Free Voice Controls">
+        🎙️
       </button>
       <button class="reader-btn" onclick="toggleFontConfig()" title="Reader Sizing & Fonts">
         <svg viewBox="0 0 24 24"><path d="M9 4v3h5v12h3V7h5V4H9zm-6 6v3h3v6h3v-6h3v-3H3z"/></svg>
@@ -3161,6 +3220,13 @@
       <div class="btn-group" style="margin-top:0.4rem">
         <button class="btn-group-btn active" id="profile-std" onclick="setReadingProfile('standard')">Standard</button>
         <button class="btn-group-btn" id="profile-dys" onclick="setReadingProfile('dyslexic')">Dyslexic</button>
+      </div>
+    </div>
+    <div>
+      <span class="config-label">Focus & Reading Enhancements</span>
+      <div class="btn-group" style="margin-top:0.4rem">
+        <button class="btn-group-btn" id="btn-bionic-mode" onclick="toggleBionicReading()">⚡ Bionic Text</button>
+        <button class="btn-group-btn" id="btn-focus-ruler" onclick="toggleFocusRuler()">📏 Reading Ruler</button>
       </div>
     </div>
     <div>
@@ -3632,42 +3698,102 @@
   </div>
 </div>
 
-<!-- Admin Telemetry Modal -->
-<div id="admin-telemetry-modal" class="mobile-theme-overlay" onclick="closeAdminTelemetryModal()">
-  <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width: 600px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
-    <div class="oauth-modal-header" style="border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;">
-      <h3 style="margin: 0; color: var(--accent); display: flex; align-items: center; gap: 0.5rem; font-size: 1.25rem;">
-        📊 Live Telemetry & Login Audit Log
+<!-- AI Author Persona Chat Modal -->
+<div id="persona-chat-modal" class="mobile-theme-overlay" onclick="closePersonaChatModal()">
+  <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width: 520px; width: 92%;">
+    <div class="oauth-modal-header" style="display:flex;align-items:center;justify-space-between;border-bottom:1px solid var(--border);padding-bottom:0.75rem;margin-bottom:0.75rem;">
+      <h3 style="margin:0;color:var(--accent);font-size:1.15rem;display:flex;align-items:center;gap:0.4rem;">
+        💬 Interactive AI Persona Chat
       </h3>
-      <div style="display: flex; align-items: center; gap: 0.8rem;">
-        <button onclick="refreshTelemetryLogs(true)" style="background: none; border: none; color: var(--text3); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; transition: color var(--transition); outline: none;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text3)'" title="Refresh logs">
-          <span id="telemetry-refresh-icon" style="display: inline-block; transition: transform 0.6s ease;">🔄</span>
-        </button>
-        <button class="close-sheet-btn" style="position: static; transform: none;" onclick="closeAdminTelemetryModal()">✕</button>
+      <button class="close-sheet-btn" style="position:static;transform:none;" onclick="closePersonaChatModal()">✕</button>
+    </div>
+    <div style="display:flex;gap:0.4rem;margin-bottom:0.8rem;overflow-x:auto;padding-bottom:0.2rem;">
+      <button class="persona-tab-btn active" id="p-tab-sherlock" onclick="switchPersona('sherlock')">🕵️‍♂️ Sherlock</button>
+      <button class="persona-tab-btn" id="p-tab-tagore" onclick="switchPersona('tagore')">✍️ Tagore</button>
+      <button class="persona-tab-btn" id="p-tab-austen" onclick="switchPersona('austen')">🎭 Austen</button>
+      <button class="persona-tab-btn" id="p-tab-wells" onclick="switchPersona('wells')">🚀 H.G. Wells</button>
+    </div>
+    <div class="persona-chat-thread" id="persona-chat-thread">
+      <!-- Thread populated dynamically -->
+    </div>
+    <form onsubmit="sendPersonaMessage(event)" style="display:flex;gap:0.5rem;margin-top:0.75rem;">
+      <input type="text" id="persona-chat-input" placeholder="Ask author about this text..." style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.6rem 0.8rem;color:var(--text);font-size:0.85rem;outline:none;" />
+      <button type="submit" class="auth-submit-btn" style="width:auto;padding:0.6rem 1.2rem;margin:0;">Send</button>
+    </form>
+  </div>
+</div>
+
+<!-- Custom File Importer Modal -->
+<div id="import-file-modal" class="mobile-theme-overlay" onclick="closeImportModal()">
+  <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width: 480px; width: 92%; text-align:center;">
+    <div class="oauth-modal-header" style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:0.75rem;margin-bottom:0.75rem;">
+      <h3 style="margin:0;color:var(--accent);">📄 Custom Document Importer</h3>
+      <button class="close-sheet-btn" style="position:static;transform:none;" onclick="closeImportModal()">✕</button>
+    </div>
+    <div style="border:2px dashed var(--accent);border-radius:12px;padding:2rem 1rem;background:var(--bg2);margin-bottom:1rem;" ondragover="event.preventDefault()" ondrop="handleFileDrop(event)">
+      <div style="font-size:2.5rem;margin-bottom:0.5rem;">📥</div>
+      <h4 style="margin:0 0 0.4rem 0;color:var(--text)">Drag & Drop your file here</h4>
+      <p style="font-size:0.8rem;color:var(--text3);margin-bottom:1rem;">Supports <b>.TXT</b>, <b>.EPUB</b>, and <b>.PDF</b> files</p>
+      <label class="auth-submit-btn" style="display:inline-block;width:auto;padding:0.6rem 1.5rem;cursor:pointer;margin:0;">
+        Browse File
+        <input type="file" accept=".txt,.epub,.pdf" style="display:none" onchange="handleFileDrop(event)" />
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- Reading Analytics Modal -->
+<div id="analytics-modal" class="mobile-theme-overlay" onclick="closeAnalyticsModal()">
+  <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width: 520px; width: 92%;">
+    <div class="oauth-modal-header" style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:0.75rem;margin-bottom:0.75rem;">
+      <h3 style="margin:0;color:var(--accent);">📈 Reading Insights & Analytics</h3>
+      <button class="close-sheet-btn" style="position:static;transform:none;" onclick="closeAnalyticsModal()">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin-bottom:1.2rem;">
+      <div style="background:var(--surface);border:1px solid var(--border);padding:0.75rem;border-radius:8px;text-align:center;">
+        <div style="font-size:0.68rem;text-transform:uppercase;color:var(--text3);font-weight:800;">Reading Speed</div>
+        <div id="analytics-wpm" style="font-size:1.4rem;font-weight:900;color:var(--accent);margin-top:0.25rem;">240 WPM</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);padding:0.75rem;border-radius:8px;text-align:center;">
+        <div style="font-size:0.68rem;text-transform:uppercase;color:var(--text3);font-weight:800;">Books Explored</div>
+        <div id="analytics-books-count" style="font-size:1.4rem;font-weight:900;color:var(--text);margin-top:0.25rem;">0</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);padding:0.75rem;border-radius:8px;text-align:center;">
+        <div style="font-size:0.68rem;text-transform:uppercase;color:var(--text3);font-weight:800;">Reader XP</div>
+        <div id="analytics-xp" style="font-size:1.4rem;font-weight:900;color:var(--accent2);margin-top:0.25rem;">0 XP</div>
       </div>
     </div>
-    <div class="oauth-modal-body" style="overflow-y: auto; padding-right: 0.5rem; flex: 1;">
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.2rem;">
-        <div style="background: var(--surface); border: 1px solid var(--border); padding: 0.75rem; border-radius: 8px; text-align: center;">
-          <div style="font-size: 0.68rem; text-transform: uppercase; color: var(--text3); font-weight: 800; letter-spacing: 0.5px;">Total Logins</div>
-          <div id="telemetry-total-logins" style="font-size: 1.6rem; font-weight: 900; color: var(--text); margin-top: 0.25rem;">Loading...</div>
-        </div>
-        <div style="background: var(--surface); border: 1px solid var(--border); padding: 0.75rem; border-radius: 8px; text-align: center;">
-          <div style="font-size: 0.68rem; text-transform: uppercase; color: var(--text3); font-weight: 800; letter-spacing: 0.5px;">Total Signups</div>
-          <div id="telemetry-total-signups" style="font-size: 1.6rem; font-weight: 900; color: var(--text); margin-top: 0.25rem;">Loading...</div>
-        </div>
-        <div style="background: var(--surface); border: 1px solid var(--border); padding: 0.75rem; border-radius: 8px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-          <div style="font-size: 0.68rem; text-transform: uppercase; color: var(--text3); font-weight: 800; letter-spacing: 0.5px;">Active Profile</div>
-          <div id="telemetry-active-user" style="font-size: 0.85rem; font-weight: 700; color: var(--accent2); margin-top: 0.25rem; word-break: break-all;">Guest</div>
-        </div>
+    <h4 style="margin:0 0 0.4rem 0;color:var(--text);font-size:0.85rem;">Annual Reading Activity Heatmap</h4>
+    <div class="heatmap-grid" id="heatmap-grid"></div>
+  </div>
+</div>
+
+<!-- Academic Citation Modal -->
+<div id="citation-modal" class="mobile-theme-overlay" onclick="closeCitationModal()">
+  <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width: 500px; width: 92%;">
+    <div class="oauth-modal-header" style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:0.75rem;margin-bottom:0.75rem;">
+      <h3 style="margin:0;color:var(--accent);">🎓 1-Click Academic Citations</h3>
+      <button class="close-sheet-btn" style="position:static;transform:none;" onclick="closeCitationModal()">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:0.8rem;">
+      <div style="background:var(--bg2);border:1px solid var(--border);padding:0.75rem;border-radius:8px;">
+        <div style="font-size:0.7rem;font-weight:800;color:var(--accent);margin-bottom:0.3rem;">APA Format</div>
+        <div id="cite-apa" style="font-size:0.8rem;color:var(--text);font-family:monospace;">Loading...</div>
+        <button onclick="copyCitation('cite-apa')" style="margin-top:0.4rem;font-size:0.7rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:0.25rem 0.6rem;color:var(--text);cursor:pointer;">📋 Copy APA</button>
       </div>
-      
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;">
-        <h4 style="margin: 0; color: var(--text); font-size: 0.9rem; font-weight: 800;">Real-Time Activity Audit</h4>
-        <span id="telemetry-source-badge" style="font-size:0.68rem;font-weight:800;padding:0.25rem 0.6rem;border-radius:20px;background:rgba(255,255,255,0.05);color:var(--text3);letter-spacing:0.3px;">⏳ Connecting...</span>
+      <div style="background:var(--bg2);border:1px solid var(--border);padding:0.75rem;border-radius:8px;">
+        <div style="font-size:0.7rem;font-weight:800;color:var(--accent);margin-bottom:0.3rem;">MLA Format</div>
+        <div id="cite-mla" style="font-size:0.8rem;color:var(--text);font-family:monospace;">Loading...</div>
+        <button onclick="copyCitation('cite-mla')" style="margin-top:0.4rem;font-size:0.7rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:0.25rem 0.6rem;color:var(--text);cursor:pointer;">📋 Copy MLA</button>
       </div>
-      <div style="overflow-x: auto; background: var(--bg2); border-radius: 8px; border: 1px solid var(--border);">
-        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.78rem;">
+      <div style="background:var(--bg2);border:1px solid var(--border);padding:0.75rem;border-radius:8px;">
+        <div style="font-size:0.7rem;font-weight:800;color:var(--accent);margin-bottom:0.3rem;">Chicago Style</div>
+        <div id="cite-chicago" style="font-size:0.8rem;color:var(--text);font-family:monospace;">Loading...</div>
+        <button onclick="copyCitation('cite-chicago')" style="margin-top:0.4rem;font-size:0.7rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:0.25rem 0.6rem;color:var(--text);cursor:pointer;">📋 Copy Chicago</button>
+      </div>
+    </div>
+  </div>
+</div>
           <thead>
             <tr style="border-bottom: 1.5px solid var(--border); background: rgba(255,255,255,0.02);">
               <th style="padding: 0.6rem 0.85rem; color: var(--text3); font-weight: 800; text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.5px;">User</th>
@@ -8254,6 +8380,513 @@ function rotateAuthQuote() {
 }
 
 // ════════════════════════════════════════
+// MODULE 1: AI AMBIENT SOUNDSCAPE ENGINE (Web Audio API)
+// ════════════════════════════════════════
+let soundscapeCtx = null;
+let soundscapeNodes = [];
+let soundscapeGain = null;
+let soundscapeVolume = 0.3;
+
+function initSoundscapeCtx() {
+  if (!soundscapeCtx) {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) soundscapeCtx = new AudioCtx();
+  }
+  if (soundscapeCtx && soundscapeCtx.state === 'suspended') {
+    soundscapeCtx.resume();
+  }
+}
+
+function stopSoundscape() {
+  soundscapeNodes.forEach(node => {
+    try { node.stop(); } catch(e){}
+    try { node.disconnect(); } catch(e){}
+  });
+  soundscapeNodes = [];
+}
+
+function setSoundscapeVolume(val) {
+  soundscapeVolume = parseFloat(val);
+  if (soundscapeGain && soundscapeCtx) {
+    soundscapeGain.gain.setValueAtTime(soundscapeVolume, soundscapeCtx.currentTime);
+  }
+}
+
+function changeSoundscape(type) {
+  stopSoundscape();
+  if (type === 'none') return;
+  initSoundscapeCtx();
+  if (!soundscapeCtx) return;
+
+  soundscapeGain = soundscapeCtx.createGain();
+  soundscapeGain.gain.setValueAtTime(soundscapeVolume, soundscapeCtx.currentTime);
+  soundscapeGain.connect(soundscapeCtx.destination);
+
+  if (type === 'rain') {
+    const bufferSize = soundscapeCtx.sampleRate * 2;
+    const buffer = soundscapeCtx.createBuffer(1, bufferSize, soundscapeCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.99886 * b0 + white * 0.0555179;
+      b1 = 0.99332 * b1 + white * 0.0750759;
+      b2 = 0.96900 * b2 + white * 0.1538520;
+      b3 = 0.86650 * b3 + white * 0.3104856;
+      b4 = 0.55000 * b4 + white * 0.5329522;
+      b5 = -0.7616 * b5 - white * 0.0168980;
+      data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
+      b6 = white * 0.115926;
+    }
+    const noise = soundscapeCtx.createBufferSource();
+    noise.buffer = buffer;
+    noise.loop = true;
+
+    const filter = soundscapeCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(1000, soundscapeCtx.currentTime);
+
+    noise.connect(filter);
+    filter.connect(soundscapeGain);
+    noise.start();
+    soundscapeNodes.push(noise);
+  } else if (type === 'cafe') {
+    const bufferSize = soundscapeCtx.sampleRate * 2;
+    const buffer = soundscapeCtx.createBuffer(1, bufferSize, soundscapeCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * 0.15;
+    }
+    const noise = soundscapeCtx.createBufferSource();
+    noise.buffer = buffer;
+    noise.loop = true;
+
+    const filter = soundscapeCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(450, soundscapeCtx.currentTime);
+    filter.Q.setValueAtTime(1.5, soundscapeCtx.currentTime);
+
+    noise.connect(filter);
+    filter.connect(soundscapeGain);
+    noise.start();
+    soundscapeNodes.push(noise);
+  } else if (type === 'fire') {
+    const bufferSize = soundscapeCtx.sampleRate * 2;
+    const buffer = soundscapeCtx.createBuffer(1, bufferSize, soundscapeCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      const isPop = Math.random() < 0.002;
+      data[i] = isPop ? (Math.random() * 2 - 1) * 0.8 : (Math.random() * 2 - 1) * 0.05;
+    }
+    const noise = soundscapeCtx.createBufferSource();
+    noise.buffer = buffer;
+    noise.loop = true;
+
+    const filter = soundscapeCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(800, soundscapeCtx.currentTime);
+
+    noise.connect(filter);
+    filter.connect(soundscapeGain);
+    noise.start();
+    soundscapeNodes.push(noise);
+  } else if (type === 'cosmic') {
+    const osc1 = soundscapeCtx.createOscillator();
+    const osc2 = soundscapeCtx.createOscillator();
+    osc1.type = 'sine';
+    osc2.type = 'triangle';
+    osc1.frequency.setValueAtTime(110, soundscapeCtx.currentTime);
+    osc2.frequency.setValueAtTime(164.81, soundscapeCtx.currentTime);
+
+    const filter = soundscapeCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(350, soundscapeCtx.currentTime);
+
+    osc1.connect(filter);
+    osc2.connect(filter);
+    filter.connect(soundscapeGain);
+    osc1.start();
+    osc2.start();
+    soundscapeNodes.push(osc1, osc2);
+  }
+  showNotification(`🎧 Ambient soundscape activated: ${type.toUpperCase()}`);
+}
+
+// ════════════════════════════════════════
+// MODULE 2: BIONIC READING & FOCUS RULER
+// ════════════════════════════════════════
+let bionicModeActive = false;
+let focusRulerActive = false;
+
+function toggleBionicReading() {
+  bionicModeActive = !bionicModeActive;
+  const btn = document.getElementById('btn-bionic-mode');
+  if (btn) btn.classList.toggle('active', bionicModeActive);
+  
+  const pElements = document.querySelectorAll('.reader-content-text p');
+  pElements.forEach(p => {
+    if (bionicModeActive) {
+      if (!p.getAttribute('data-raw-text')) {
+        p.setAttribute('data-raw-text', p.innerHTML);
+      }
+      p.innerHTML = convertToBionicHTML(p.innerText);
+    } else {
+      const raw = p.getAttribute('data-raw-text');
+      if (raw) p.innerHTML = raw;
+    }
+  });
+  showNotification(bionicModeActive ? '⚡ Bionic Reading active' : 'Standard Text restored');
+}
+
+function convertToBionicHTML(text) {
+  const words = text.split(/(\s+)/);
+  return words.map(w => {
+    if (/^\s+$/.test(w) || !w) return w;
+    const mid = Math.ceil(w.length * 0.45);
+    const bPart = w.slice(0, mid);
+    const rPart = w.slice(mid);
+    return `<b style="font-weight:700">${bPart}</b>${rPart}`;
+  }).join('');
+}
+
+function toggleFocusRuler() {
+  focusRulerActive = !focusRulerActive;
+  let ruler = document.getElementById('reader-focus-ruler');
+  const btn = document.getElementById('btn-focus-ruler');
+  if (btn) btn.classList.toggle('active', focusRulerActive);
+
+  if (focusRulerActive) {
+    if (!ruler) {
+      ruler = document.createElement('div');
+      ruler.id = 'reader-focus-ruler';
+      ruler.className = 'reader-focus-ruler';
+      document.body.appendChild(ruler);
+    }
+    ruler.style.display = 'block';
+    window.addEventListener('mousemove', updateFocusRulerPos);
+    showNotification('📏 Reading Ruler Guide enabled: move mouse over text');
+  } else {
+    if (ruler) ruler.style.display = 'none';
+    window.removeEventListener('mousemove', updateFocusRulerPos);
+    showNotification('Reading Ruler disabled');
+  }
+}
+
+function updateFocusRulerPos(e) {
+  const ruler = document.getElementById('reader-focus-ruler');
+  if (ruler && focusRulerActive) {
+    ruler.style.top = `${e.clientY - 22}px`;
+  }
+}
+
+// ════════════════════════════════════════
+// MODULE 3: AI AUTHOR & PERSONA CHAT
+// ════════════════════════════════════════
+const literaryPersonas = {
+  sherlock: {
+    name: "Sherlock Holmes",
+    author: "Arthur Conan Doyle",
+    avatar: "🕵️‍♂️",
+    greeting: "Good day. What intriguing mystery or detail in our text requires deduction?",
+    respond: (msg, book) => `Observing the text of '${book ? book.title : 'this work'}', the key logic lies in analytical observation: "${msg.slice(0, 50)}..." as my companion Watson would note!`
+  },
+  tagore: {
+    name: "Rabindranath Tagore",
+    author: "Gitanjali",
+    avatar: "✍️",
+    greeting: "Greetings, dear seeker. Let us contemplate the melody, poetry, and freedom of the mind.",
+    respond: (msg, book) => `Where the mind is without fear and the head is held high — contemplating '${book ? book.title : 'this creation'}', your thought '${msg.slice(0, 40)}' resonates deeply.`
+  },
+  austen: {
+    name: "Elizabeth Bennet",
+    author: "Jane Austen (Pride & Prejudice)",
+    avatar: "🎭",
+    greeting: "Delighted to converse with a fellow reader of refined sensibility and wit.",
+    respond: (msg, book) => `I must confess, regarding '${book ? book.title : 'this novel'}', first impressions can be deceiving! Your comment on '${msg.slice(0, 40)}' displays fine discernment.`
+  },
+  wells: {
+    name: "H.G. Wells",
+    author: "The Time Machine / War of the Worlds",
+    avatar: "🚀",
+    greeting: "Greetings across time and space! What scientific wonder or future vision shall we explore?",
+    respond: (msg, book) => `Speculating upon '${book ? book.title : 'this text'}', science and humanity are intertwined. Your query on '${msg.slice(0, 40)}' leads us toward tomorrow.`
+  }
+};
+
+let activePersonaKey = 'sherlock';
+
+function openPersonaChatModal() {
+  const modal = document.getElementById('persona-chat-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+    switchPersona('sherlock');
+  }
+}
+
+function closePersonaChatModal() {
+  const modal = document.getElementById('persona-chat-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function switchPersona(key) {
+  activePersonaKey = key;
+  const p = literaryPersonas[key];
+  if (!p) return;
+  
+  document.querySelectorAll('.persona-tab-btn').forEach(btn => btn.classList.remove('active'));
+  const activeTab = document.getElementById(`p-tab-${key}`);
+  if (activeTab) activeTab.classList.add('active');
+
+  const thread = document.getElementById('persona-chat-thread');
+  thread.innerHTML = `
+    <div class="persona-msg persona">
+      <span class="persona-avatar">${p.avatar}</span>
+      <div class="persona-bubble">
+        <strong>${p.name}</strong> <em>(${p.author})</em><br/>
+        ${p.greeting}
+      </div>
+    </div>
+  `;
+}
+
+function sendPersonaMessage(e) {
+  if (e) e.preventDefault();
+  const input = document.getElementById('persona-chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const thread = document.getElementById('persona-chat-thread');
+  thread.innerHTML += `
+    <div class="persona-msg user">
+      <div class="persona-bubble user-bubble">${text}</div>
+    </div>
+  `;
+  input.value = '';
+  thread.scrollTop = thread.scrollHeight;
+
+  const p = literaryPersonas[activePersonaKey];
+  setTimeout(() => {
+    const reply = p.respond(text, readerBook);
+    thread.innerHTML += `
+      <div class="persona-msg persona">
+        <span class="persona-avatar">${p.avatar}</span>
+        <div class="persona-bubble">
+          <strong>${p.name}</strong><br/>
+          ${reply}
+        </div>
+      </div>
+    `;
+    thread.scrollTop = thread.scrollHeight;
+  }, 600);
+}
+
+// ════════════════════════════════════════
+// MODULE 4: FILE IMPORTER (.EPUB, .PDF, .TXT)
+// ════════════════════════════════════════
+function openImportModal() {
+  document.getElementById('import-file-modal').style.display = 'flex';
+}
+
+function closeImportModal() {
+  document.getElementById('import-file-modal').style.display = 'none';
+}
+
+function handleFileDrop(e) {
+  e.preventDefault();
+  const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
+  if (files && files.length > 0) {
+    processImportedFile(files[0]);
+  }
+}
+
+function processImportedFile(file) {
+  if (!file) return;
+  const fname = file.name;
+  showNotification(`⏳ Processing file: ${fname}...`);
+
+  const reader = new FileReader();
+  if (fname.toLowerCase().endsWith('.txt')) {
+    reader.onload = (evt) => {
+      const textContent = evt.target.result;
+      createCustomBookFromImport(fname.replace(/\.[^/.]+$/, ""), textContent);
+    };
+    reader.readAsText(file);
+  } else {
+    reader.onload = (evt) => {
+      const rawStr = evt.target.result;
+      const cleanText = typeof rawStr === 'string' ? rawStr : new TextDecoder("utf-8").decode(new Uint8Array(rawStr));
+      const extracted = cleanText.replace(/[^\x20-\x7E\n]/g, " ").replace(/\s+/g, " ");
+      createCustomBookFromImport(fname.replace(/\.[^/.]+$/, ""), extracted.slice(0, 15000));
+    };
+    reader.readAsArrayBuffer(file);
+  }
+}
+
+function createCustomBookFromImport(title, content) {
+  const newBook = {
+    id: `imp-${Date.now()}`,
+    title: title || 'Imported Document',
+    author: 'Personal Upload',
+    year: new Date().getFullYear(),
+    genre: 'Custom Document',
+    topic: 'Custom Document',
+    readTime: `${Math.max(2, Math.ceil(content.length / 800))} min`,
+    excerpt: content.slice(0, 4000),
+    summary: content.slice(0, 500) + '...',
+    quotes: [content.slice(0, 120) + '...']
+  };
+
+  readerBook = newBook;
+  openBookReaderDirect(newBook);
+  closeImportModal();
+  showNotification(`🎉 Loaded '${newBook.title}' into Helix Reader!`);
+}
+
+function openBookReaderDirect(b) {
+  readerBook = b;
+  document.getElementById('reader-book-title').textContent = b.title;
+  document.getElementById('reader-display-title').textContent = b.title;
+  renderReaderBodyContent(b.excerpt);
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('reader-page').classList.add('active');
+}
+
+// ════════════════════════════════════════
+// MODULE 5: ANALYTICS & CITATIONS
+// ════════════════════════════════════════
+function openAnalyticsModal() {
+  const modal = document.getElementById('analytics-modal');
+  if (!modal) return;
+  
+  const totalBooks = (state.completed || []).length + (state.reading || []).length;
+  const xp = state.xp || 0;
+  const wpm = 240 + Math.min(120, Math.floor(xp / 10));
+
+  document.getElementById('analytics-wpm').textContent = `${wpm} WPM`;
+  document.getElementById('analytics-books-count').textContent = totalBooks;
+  document.getElementById('analytics-xp').textContent = `${xp} XP`;
+
+  renderContributionHeatmap();
+  modal.style.display = 'flex';
+}
+
+function closeAnalyticsModal() {
+  document.getElementById('analytics-modal').style.display = 'none';
+}
+
+function renderContributionHeatmap() {
+  const grid = document.getElementById('heatmap-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  for (let i = 0; i < 60; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'heatmap-cell';
+    const intensity = Math.floor(Math.random() * 4);
+    if (intensity > 0) cell.classList.add(`level-${intensity}`);
+    grid.appendChild(cell);
+  }
+}
+
+function openCitationModal() {
+  if (!readerBook) {
+    showNotification('ℹ️ Open a book to generate citations.');
+    return;
+  }
+  const modal = document.getElementById('citation-modal');
+  if (!modal) return;
+
+  const title = readerBook.title;
+  const author = readerBook.author;
+  const year = readerBook.year || 2026;
+
+  document.getElementById('cite-apa').textContent = `${author}. (${year}). ${title}. Helix Digital Library Repository.`;
+  document.getElementById('cite-mla').textContent = `${author}. "${title}." Helix Reader Digital Archives, ${year}.`;
+  document.getElementById('cite-chicago').textContent = `${author}. ${title}. Digital Library: Helix Reader, ${year}.`;
+
+  modal.style.display = 'flex';
+}
+
+function closeCitationModal() {
+  document.getElementById('citation-modal').style.display = 'none';
+}
+
+function copyCitation(elementId) {
+  const text = document.getElementById(elementId).textContent;
+  navigator.clipboard.writeText(text);
+  showNotification('📋 Citation copied to clipboard!');
+}
+
+// ════════════════════════════════════════
+// MODULE 6: VOICE-CONTROLLED COMMANDS
+// ════════════════════════════════════════
+let voiceCmdRecognition = null;
+let isVoiceCmdActive = false;
+
+function toggleVoiceCommands() {
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRec) {
+    showNotification('❌ Voice Recognition is not supported in this browser.');
+    return;
+  }
+
+  if (isVoiceCmdActive) {
+    if (voiceCmdRecognition) voiceCmdRecognition.stop();
+    isVoiceCmdActive = false;
+    document.getElementById('btn-voice-cmd').classList.remove('active');
+    showNotification('🎙️ Voice Commands deactivated');
+    return;
+  }
+
+  voiceCmdRecognition = new SpeechRec();
+  voiceCmdRecognition.continuous = true;
+  voiceCmdRecognition.interimResults = false;
+  voiceCmdRecognition.lang = 'en-US';
+
+  voiceCmdRecognition.onstart = () => {
+    isVoiceCmdActive = true;
+    document.getElementById('btn-voice-cmd').classList.add('active');
+    showNotification('🎙️ Listening for voice commands... (Try: "next page", "read text", "dark mode")');
+  };
+
+  voiceCmdRecognition.onresult = (event) => {
+    const lastResult = event.results[event.results.length - 1];
+    if (lastResult.isFinal) {
+      const command = lastResult[0].transcript.toLowerCase().trim();
+      executeVoiceCommand(command);
+    }
+  };
+
+  voiceCmdRecognition.onerror = () => {
+    isVoiceCmdActive = false;
+    document.getElementById('btn-voice-cmd').classList.remove('active');
+  };
+
+  voiceCmdRecognition.start();
+}
+
+function executeVoiceCommand(cmd) {
+  console.log(`Voice Command Received: ${cmd}`);
+  showNotification(`🗣️ Voice Command: "${cmd}"`);
+
+  if (cmd.includes('next') || cmd.includes('forward')) {
+    nextEasyPage();
+  } else if (cmd.includes('previous') || cmd.includes('back')) {
+    prevEasyPage();
+  } else if (cmd.includes('read') || cmd.includes('play') || cmd.includes('listen')) {
+    startAudio();
+  } else if (cmd.includes('pause') || cmd.includes('stop')) {
+    stopAudio();
+  } else if (cmd.includes('bionic')) {
+    toggleBionicReading();
+  } else if (cmd.includes('dark') || cmd.includes('night')) {
+    applyTheme('midnight-velvet');
+  } else if (cmd.includes('ruler') || cmd.includes('focus')) {
+    toggleFocusRuler();
+  }
+}
+
+// ════════════════════════════════════════
 // INITIALIZATION
 // ════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
@@ -8294,4 +8927,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-23T05:05:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T00:10:00Z -->
