@@ -9502,8 +9502,25 @@ async function askHelixAI(query) {
     return;
   }
 
-  // 2. Practical Life / How-To / Human Advice Questions
-  if (q.includes('joke') || q.includes('tell me a joke') || q.includes('funny')) {
+  // 2. Emotional & Conversational Empathy (Sharing feelings, mood, personal thoughts)
+  if (q.includes('tired') || q.includes('stressed') || q.includes('sad') || q.includes('bad day') || q.includes('exhausted')) {
+    speakSiriResponse("I hear you. Take a deep breath and give yourself a break. Listening to our Rain soundscape or reading a soothing chapter can help you unwind.");
+    return;
+
+  } else if (q.includes('happy') || q.includes('excited') || q.includes('great day') || q.includes('won') || q.includes('passed')) {
+    speakSiriResponse("That's fantastic news! I'm really glad to hear that. Celebrating your wins is wonderful.");
+    return;
+
+  } else if (q.includes('how are you') || q.includes('how do you feel') || q.includes('how is it going')) {
+    speakSiriResponse("I'm feeling great, thank you for asking! I'm here and ready to help you read, learn, or explore any topic on your mind.");
+    return;
+
+  } else if (q.includes('thank you') || q.includes('thanks') || q.includes('awesome') || q.includes('good job')) {
+    speakSiriResponse("You're very welcome! I'm always happy to help.");
+    return;
+
+  // 3. Practical Life / How-To / Human Advice Questions
+  } else if (q.includes('joke') || q.includes('tell me a joke') || q.includes('funny')) {
     const jokes = [
       "Why don't scientists trust atoms? Because they make up everything!",
       "What did one book say to the other? I've got a lot of stories, but you're bound to like this one!",
@@ -9622,4 +9639,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T01:18:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T01:21:00Z -->
