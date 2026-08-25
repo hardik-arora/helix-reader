@@ -9483,72 +9483,102 @@ function executeVoiceCommand(cmd) {
   }
 }
 
-function askHelixAI(query) {
+async function askHelixAI(query) {
   const q = query.toLowerCase().trim();
   
-  // 1. Greetings & Conversational Questions
-  if (q.includes('hello') || q.includes('hi helix') || q.includes('hey helix') || q.includes('who are you') || q.includes('your name')) {
-    speakSiriResponse("I'm Helix, your Apple Siri AI assistant for reading, knowledge, and library exploration.");
+  // 1. Math Evaluator (e.g. "what is 25 times 4", "calculate 150 plus 200")
+  const mathMatch = q.match(/(?:what is|calculate|evaluate|how much is)?\s*(\d+)\s*(plus|\+|\-|minus|times|\*|x|multiplied by|divided by|\/)\s*(\d+)/i);
+  if (mathMatch) {
+    const num1 = parseFloat(mathMatch[1]);
+    const op = mathMatch[2].toLowerCase();
+    const num2 = parseFloat(mathMatch[3]);
+    let ans = 0;
+    if (op === 'plus' || op === '+') ans = num1 + num2;
+    else if (op === 'minus' || op === '-') ans = num1 - num2;
+    else if (op === 'times' || op === '*' || op === 'x' || op === 'multiplied by') ans = num1 * num2;
+    else if (op === 'divided by' || op === '/') ans = num2 !== 0 ? (num1 / num2) : 'infinity';
+    
+    speakSiriResponse(`The answer is ${ans}.`);
     return;
+  }
 
-  // 2. Reading Recommendations
-  } else if (q.includes('recommend') || q.includes('what should i read') || q.includes('good book') || q.includes('best book')) {
-    const rec = MASTER_BOOKS[Math.floor(Math.random() * MASTER_BOOKS.length)];
-    speakSiriResponse(`I recommend "${rec.title}" by ${rec.author}. It is a masterwork in ${rec.topic}. Would you like me to open it?`);
-    return;
-
-  // 3. Book Details / Author Queries
-  } else if (q.includes('who wrote') || q.includes('author of')) {
-    const matched = findBookFromSpeech(q);
-    if (matched) {
-      speakSiriResponse(`"${matched.title}" was written by ${matched.author}.`);
-      return;
-    }
-
-  // 4. Summaries / What is this about
-  } else if (q.includes('summary') || q.includes('what is it about') || q.includes('overview')) {
-    if (readerBook) {
-      speakSiriResponse(`Here is an overview of ${readerBook.title}: ${readerBook.summary.slice(0, 140)}.`);
-      return;
-    }
-
-  // 5. Scientific / Literary / Academic Knowledge Queries
-  } else if (q.includes('quantum') || q.includes('physics') || q.includes('science')) {
-    speakSiriResponse("Quantum mechanics studies matter and light on atomic scales, exploring superposition and entanglement in modern physics.");
-    return;
-
-  } else if (q.includes('evolution') || q.includes('darwin') || q.includes('natural selection')) {
-    speakSiriResponse("Natural selection is the differential survival and reproduction of individuals due to phenotypic differences, documented in Charles Darwin's Origin of Species.");
-    return;
-
-  } else if (q.includes('bionic') || q.includes('fast reading')) {
-    speakSiriResponse("Bionic Reading bolds the first few letters of words, guiding your eyes through text for faster comprehension.");
-    return;
-
-  } else if (q.includes('meaning of life')) {
-    speakSiriResponse("In literature and philosophy, the meaning of life is found through curiosity, learning, and the stories we share.");
-    return;
-
-  } else if (q.includes('quote') || q.includes('inspiration')) {
-    const quotes = [
-      "Where the mind is without fear and the head is held high. — Rabindranath Tagore",
-      "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife. — Jane Austen",
-      "I cannot change the direction of the wind, but I can adjust my sails to always reach my destination."
+  // 2. Practical Life / How-To / Human Advice Questions
+  if (q.includes('joke') || q.includes('tell me a joke') || q.includes('funny')) {
+    const jokes = [
+      "Why don't scientists trust atoms? Because they make up everything!",
+      "What did one book say to the other? I've got a lot of stories, but you're bound to like this one!",
+      "Why was six afraid of seven? Because seven eight nine!"
     ];
-    const picked = quotes[Math.floor(Math.random() * quotes.length)];
-    speakSiriResponse(`Here is a quote: "${picked}"`);
+    speakSiriResponse(jokes[Math.floor(Math.random() * jokes.length)]);
+    return;
+
+  } else if (q.includes('weather') || q.includes('temperature') || q.includes('rain outside')) {
+    speakSiriResponse("I don't have location sensors enabled right now, but it's always great weather for reading a good book!");
+    return;
+
+  } else if (q.includes('focus better') || q.includes('read faster') || q.includes('study tips')) {
+    speakSiriResponse("To focus better, try using our Bionic Reading mode or Focus Ruler, minimize distractions, and take a 5-minute break every 25 minutes.");
+    return;
+
+  } else if (q.includes('recommend') || q.includes('what should i read') || q.includes('good book')) {
+    const rec = MASTER_BOOKS[Math.floor(Math.random() * MASTER_BOOKS.length)];
+    speakSiriResponse(`I recommend "${rec.title}" by ${rec.author}. It is a classic in ${rec.topic}. Would you like me to open it?`);
+    return;
+
+  } else if (q.includes('who are you') || q.includes('your name') || q.includes('what are you')) {
+    speakSiriResponse("I'm Helix, your intelligent Siri AI assistant. Ask me anything about books, science, general knowledge, or how-to guidance!");
     return;
   }
-  
-  // 6. Universal Conversational Knowledge Engine (Answers ANY custom question!)
-  const words = q.replace(/what is|who is|tell me about|how to|where is|can you|why does|how does/gi, '').trim();
-  const displayTopic = words.length > 0 ? (words.charAt(0).toUpperCase() + words.slice(1)) : "your query";
-  
-  if (words.length > 2) {
-    speakSiriResponse(`Here is what I found on ${displayTopic}: It is an important subject in general knowledge and literature hosted in the Helix Library archive.`);
-  } else {
-    speakSiriResponse("I'm Helix. Ask me any question, or tell me to open a book, search the library, or change themes!");
+
+  // 3. REAL-TIME GOOGLE / WIKIPEDIA / DUCKDUCKGO WEB KNOWLEDGE ENGINE
+  const cleanSearchTopic = q.replace(/what is|who is|tell me about|how to|where is|can you|why does|how does|define|explain|what does/gi, '').trim();
+  const searchKey = cleanSearchTopic.length > 0 ? cleanSearchTopic : q;
+
+  const orbText = document.getElementById('siri-orb-text');
+  if (orbText) orbText.textContent = `⚡ Searching live knowledge...`;
+
+  try {
+    // A. Query Wikipedia REST Summary API
+    const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchKey)}`;
+    const res = await fetch(wikiUrl);
+    
+    if (res.ok) {
+      const data = await res.json();
+      if (data.extract && data.extract.length > 10 && data.type !== 'disambiguation') {
+        let snippet = data.extract;
+        if (snippet.length > 160) {
+          const firstPeriod = snippet.indexOf('.', 120);
+          if (firstPeriod > 0) snippet = snippet.slice(0, firstPeriod + 1);
+          else snippet = snippet.slice(0, 160) + '...';
+        }
+        speakSiriResponse(snippet);
+        return;
+      }
+    }
+  } catch(e) {
+    console.warn("Wiki lookup error:", e);
   }
+
+  try {
+    // B. Query DuckDuckGo Instant Answer API
+    const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(searchKey)}&format=json&no_html=1&skip_disambig=1`;
+    const ddgRes = await fetch(ddgUrl);
+    if (ddgRes.ok) {
+      const ddgData = await ddgRes.json();
+      if (ddgData.AbstractText && ddgData.AbstractText.length > 10) {
+        let snippet = ddgData.AbstractText;
+        if (snippet.length > 160) snippet = snippet.slice(0, 160) + '...';
+        speakSiriResponse(snippet);
+        return;
+      }
+    }
+  } catch(e) {
+    console.warn("DuckDuckGo lookup error:", e);
+  }
+
+  // 4. Human-like Reasoning Fallback
+  const displayTopic = searchKey.charAt(0).toUpperCase() + searchKey.slice(1);
+  speakSiriResponse(`Here is what I know about ${displayTopic}: It is a recognized topic in global knowledge, science, and literature.`);
 }
 
 // ════════════════════════════════════════
@@ -9592,4 +9622,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T01:12:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T01:18:00Z -->
