@@ -9547,6 +9547,29 @@ function executeVoiceCommand(cmd) {
 }
 
 function evaluateSpokenMath(q) {
+  if (!q) return null;
+  
+  let norm = q.toLowerCase();
+  
+  // Replace unicode multiplication/division/minus signs from Chrome Web Speech API
+  norm = norm.replace(/[\u00d7\u2715]/g, ' * ')
+             .replace(/[\u00f7]/g, ' / ')
+             .replace(/[\u2013\u2014]/g, ' - ');
+  
+  // Replace spoken phrase variations
+  norm = norm.replace(/\bin to\b/g, ' * ')
+             .replace(/\binto\b/g, ' * ')
+             .replace(/\bmultiplied by\b/g, ' * ')
+             .replace(/\btimes\b/g, ' * ')
+             .replace(/\bcross\b/g, ' * ')
+             .replace(/\bstar\b/g, ' * ')
+             .replace(/\bby\b/g, ' * ')
+             .replace(/\bdivided by\b/g, ' / ')
+             .replace(/\bover\b/g, ' / ')
+             .replace(/\bplus\b/g, ' + ')
+             .replace(/\bminus\b/g, ' - ');
+
+  // Replace spoken number words to digits
   const numberWordMap = {
     'zero': 0, 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
     'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
@@ -9556,49 +9579,42 @@ function evaluateSpokenMath(q) {
     'hundred': 100
   };
 
-  // Clean apostrophes, hyphens, contractions
-  let norm = q.toLowerCase().replace(/['’]/g, '').replace(/-/g, ' ');
-  norm = norm.replace(/\bwhat is\b/g, '').replace(/\bwhats\b/g, '').replace(/\bhow much is\b/g, '').replace(/\bcalculate\b/g, '').replace(/\bevaluate\b/g, '');
-  norm = norm.replace(/\bin to\b/g, 'into').replace(/\bmultiplied by\b/g, 'into').replace(/\bby\b/g, 'into');
-
   for (const [w, val] of Object.entries(numberWordMap)) {
     const reg = new RegExp(`\\b${w}\\b`, 'g');
     norm = norm.replace(reg, val);
   }
 
-  // Handle compound spoken words like "twenty eight" -> "20 8" -> 28
+  // Combine compound numbers like "20 8" -> 28
   norm = norm.replace(/\b(\d0)\s+(\d)\b/g, (m, tens, units) => parseInt(tens) + parseInt(units));
 
-  // 1. Match "28 times 33", "28 into 33", "28 x 33", "28 * 33"
-  const multMatch = norm.match(/(\d+(?:\.\d+)?)\s*(?:into|times|\*|x|multiplied by)\s*(\d+(?:\.\d+)?)/i);
-  if (multMatch) {
-    const n1 = parseFloat(multMatch[1]);
-    const n2 = parseFloat(multMatch[2]);
-    return `${n1} times ${n2} is ${n1 * n2}.`;
-  }
+  // Extract ANY expression containing: [number] [operator] [number]
+  const mathRegex = /(\d+(?:\.\d+)?)\s*([\+\-\*\/xX])\s*(\d+(?:\.\d+)?)/i;
+  const match = norm.match(mathRegex);
 
-  // 2. Match "28 plus 33", "28 + 33"
-  const addMatch = norm.match(/(\d+(?:\.\d+)?)\s*(?:plus|\+)\s*(\d+(?:\.\d+)?)/i);
-  if (addMatch) {
-    const n1 = parseFloat(addMatch[1]);
-    const n2 = parseFloat(addMatch[2]);
-    return `${n1} plus ${n2} is ${n1 + n2}.`;
-  }
+  if (match) {
+    const n1 = parseFloat(match[1]);
+    const opStr = match[2].toLowerCase();
+    const n2 = parseFloat(match[3]);
 
-  // 3. Match "33 minus 28", "33 - 28"
-  const subMatch = norm.match(/(\d+(?:\.\d+)?)\s*(?:minus|\-)\s*(\d+(?:\.\d+)?)/i);
-  if (subMatch) {
-    const n1 = parseFloat(subMatch[1]);
-    const n2 = parseFloat(subMatch[2]);
-    return `${n1} minus ${n2} is ${n1 - n2}.`;
-  }
+    let result = 0;
+    let opName = 'times';
 
-  // 4. Match "33 divided by 3", "33 / 3"
-  const divMatch = norm.match(/(\d+(?:\.\d+)?)\s*(?:divided by|\/)\s*(\d+(?:\.\d+)?)/i);
-  if (divMatch) {
-    const n1 = parseFloat(divMatch[1]);
-    const n2 = parseFloat(divMatch[2]);
-    return n2 !== 0 ? `${n1} divided by ${n2} is ${n1 / n2}.` : "Division by zero is undefined.";
+    if (opStr === '*' || opStr === 'x') {
+      result = n1 * n2;
+      opName = 'times';
+    } else if (opStr === '+') {
+      result = n1 + n2;
+      opName = 'plus';
+    } else if (opStr === '-') {
+      result = n1 - n2;
+      opName = 'minus';
+    } else if (opStr === '/') {
+      if (n2 === 0) return "Division by zero is undefined.";
+      result = n1 / n2;
+      opName = 'divided by';
+    }
+
+    return `${n1} ${opName} ${n2} is ${result}.`;
   }
 
   return null;
@@ -9833,4 +9849,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T02:01:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T02:05:00Z -->
