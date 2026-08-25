@@ -1797,20 +1797,19 @@
       transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
     }
     .reader-focus-ruler {
-      position: fixed; left: 0; right: 0; top: 0; width: 100vw; height: 56px;
-      background: linear-gradient(90deg, rgba(99,102,241,0.08) 0%, rgba(168,85,247,0.16) 50%, rgba(6,182,212,0.08) 100%);
-      border-top: 2px solid rgba(99, 102, 241, 0.75);
-      border-bottom: 2px solid rgba(168, 85, 247, 0.75);
+      position: fixed; left: 0; right: 0; top: 0; width: 100vw; height: 48px;
+      background: rgba(99, 102, 241, 0.07);
+      border-top: 2.5px solid var(--accent);
+      border-bottom: 2.5px solid var(--accent);
       pointer-events: none; z-index: 9999;
-      box-shadow: 0 0 24px rgba(99, 102, 241, 0.35), inset 0 0 15px rgba(168, 85, 247, 0.2);
-      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+      box-shadow: 0 -2px 12px var(--accent-glow), 0 2px 12px var(--accent-glow), inset 0 0 12px rgba(99, 102, 241, 0.06);
       display: none; will-change: transform;
       transform: translate3d(0, 0, 0);
     }
     .reader-focus-ruler::before {
       content: ''; position: absolute; left: 2.5rem; top: 50%; transform: translateY(-50%);
-      width: 10px; height: 10px; border-radius: 50%; background: #06b6d4;
-      box-shadow: 0 0 10px #06b6d4, 0 0 20px #6366f1;
+      width: 10px; height: 10px; border-radius: 50%; background: var(--accent);
+      box-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent2);
     }
     .reader-focus-ruler::after {
       content: '⚡ LASER FOCUS LENS'; position: absolute; right: 2.5rem; top: 50%; transform: translateY(-50%);
@@ -3296,6 +3295,10 @@
         <button class="btn-group-btn" id="btn-bionic-mode" onclick="toggleBionicReading()">⚡ Bionic Text</button>
         <button class="btn-group-btn" id="btn-focus-ruler" onclick="toggleFocusRuler()">📏 Reading Ruler</button>
       </div>
+    </div>
+    <div>
+      <span class="config-label">Ruler Guide Height: <span id="ruler-height-val-panel">48px</span></span>
+      <input type="range" min="20" max="120" value="48" step="4" style="width:100%;margin-top:0.4rem;accent-color:var(--accent)" oninput="updateRulerHeight(this.value)" />
     </div>
     <div>
       <span class="config-label">Font Sizing: <span id="font-size-val">18px</span></span>
@@ -8671,6 +8674,31 @@ function convertToBionicHTML(text) {
   }).join('');
 }
 
+let focusRulerHeight = parseInt(localStorage.getItem('h_ruler_height') || '48', 10);
+
+function updateRulerHeight(val) {
+  focusRulerHeight = Math.max(20, Math.min(140, parseInt(val, 10)));
+  try {
+    localStorage.setItem('h_ruler_height', focusRulerHeight);
+  } catch(e){}
+  
+  const ruler = document.getElementById('reader-focus-ruler');
+  if (ruler) {
+    ruler.style.height = `${focusRulerHeight}px`;
+  }
+  
+  const valPanel = document.getElementById('ruler-height-val-panel');
+  if (valPanel) valPanel.textContent = `${focusRulerHeight}px`;
+  
+  const valBadge = document.getElementById('ruler-height-val');
+  if (valBadge) valBadge.textContent = `${focusRulerHeight}px`;
+}
+
+function adjustRulerHeight(delta, e) {
+  if (e) e.stopPropagation();
+  updateRulerHeight(focusRulerHeight + delta);
+}
+
 function toggleFocusRuler() {
   focusRulerActive = !focusRulerActive;
   let ruler = document.getElementById('reader-focus-ruler');
@@ -8682,15 +8710,29 @@ function toggleFocusRuler() {
       ruler = document.createElement('div');
       ruler.id = 'reader-focus-ruler';
       ruler.className = 'reader-focus-ruler';
+      ruler.innerHTML = `
+        <div class="ruler-badge-controls" style="pointer-events: auto; position: absolute; right: 2rem; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 0.4rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 0.25rem 0.7rem; box-shadow: 0 4px 14px var(--shadow);">
+          <span style="font-size:0.65rem; font-weight:900; letter-spacing:1px; color:var(--accent)">⚡ RULER</span>
+          <button onclick="adjustRulerHeight(-8, event)" style="background:var(--surface); border:1px solid var(--border); border-radius:50%; width:22px; height:22px; color:var(--text); font-size:0.75rem; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;" title="Decrease Height">➖</button>
+          <span id="ruler-height-val" style="font-size:0.75rem; font-weight:800; color:var(--text); min-width:32px; text-align:center;">${focusRulerHeight}px</span>
+          <button onclick="adjustRulerHeight(8, event)" style="background:var(--surface); border:1px solid var(--border); border-radius:50%; width:22px; height:22px; color:var(--text); font-size:0.75rem; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;" title="Increase Height">➕</button>
+        </div>
+      `;
       document.body.appendChild(ruler);
     }
+    ruler.style.height = `${focusRulerHeight}px`;
     ruler.style.display = 'block';
     window.addEventListener('mousemove', updateFocusRulerPos);
-    showNotification('📏 Reading Ruler Guide enabled: move mouse over text');
+    
+    // Sync slider panel value
+    const valPanel = document.getElementById('ruler-height-val-panel');
+    if (valPanel) valPanel.textContent = `${focusRulerHeight}px`;
+
+    showNotification(`📏 Focus Ruler enabled (${focusRulerHeight}px height): move mouse over text`);
   } else {
     if (ruler) ruler.style.display = 'none';
     window.removeEventListener('mousemove', updateFocusRulerPos);
-    showNotification('Reading Ruler disabled');
+    showNotification('Reading Ruler guide disabled');
   }
 }
 
@@ -8704,7 +8746,8 @@ function updateFocusRulerPos(e) {
     requestAnimationFrame(() => {
       const ruler = document.getElementById('reader-focus-ruler');
       if (ruler && focusRulerActive) {
-        ruler.style.transform = `translate3d(0, ${lastMouseY - 28}px, 0)`;
+        ruler.style.height = `${focusRulerHeight}px`;
+        ruler.style.transform = `translate3d(0, ${lastMouseY - (focusRulerHeight / 2)}px, 0)`;
       }
       rulerRafPending = false;
     });
@@ -9580,4 +9623,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T02:26:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T02:35:00Z -->
