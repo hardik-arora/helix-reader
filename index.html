@@ -9556,7 +9556,9 @@ function evaluateSpokenMath(q) {
     'hundred': 100
   };
 
-  let norm = q.toLowerCase();
+  // Clean apostrophes, hyphens, contractions
+  let norm = q.toLowerCase().replace(/['’]/g, '').replace(/-/g, ' ');
+  norm = norm.replace(/\bwhat is\b/g, '').replace(/\bwhats\b/g, '').replace(/\bhow much is\b/g, '').replace(/\bcalculate\b/g, '').replace(/\bevaluate\b/g, '');
   norm = norm.replace(/\bin to\b/g, 'into').replace(/\bmultiplied by\b/g, 'into').replace(/\bby\b/g, 'into');
 
   for (const [w, val] of Object.entries(numberWordMap)) {
@@ -9564,32 +9566,35 @@ function evaluateSpokenMath(q) {
     norm = norm.replace(reg, val);
   }
 
-  // 1. Match "5 into 20", "5 times 20", "5 x 20", "5 * 20"
-  const multMatch = norm.match(/(?:what is|calculate|evaluate|how much is)?\s*(\d+(?:\.\d+)?)\s*(?:into|times|\*|x|multiplied by)\s*(\d+(?:\.\d+)?)/i);
+  // Handle compound spoken words like "twenty eight" -> "20 8" -> 28
+  norm = norm.replace(/\b(\d0)\s+(\d)\b/g, (m, tens, units) => parseInt(tens) + parseInt(units));
+
+  // 1. Match "28 times 33", "28 into 33", "28 x 33", "28 * 33"
+  const multMatch = norm.match(/(\d+(?:\.\d+)?)\s*(?:into|times|\*|x|multiplied by)\s*(\d+(?:\.\d+)?)/i);
   if (multMatch) {
     const n1 = parseFloat(multMatch[1]);
     const n2 = parseFloat(multMatch[2]);
     return `${n1} times ${n2} is ${n1 * n2}.`;
   }
 
-  // 2. Match "5 plus 20", "5 + 20"
-  const addMatch = norm.match(/(?:what is|calculate|evaluate|how much is)?\s*(\d+(?:\.\d+)?)\s*(?:plus|\+)\s*(\d+(?:\.\d+)?)/i);
+  // 2. Match "28 plus 33", "28 + 33"
+  const addMatch = norm.match(/(\d+(?:\.\d+)?)\s*(?:plus|\+)\s*(\d+(?:\.\d+)?)/i);
   if (addMatch) {
     const n1 = parseFloat(addMatch[1]);
     const n2 = parseFloat(addMatch[2]);
     return `${n1} plus ${n2} is ${n1 + n2}.`;
   }
 
-  // 3. Match "20 minus 5", "20 - 5"
-  const subMatch = norm.match(/(?:what is|calculate|evaluate|how much is)?\s*(\d+(?:\.\d+)?)\s*(?:minus|\-)\s*(\d+(?:\.\d+)?)/i);
+  // 3. Match "33 minus 28", "33 - 28"
+  const subMatch = norm.match(/(\d+(?:\.\d+)?)\s*(?:minus|\-)\s*(\d+(?:\.\d+)?)/i);
   if (subMatch) {
     const n1 = parseFloat(subMatch[1]);
     const n2 = parseFloat(subMatch[2]);
     return `${n1} minus ${n2} is ${n1 - n2}.`;
   }
 
-  // 4. Match "20 divided by 5", "20 / 5"
-  const divMatch = norm.match(/(?:what is|calculate|evaluate|how much is)?\s*(\d+(?:\.\d+)?)\s*(?:divided by|\/)\s*(\d+(?:\.\d+)?)/i);
+  // 4. Match "33 divided by 3", "33 / 3"
+  const divMatch = norm.match(/(\d+(?:\.\d+)?)\s*(?:divided by|\/)\s*(\d+(?:\.\d+)?)/i);
   if (divMatch) {
     const n1 = parseFloat(divMatch[1]);
     const n2 = parseFloat(divMatch[2]);
@@ -9828,4 +9833,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T01:55:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T02:01:00Z -->
