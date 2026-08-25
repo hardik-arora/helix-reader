@@ -9178,6 +9178,35 @@ function runCustomAction(act) {
   else if (act === 'open_author_chat') { speakSiriResponse('Opening Author Chat.'); openPersonaChatModal(); }
 }
 
+function getBestSiriVoice() {
+  if (!window.speechSynthesis) return null;
+  const voices = window.speechSynthesis.getVoices();
+  if (!voices || voices.length === 0) return null;
+
+  const savedGender = localStorage.getItem('h_siri_voice_gender') || 'female';
+
+  const preferredNames = [
+    'Samantha', 'Karen', 'Siri', 'Serena', 'Daniel', 'Moira', 'Fiona', 'Victoria', 'Alex',
+    'Google US English', 'Google UK English Female', 'Google Natural', 'Microsoft Zira'
+  ];
+
+  if (savedGender === 'male') {
+    const maleVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Daniel') || v.name.includes('Alex') || v.name.includes('George') || v.name.includes('Male')));
+    if (maleVoice) return maleVoice;
+  }
+
+  for (const name of preferredNames) {
+    const found = voices.find(v => v.name.includes(name));
+    if (found) return found;
+  }
+
+  return voices.find(v => v.lang.startsWith('en')) || voices[0];
+}
+
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = () => { getBestSiriVoice(); };
+}
+
 function speakSiriResponse(text) {
   const siriAudioToggle = document.getElementById('set-siri-audio-toggle');
   const allowAudio = !siriAudioToggle || siriAudioToggle.checked;
@@ -9189,8 +9218,15 @@ function speakSiriResponse(text) {
   if (allowAudio && window.speechSynthesis) {
     window.speechSynthesis.cancel();
     const synthUtterance = new SpeechSynthesisUtterance(text);
-    synthUtterance.rate = 1.0;
-    synthUtterance.pitch = 1.05;
+    
+    const siriVoice = getBestSiriVoice();
+    if (siriVoice) {
+      synthUtterance.voice = siriVoice;
+    }
+    
+    synthUtterance.rate = 0.96;
+    synthUtterance.pitch = 1.0;
+    
     window.speechSynthesis.speak(synthUtterance);
   }
 }
@@ -9695,4 +9731,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T01:31:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T01:34:00Z -->
