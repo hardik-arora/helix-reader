@@ -3836,6 +3836,60 @@
   </div>
 </div>
 
+<!-- Admin Telemetry Audit Modal -->
+<div id="admin-telemetry-modal" class="mobile-theme-overlay" onclick="closeAdminTelemetryModal()">
+  <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width: 620px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="oauth-modal-header" style="border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;">
+      <h3 style="margin: 0; color: var(--accent); display: flex; align-items: center; gap: 0.5rem; font-size: 1.25rem;">
+        📊 Live Telemetry & Security Audit Log
+      </h3>
+      <div style="display: flex; align-items: center; gap: 0.8rem;">
+        <button onclick="refreshTelemetryLogs(true)" style="background: none; border: none; color: var(--text3); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; transition: color var(--transition); outline: none;" title="Refresh logs">
+          <span id="telemetry-refresh-icon" style="display: inline-block; transition: transform 0.6s ease;">🔄</span>
+        </button>
+        <button class="close-sheet-btn" style="position: static; transform: none;" onclick="closeAdminTelemetryModal()">✕</button>
+      </div>
+    </div>
+    <div class="oauth-modal-body" style="overflow-y: auto; padding-right: 0.5rem; flex: 1;">
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.2rem;">
+        <div style="background: var(--surface); border: 1px solid var(--border); padding: 0.75rem; border-radius: 8px; text-align: center;">
+          <div style="font-size: 0.68rem; text-transform: uppercase; color: var(--text3); font-weight: 800; letter-spacing: 0.5px;">Total Logins</div>
+          <div id="telemetry-total-logins" style="font-size: 1.6rem; font-weight: 900; color: var(--text); margin-top: 0.25rem;">284</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); padding: 0.75rem; border-radius: 8px; text-align: center;">
+          <div style="font-size: 0.68rem; text-transform: uppercase; color: var(--text3); font-weight: 800; letter-spacing: 0.5px;">Total Signups</div>
+          <div id="telemetry-total-signups" style="font-size: 1.6rem; font-weight: 900; color: var(--text); margin-top: 0.25rem;">142</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--border); padding: 0.75rem; border-radius: 8px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+          <div style="font-size: 0.68rem; text-transform: uppercase; color: var(--text3); font-weight: 800; letter-spacing: 0.5px;">Active Profile</div>
+          <div id="telemetry-active-user" style="font-size: 0.85rem; font-weight: 700; color: var(--accent2); margin-top: 0.25rem; word-break: break-all;">Guest Reader</div>
+        </div>
+      </div>
+      
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;">
+        <h4 style="margin: 0; color: var(--text); font-size: 0.9rem; font-weight: 800;">Real-Time Activity Audit</h4>
+        <span id="telemetry-source-badge" style="font-size:0.68rem;font-weight:800;padding:0.25rem 0.6rem;border-radius:20px;background:rgba(255,255,255,0.05);color:var(--accent2);letter-spacing:0.3px;">🟡 Audit System Live</span>
+      </div>
+      <div style="overflow-x: auto; background: var(--bg2); border-radius: 8px; border: 1px solid var(--border);">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.78rem;">
+          <thead>
+            <tr style="border-bottom: 1.5px solid var(--border); background: rgba(255,255,255,0.02);">
+              <th style="padding: 0.6rem 0.85rem; color: var(--text3); font-weight: 800; text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.5px;">User</th>
+              <th style="padding: 0.6rem 0.85rem; color: var(--text3); font-weight: 800; text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.5px;">Method</th>
+              <th style="padding: 0.6rem 0.85rem; color: var(--text3); font-weight: 800; text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.5px;">Timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="telemetry-log-table-body">
+            <tr>
+              <td colspan="3" style="padding: 1.2rem; text-align: center; color: var(--text2);">Loading security event logs...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Siri AI Voice Assistant Floating Widget -->
 <div id="siri-voice-orb" class="siri-orb-container" style="display:none;" onclick="toggleVoiceCommands()" title="Siri AI Voice Assistant">
   <div class="siri-orb"></div>
@@ -9286,4 +9340,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T00:35:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T00:38:00Z -->
