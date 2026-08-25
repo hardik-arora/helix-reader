@@ -2814,6 +2814,16 @@
     </div>
   </div>
 
+  <!-- Global Siri AI & Settings Buttons -->
+  <div style="display: flex; align-items: center; gap: 0.4rem; margin-left: 0.5rem;">
+    <button class="nav-btn" id="nav-siri-ai" onclick="toggleVoiceCommands()" title="Activate Siri AI Voice Assistant" style="background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899); color: #ffffff; border: none; font-weight: 700; box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);">
+      🤖 Siri AI
+    </button>
+    <button class="nav-btn" id="nav-settings" onclick="openSiteSettingsModal()" title="Global Site Settings & Commands Manager" style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border-radius: 50%;">
+      ⚙️
+    </button>
+  </div>
+
   <!-- User Authentication Profile drop down -->
   <div id="nav-auth-section" style="display: flex; align-items: center; gap: 0.5rem; margin-left: 0.5rem;">
     <button class="nav-btn" id="nav-auth" onclick="navigate('auth')">Sign In</button>
@@ -3830,6 +3840,86 @@
 <div id="siri-voice-orb" class="siri-orb-container" style="display:none;" onclick="toggleVoiceCommands()" title="Siri AI Voice Assistant">
   <div class="siri-orb"></div>
   <div class="siri-badge" id="siri-orb-text">Siri AI Listening...</div>
+</div>
+
+<!-- Global Site Settings & Commands Manager Modal -->
+<div id="site-settings-modal" class="mobile-theme-overlay" onclick="closeSiteSettingsModal()">
+  <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width: 580px; width: 92%; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="oauth-modal-header" style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:0.75rem;margin-bottom:0.75rem;flex-shrink:0;">
+      <h3 style="margin:0;color:var(--accent);display:flex;align-items:center;gap:0.4rem;">
+        ⚙️ Site Settings & Siri Commands Manager
+      </h3>
+      <button class="close-sheet-btn" style="position:static;transform:none;" onclick="closeSiteSettingsModal()">✕</button>
+    </div>
+    
+    <div style="display:flex;gap:0.4rem;margin-bottom:0.8rem;overflow-x:auto;padding-bottom:0.2rem;flex-shrink:0;">
+      <button class="persona-tab-btn active" id="set-tab-general" onclick="switchSettingsTab('general')">⚙️ Preferences</button>
+      <button class="persona-tab-btn" id="set-tab-siri" onclick="switchSettingsTab('siri')">🤖 Siri Voice AI</button>
+      <button class="persona-tab-btn" id="set-tab-commands" onclick="switchSettingsTab('commands')">➕ Voice Commands</button>
+    </div>
+    
+    <div style="overflow-y:auto;flex:1;padding-right:0.3rem;">
+      <!-- Tab 1: General Preferences -->
+      <div id="set-content-general" style="display:flex;flex-direction:column;gap:0.8rem;">
+        <div style="background:var(--surface);border:1px solid var(--border);padding:0.8rem;border-radius:8px;">
+          <label style="font-size:0.8rem;font-weight:700;color:var(--text);display:block;margin-bottom:0.4rem;">Default Reading Voice Gender</label>
+          <select id="set-voice-gender" class="auth-input-group" style="width:100%;padding:0.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);" onchange="saveSiteSettings()">
+            <option value="female" selected>👩 Female Accent (Samantha / Zira / Rishi)</option>
+            <option value="male">👨 Male Accent (Alex / Daniel)</option>
+          </select>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);padding:0.8rem;border-radius:8px;">
+          <label style="font-size:0.8rem;font-weight:700;color:var(--text);display:block;margin-bottom:0.4rem;">Default Ambiance Volume</label>
+          <input type="range" id="set-soundscape-vol" min="0" max="1" step="0.05" value="0.3" style="width:100%;accent-color:var(--accent)" oninput="setSoundscapeVolume(this.value); saveSiteSettings();" />
+        </div>
+      </div>
+      
+      <!-- Tab 2: Siri AI Settings -->
+      <div id="set-content-siri" style="display:none;flex-direction:column;gap:0.8rem;">
+        <div style="background:var(--surface);border:1px solid var(--border);padding:0.8rem;border-radius:8px;display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:0.85rem;font-weight:700;color:var(--text)">Siri AI Voice Speech Feedback</div>
+            <div style="font-size:0.75rem;color:var(--text3)">Siri speaks out loud when responding to voice commands</div>
+          </div>
+          <input type="checkbox" id="set-siri-audio-toggle" checked style="width:20px;height:20px;accent-color:var(--accent)" onchange="saveSiteSettings()" />
+        </div>
+        <button onclick="speakSiriResponse('Hello! Siri AI voice assistant is active and ready to assist your reading.')" class="auth-submit-btn" style="background:var(--bg2);color:var(--accent);border:1px solid var(--accent);margin:0;">
+          🎙️ Test Siri Audio Voice Feedback
+        </button>
+      </div>
+      
+      <!-- Tab 3: Custom Commands Registry -->
+      <div id="set-content-commands" style="display:none;flex-direction:column;gap:0.8rem;">
+        <div style="background:var(--surface);border:1px solid var(--border);padding:0.8rem;border-radius:8px;">
+          <h4 style="margin:0 0 0.5rem 0;color:var(--accent);font-size:0.85rem;">➕ Add Custom Voice Command</h4>
+          <form onsubmit="addCustomVoiceCommand(event)" style="display:flex;flex-direction:column;gap:0.5rem;">
+            <input type="text" id="custom-cmd-trigger" placeholder="Trigger phrase (e.g. 'go dark' or 'hello siri')" required style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.5rem 0.7rem;color:var(--text);font-size:0.8rem;" />
+            <select id="custom-cmd-action" required style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.5rem 0.7rem;color:var(--text);font-size:0.8rem;">
+              <option value="scroll_down">Scroll Down Page</option>
+              <option value="scroll_up">Scroll Up Page</option>
+              <option value="start_read">Start Voice Reading</option>
+              <option value="pause_read">Pause Voice Reading</option>
+              <option value="theme_dark">Switch to Dark Mode</option>
+              <option value="theme_oldmoney">Switch to Old Money Theme</option>
+              <option value="theme_cyberpunk">Switch to Cyberpunk Theme</option>
+              <option value="bionic_mode">Toggle Bionic Text</option>
+              <option value="focus_ruler">Toggle Reading Ruler</option>
+              <option value="open_citations">Open Citations Modal</option>
+              <option value="open_analytics">Open Analytics Dashboard</option>
+              <option value="open_importer">Open File Importer</option>
+              <option value="open_author_chat">Open AI Author Chat</option>
+            </select>
+            <button type="submit" class="auth-submit-btn" style="margin:0.2rem 0 0 0;padding:0.5rem;">➕ Save Custom Command</button>
+          </form>
+        </div>
+        
+        <h4 style="margin:0.4rem 0 0.2rem 0;color:var(--text);font-size:0.85rem;">📋 Active Siri Voice Commands Registry</h4>
+        <div id="custom-commands-list" style="display:flex;flex-direction:column;gap:0.4rem;">
+          <!-- Loaded dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
           <thead>
             <tr style="border-bottom: 1.5px solid var(--border); background: rgba(255,255,255,0.02);">
@@ -8871,12 +8961,152 @@ function copyAllCitations() {
 let voiceCmdRecognition = null;
 let isVoiceCmdActive = false;
 
+let customVoiceCommands = [];
+
+function openSiteSettingsModal() {
+  const modal = document.getElementById('site-settings-modal');
+  if (!modal) return;
+  loadCustomVoiceCommands();
+  switchSettingsTab('general');
+  modal.style.display = 'flex';
+}
+
+function closeSiteSettingsModal() {
+  const modal = document.getElementById('site-settings-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function switchSettingsTab(tab) {
+  document.querySelectorAll('#site-settings-modal .persona-tab-btn').forEach(btn => btn.classList.remove('active'));
+  const activeTab = document.getElementById(`set-tab-${tab}`);
+  if (activeTab) activeTab.classList.add('active');
+
+  document.getElementById('set-content-general').style.display = tab === 'general' ? 'flex' : 'none';
+  document.getElementById('set-content-siri').style.display = tab === 'siri' ? 'flex' : 'none';
+  document.getElementById('set-content-commands').style.display = tab === 'commands' ? 'flex' : 'none';
+}
+
+function loadCustomVoiceCommands() {
+  try {
+    const saved = localStorage.getItem('h_custom_commands');
+    customVoiceCommands = saved ? JSON.parse(saved) : [
+      { id: 'c1', trigger: 'go dark', action: 'theme_dark' },
+      { id: 'c2', trigger: 'read out loud', action: 'start_read' }
+    ];
+  } catch(e) {
+    customVoiceCommands = [];
+  }
+  renderCustomCommandsList();
+}
+
+function saveSiteSettings() {
+  const gender = document.getElementById('set-voice-gender').value;
+  const vol = document.getElementById('set-soundscape-vol').value;
+  const siriAudio = document.getElementById('set-siri-audio-toggle').checked;
+
+  try {
+    localStorage.setItem('h_voice_gender', gender);
+    localStorage.setItem('h_soundscape_vol', vol);
+    localStorage.setItem('h_siri_audio_feedback', siriAudio);
+  } catch(e){}
+  
+  showNotification('⚙️ Settings saved successfully!');
+}
+
+function addCustomVoiceCommand(e) {
+  if (e) e.preventDefault();
+  const triggerInput = document.getElementById('custom-cmd-trigger');
+  const actionSelect = document.getElementById('custom-cmd-action');
+
+  const trigger = triggerInput.value.trim().toLowerCase();
+  const action = actionSelect.value;
+
+  if (!trigger) return;
+
+  const newCmd = {
+    id: `cmd-${Date.now()}`,
+    trigger,
+    action
+  };
+
+  customVoiceCommands.push(newCmd);
+  try {
+    localStorage.setItem('h_custom_commands', JSON.stringify(customVoiceCommands));
+  } catch(e){}
+
+  triggerInput.value = '';
+  renderCustomCommandsList();
+  showNotification(`➕ Custom command "${trigger}" added!`);
+}
+
+function deleteCustomVoiceCommand(id) {
+  customVoiceCommands = customVoiceCommands.filter(c => c.id !== id);
+  try {
+    localStorage.setItem('h_custom_commands', JSON.stringify(customVoiceCommands));
+  } catch(e){}
+  renderCustomCommandsList();
+  showNotification('🗑️ Custom command removed');
+}
+
+function renderCustomCommandsList() {
+  const container = document.getElementById('custom-commands-list');
+  if (!container) return;
+
+  const builtInCommands = [
+    { trigger: 'scroll down / next page', action: 'Scroll Down' },
+    { trigger: 'scroll up / previous page', action: 'Scroll Up' },
+    { trigger: 'read / play / listen', action: 'Start Reading Audio' },
+    { trigger: 'pause / stop', action: 'Pause Audio' },
+    { trigger: 'dark mode / midnight', action: 'Midnight Velvet Theme' },
+    { trigger: 'bionic mode', action: 'Toggle Bionic Text' },
+    { trigger: 'ruler / focus', action: 'Toggle Reading Ruler' },
+    { trigger: 'show citations', action: 'Open Citations' },
+    { trigger: 'analytics / speed', action: 'Open Analytics' },
+    { trigger: 'who wrote this', action: 'Query Book Author' }
+  ];
+
+  let html = builtInCommands.map(c => `
+    <div style="background:var(--bg2);border:1px solid var(--border);padding:0.5rem 0.75rem;border-radius:6px;display:flex;align-items:center;justify-content:space-between;font-size:0.78rem;">
+      <span><strong>"${c.trigger}"</strong> &rarr; <span style="color:var(--accent)">${c.action}</span></span>
+      <span style="font-size:0.65rem;color:var(--text3);font-weight:700;text-transform:uppercase;">Built-in</span>
+    </div>
+  `).join('');
+
+  html += customVoiceCommands.map(c => `
+    <div style="background:var(--surface);border:1px solid var(--accent);padding:0.5rem 0.75rem;border-radius:6px;display:flex;align-items:center;justify-content:space-between;font-size:0.78rem;">
+      <span><strong>"${c.trigger}"</strong> &rarr; <span style="color:var(--accent2)">${c.action.replace('_', ' ')}</span></span>
+      <button onclick="deleteCustomVoiceCommand('${c.id}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-weight:bold;">✕</button>
+    </div>
+  `).join('');
+
+  container.innerHTML = html;
+}
+
+function runCustomAction(act) {
+  if (act === 'scroll_down') { window.scrollBy({top: 450, behavior: 'smooth'}); speakSiriResponse('Scrolling down.'); }
+  else if (act === 'scroll_up') { window.scrollBy({top: -450, behavior: 'smooth'}); speakSiriResponse('Scrolling up.'); }
+  else if (act === 'start_read') { speakSiriResponse('Starting voice reading.'); startAudio(); }
+  else if (act === 'pause_read') { speakSiriResponse('Paused audio.'); stopAudio(); }
+  else if (act === 'theme_dark') { speakSiriResponse('Applying Midnight theme.'); applyTheme('midnight-velvet'); }
+  else if (act === 'theme_oldmoney') { speakSiriResponse('Applying Old Money theme.'); applyTheme('old-money'); }
+  else if (act === 'theme_cyberpunk') { speakSiriResponse('Applying Cyberpunk theme.'); applyTheme('cyberpunk'); }
+  else if (act === 'bionic_mode') { speakSiriResponse('Toggling Bionic text.'); toggleBionicReading(); }
+  else if (act === 'focus_ruler') { speakSiriResponse('Toggling reading ruler.'); toggleFocusRuler(); }
+  else if (act === 'open_citations') { speakSiriResponse('Opening citations.'); openCitationModal(); }
+  else if (act === 'open_analytics') { speakSiriResponse('Opening analytics.'); openAnalyticsModal(); }
+  else if (act === 'open_importer') { speakSiriResponse('Opening document importer.'); openImportModal(); }
+  else if (act === 'open_author_chat') { speakSiriResponse('Opening author chat.'); openPersonaChatModal(); }
+}
+
 function speakSiriResponse(text) {
+  const siriAudioToggle = document.getElementById('set-siri-audio-toggle');
+  const allowAudio = !siriAudioToggle || siriAudioToggle.checked;
+
   showNotification(`🤖 Siri AI: "${text}"`);
   const orbText = document.getElementById('siri-orb-text');
   if (orbText) orbText.textContent = text;
   
-  if (window.speechSynthesis) {
+  if (allowAudio && window.speechSynthesis) {
     window.speechSynthesis.cancel();
     const synthUtterance = new SpeechSynthesisUtterance(text);
     synthUtterance.rate = 1.05;
@@ -8933,6 +9163,14 @@ function toggleVoiceCommands() {
 
 function executeVoiceCommand(cmd) {
   console.log(`Siri AI Command Received: ${cmd}`);
+
+  // Check Custom Commands Registry
+  for (const custom of customVoiceCommands) {
+    if (cmd.includes(custom.trigger.toLowerCase())) {
+      runCustomAction(custom.action);
+      return;
+    }
+  }
 
   if (cmd.includes('down') || cmd.includes('scroll down') || cmd.includes('next paragraph') || cmd.includes('next page') || cmd.includes('forward')) {
     window.scrollBy({top: 450, behavior: 'smooth'});
@@ -9048,4 +9286,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T00:25:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T00:32:00Z -->
