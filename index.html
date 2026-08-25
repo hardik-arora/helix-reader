@@ -9572,6 +9572,23 @@ function evaluateSpokenMath(q) {
   return null;
 }
 
+const INSTANT_WORLD_FACTS = [
+  { keywords: ['president of india'], answer: "Droupadi Murmu is the President of India, serving as the 15th president since July 2022." },
+  { keywords: ['prime minister of india', 'pm of india'], answer: "Narendra Modi is the Prime Minister of India, serving since 2014." },
+  { keywords: ['president of usa', 'president of america', 'president of united states', 'us president'], answer: "Joe Biden is the President of the United States." },
+  { keywords: ['prime minister of uk', 'pm of uk', 'uk prime minister'], answer: "Keir Starmer is the Prime Minister of the United Kingdom." },
+  { keywords: ['capital of france'], answer: "The capital of France is Paris." },
+  { keywords: ['capital of india'], answer: "The capital of India is New Delhi." },
+  { keywords: ['capital of japan'], answer: "The capital of Japan is Tokyo." },
+  { keywords: ['capital of usa', 'capital of america', 'capital of united states'], answer: "The capital of the United States is Washington, D.C." },
+  { keywords: ['capital of uk', 'capital of england'], answer: "The capital of the United Kingdom is London." },
+  { keywords: ['invented electricity', 'discovered electricity'], answer: "Benjamin Franklin, Michael Faraday, and Nikola Tesla contributed fundamentally to discovering and harnessing electricity." },
+  { keywords: ['invented light bulb', 'invented bulb'], answer: "Thomas Edison is widely credited with inventing the practical incandescent light bulb." },
+  { keywords: ['discovered gravity'], answer: "Sir Isaac Newton formulated the law of universal gravitation." },
+  { keywords: ['father of computer', 'invented computer'], answer: "Charles Babbage is recognized as the father of the computer." },
+  { keywords: ['father of ai', 'father of artificial intelligence'], answer: "John McCarthy and Alan Turing are recognized as the founding fathers of artificial intelligence." }
+];
+
 async function askHelixAI(query) {
   const q = query.toLowerCase().trim();
   
@@ -9582,7 +9599,15 @@ async function askHelixAI(query) {
     return;
   }
 
-  // 2. Word Meaning & Dictionary Handler (Free Dictionary API)
+  // 2. High-Speed Instant Knowledge Graph Index (0ms delay!)
+  for (const item of INSTANT_WORLD_FACTS) {
+    if (item.keywords.some(kw => q.includes(kw))) {
+      speakSiriResponse(item.answer);
+      return;
+    }
+  }
+
+  // 3. Word Meaning & Dictionary Handler (Free Dictionary API)
   const dictMatch = q.match(/(?:meaning of|define|definition of|what does|what is the meaning of)\s+([a-z\-]+)/i);
   const isSingleWord = /^[a-z\-]{3,}$/i.test(q) && !['home', 'search', 'reader', 'stats', 'dark', 'light', 'ruler', 'bionic', 'help', 'books'].includes(q);
   
@@ -9613,7 +9638,7 @@ async function askHelixAI(query) {
     }
   }
 
-  // 3. Emotional & Conversational Empathy (Sharing feelings, mood, personal thoughts, friendship)
+  // 4. Emotional & Conversational Empathy (Sharing feelings, mood, personal thoughts, friendship)
   if (q.includes('friend') || q.includes('lonely') || q.includes('talk to me') || q.includes('something nice')) {
     speakSiriResponse("I am always here for you as your loyal friend and assistant. You can talk to me about anything, anytime!");
     return;
@@ -9642,7 +9667,7 @@ async function askHelixAI(query) {
     speakSiriResponse("You're very welcome! I'm always happy to help.");
     return;
 
-  // 4. Practical Life / How-To / Human Advice Questions
+  // 5. Practical Life / How-To / Human Advice Questions
   } else if (q.includes('joke') || q.includes('tell me a joke') || q.includes('funny')) {
     const jokes = [
       "Why don't scientists trust atoms? Because they make up everything!",
@@ -9670,64 +9695,67 @@ async function askHelixAI(query) {
     return;
   }
 
-  // 5. MASTERMIND LIVE WEB KNOWLEDGE ENGINE (Wikipedia Search + Summary + DuckDuckGo)
+  // 6. LIGHTNING-FAST PARALLEL WEB KNOWLEDGE SEARCH (DuckDuckGo + Wikipedia)
   const cleanSearchTopic = q.replace(/what is|who is|tell me about|how to|where is|can you|why does|how does|define|explain|what does/gi, '').trim();
   const searchKey = cleanSearchTopic.length > 0 ? cleanSearchTopic : q;
 
   const orbText = document.getElementById('siri-orb-text');
-  if (orbText) orbText.textContent = `⚡ Mastermind searching knowledge...`;
+  if (orbText) orbText.textContent = `⚡ Siri searching knowledge...`;
 
   try {
-    // A. Query Wikipedia Search API for top matching article title
+    // Fire DuckDuckGo Instant Answer and Wikipedia REST in parallel
+    const ddgPromise = fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`).then(r => r.json()).catch(() => null);
+    const wikiPromise = fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchKey)}`).then(r => r.json()).catch(() => null);
+
+    const [ddgData, wikiData] = await Promise.all([ddgPromise, wikiPromise]);
+
+    // Check DuckDuckGo Instant Answer first (Best for "who is X", "capital of Y")
+    if (ddgData && ddgData.AbstractText && ddgData.AbstractText.length > 15) {
+      let snippet = ddgData.AbstractText;
+      if (snippet.length > 170) snippet = snippet.slice(0, 170) + '...';
+      speakSiriResponse(snippet);
+      return;
+    }
+
+    // Check Wikipedia Summary next
+    if (wikiData && wikiData.extract && wikiData.extract.length > 15 && wikiData.type !== 'disambiguation') {
+      let snippet = wikiData.extract;
+      if (snippet.length > 170) {
+        const firstPeriod = snippet.indexOf('.', 130);
+        if (firstPeriod > 0) snippet = snippet.slice(0, firstPeriod + 1);
+        else snippet = snippet.slice(0, 170) + '...';
+      }
+      speakSiriResponse(snippet);
+      return;
+    }
+  } catch(e) {
+    console.warn("Parallel knowledge fetch error:", e);
+  }
+
+  // 7. Fallback to Wikipedia Search Query API
+  try {
     const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchKey)}&format=json&origin=*`;
     const searchRes = await fetch(searchUrl);
-    
     if (searchRes.ok) {
       const searchData = await searchRes.json();
       if (searchData.query && searchData.query.search && searchData.query.search.length > 0) {
         const bestTitle = searchData.query.search[0].title;
-        
-        // B. Fetch Summary for top article title
         const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(bestTitle)}`;
         const summaryRes = await fetch(wikiUrl);
-        
         if (summaryRes.ok) {
           const data = await summaryRes.json();
           if (data.extract && data.extract.length > 10) {
             let snippet = data.extract;
-            if (snippet.length > 170) {
-              const firstPeriod = snippet.indexOf('.', 130);
-              if (firstPeriod > 0) snippet = snippet.slice(0, firstPeriod + 1);
-              else snippet = snippet.slice(0, 170) + '...';
-            }
+            if (snippet.length > 170) snippet = snippet.slice(0, 170) + '...';
             speakSiriResponse(snippet);
             return;
           }
         }
       }
     }
-  } catch(e) {
-    console.warn("Wiki Search lookup error:", e);
-  }
+  } catch(e){}
 
-  try {
-    // C. Query DuckDuckGo Instant Answer API
-    const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(searchKey)}&format=json&no_html=1&skip_disambig=1`;
-    const ddgRes = await fetch(ddgUrl);
-    if (ddgRes.ok) {
-      const ddgData = await ddgRes.json();
-      if (ddgData.AbstractText && ddgData.AbstractText.length > 10) {
-        let snippet = ddgData.AbstractText;
-        if (snippet.length > 170) snippet = snippet.slice(0, 170) + '...';
-        speakSiriResponse(snippet);
-        return;
-      }
-    }
-  } catch(e) {
-    console.warn("DuckDuckGo lookup error:", e);
-  }
-
-  // 6. Mastermind Human Reasoning Fallback
+  // 8. Human Reasoning Fallback
   const displayTopic = searchKey.charAt(0).toUpperCase() + searchKey.slice(1);
   speakSiriResponse(`Here is what I found on ${displayTopic}: It is a key topic in global knowledge, science, and literature.`);
 }
@@ -9773,4 +9801,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T01:39:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T01:44:00Z -->
