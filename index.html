@@ -9345,17 +9345,44 @@ function executeVoiceCommand(cmd) {
     }
   }
 
-  // 2. Smart Book Opening & Reading Commands
-  const matchedBook = findBookFromSpeech(cmd);
-  if (matchedBook) {
-    if (cmd.includes('excerpt') || cmd.includes('read') || cmd.includes('text') || cmd.includes('page')) {
-      openReader(matchedBook.id, true);
-      speakSiriResponse(`Opening excerpt for ${matchedBook.title}.`);
-    } else {
-      openBookDetails(matchedBook.id, true);
-      speakSiriResponse(`Opening ${matchedBook.title}.`);
-    }
+  // 2. SPOKEN MATH EVALUATION FIRST (Guarantees math like "5 into 20" or "what is 10 plus 10" is NEVER intercepted by book matcher!)
+  const mathRes = evaluateSpokenMath(cmd);
+  if (mathRes) {
+    speakSiriResponse(mathRes);
     return;
+  }
+
+  // 3. DICTIONARY & WORD MEANING QUERIES FIRST ("meaning of", "define", "what does")
+  if (cmd.includes('meaning of') || cmd.includes('define') || cmd.includes('definition of') || cmd.includes('what does')) {
+    askHelixAI(cmd);
+    return;
+  }
+
+  // 4. INSTANT KNOWLEDGE & WORLD DOUBTS FIRST ("who is", "what is", "capital of", "president of", "prime minister of", "who invented", "discovered", "how do", "why do")
+  if (cmd.includes('who is') || cmd.includes('what is') || cmd.includes('capital of') || cmd.includes('president of') || cmd.includes('prime minister of') || cmd.includes('who invented') || cmd.includes('discovered') || cmd.includes('how do') || cmd.includes('why do') || cmd.includes('where is')) {
+    askHelixAI(cmd);
+    return;
+  }
+
+  // 5. EMOTIONAL & COMPANIONSHIP PHRASES
+  if (cmd.includes('friend') || cmd.includes('lonely') || cmd.includes('tired') || cmd.includes('happy') || cmd.includes('sad') || cmd.includes('good morning') || cmd.includes('goodnight')) {
+    askHelixAI(cmd);
+    return;
+  }
+
+  // 6. EXPLICIT BOOK OPENING & READING COMMANDS ONLY
+  if (cmd.includes('open') || cmd.includes('read') || cmd.includes('book') || cmd.includes('author') || cmd.includes('excerpt')) {
+    const matchedBook = findBookFromSpeech(cmd);
+    if (matchedBook) {
+      if (cmd.includes('excerpt') || cmd.includes('read') || cmd.includes('text') || cmd.includes('page')) {
+        openReader(matchedBook.id, true);
+        speakSiriResponse(`Opening excerpt for ${matchedBook.title}.`);
+      } else {
+        openBookDetails(matchedBook.id, true);
+        speakSiriResponse(`Opening ${matchedBook.title}.`);
+      }
+      return;
+    }
   }
 
   // Fallback for general 'open book' / 'read book' without specific title
@@ -9801,4 +9828,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T01:44:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T01:55:00Z -->
