@@ -9264,12 +9264,65 @@ function executeVoiceCommand(cmd) {
     }
   }
 
-  // 2. Navigation & Page Controls
-  if (cmd.includes('home') || cmd.includes('discover') || cmd.includes('catalog')) {
+  // 2. Smart Book Opening & Reading Commands
+  if (cmd.includes('open book') || cmd.includes('read book') || cmd.includes('open excerpt') || cmd.includes('show book') || cmd.includes('open ') || cmd.includes('read ')) {
+    const allBooks = [...MASTER_BOOKS, ...(typeof DYNAMIC_SEARCH_CACHE !== 'undefined' ? DYNAMIC_SEARCH_CACHE : []), ...((state && state.customBooks) ? state.customBooks : [])];
+    
+    let matched = null;
+    for (const b of allBooks) {
+      const t = b.title.toLowerCase();
+      const a = b.author.toLowerCase();
+      if (cmd.includes(t) || (t.length > 4 && cmd.includes(t.slice(0, 5))) || cmd.includes(a)) {
+        matched = b;
+        break;
+      }
+    }
+
+    if (matched) {
+      if (cmd.includes('excerpt') || cmd.includes('read')) {
+        openReader(matched.id);
+        speakSiriResponse(`Opening excerpt for ${matched.title}.`);
+      } else {
+        openBookDetails(matched.id);
+        speakSiriResponse(`Opening ${matched.title}.`);
+      }
+      return;
+    } else if (cmd.includes('open book') || cmd.includes('read book') || cmd.includes('open excerpt')) {
+      const targetId = activeBookId || (readerBook ? readerBook.id : (MASTER_BOOKS[0] ? MASTER_BOOKS[0].id : 'b1'));
+      openReader(targetId);
+      speakSiriResponse("Opening book excerpt.");
+      return;
+    }
+  }
+
+  // 3. Catalog Browsing & Search Queries
+  if (cmd.includes('browse') || cmd.includes('catalog') || cmd.includes('show books') || cmd.includes('all books')) {
+    speakSiriResponse("Opening Library catalog.");
+    navigate('search');
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    return;
+  }
+
+  if (cmd.includes('search for') || cmd.includes('find ')) {
+    const query = cmd.replace('search for', '').replace('find', '').trim();
+    if (query) {
+      navigate('search');
+      const pageInput = document.getElementById('page-search-input');
+      const globalInput = document.getElementById('global-search-input');
+      if (pageInput) pageInput.value = query;
+      if (globalInput) globalInput.value = query;
+      handleSearch(query);
+      speakSiriResponse(`Searching for ${query}.`);
+      return;
+    }
+  }
+
+  // 4. Navigation & Page Controls
+  if (cmd.includes('home') || cmd.includes('discover')) {
     speakSiriResponse("Opening Discover.");
     navigate('discover');
 
-  } else if (cmd.includes('search') || cmd.includes('browse') || cmd.includes('library')) {
+  } else if (cmd.includes('search') || cmd.includes('library')) {
     speakSiriResponse("Opening Search.");
     navigate('search');
 
@@ -9285,8 +9338,8 @@ function executeVoiceCommand(cmd) {
     speakSiriResponse("Opening Security Logs.");
     openAdminTelemetryModal();
 
-  // 3. Audio & Reading Controls
-  } else if (cmd.includes('read') || cmd.includes('play') || cmd.includes('listen') || cmd.includes('speak') || cmd.includes('audio')) {
+  // 5. Audio Reading & TTS Controls
+  } else if (cmd.includes('start audio') || cmd.includes('read out loud') || cmd.includes('play audio') || cmd.includes('listen')) {
     speakSiriResponse("Reading out loud.");
     startAudio();
 
@@ -9294,7 +9347,7 @@ function executeVoiceCommand(cmd) {
     speakSiriResponse("Paused.");
     stopAudio();
 
-  // 4. Scrolling Controls
+  // 6. Scrolling Controls
   } else if (cmd.includes('down') || cmd.includes('scroll down') || cmd.includes('next paragraph') || cmd.includes('next page') || cmd.includes('forward')) {
     window.scrollBy({top: 450, behavior: 'smooth'});
     speakSiriResponse("Scrolling down.");
@@ -9303,7 +9356,7 @@ function executeVoiceCommand(cmd) {
     window.scrollBy({top: -450, behavior: 'smooth'});
     speakSiriResponse("Scrolling up.");
 
-  // 5. Soundscapes
+  // 7. Soundscapes
   } else if (cmd.includes('rain')) {
     speakSiriResponse("Playing Rain soundscape.");
     changeSoundscape('rain');
@@ -9320,7 +9373,7 @@ function executeVoiceCommand(cmd) {
     speakSiriResponse("Playing Lofi Synth.");
     changeSoundscape('lofi');
 
-  // 6. Font Size Controls
+  // 8. Font Size Controls
   } else if (cmd.includes('bigger') || cmd.includes('increase font') || cmd.includes('larger text')) {
     speakSiriResponse("Increasing text size.");
     changeFontSize(2);
@@ -9329,7 +9382,7 @@ function executeVoiceCommand(cmd) {
     speakSiriResponse("Decreasing text size.");
     changeFontSize(-2);
 
-  // 7. Accessibility Reading Guides
+  // 9. Accessibility Reading Guides
   } else if (cmd.includes('bionic')) {
     const newState = !bionicModeActive;
     speakSiriResponse(newState ? "Bionic mode on." : "Bionic mode off.");
@@ -9339,7 +9392,7 @@ function executeVoiceCommand(cmd) {
     speakSiriResponse("Toggling reading ruler.");
     toggleFocusRuler();
 
-  // 8. Themes
+  // 10. Themes
   } else if (cmd.includes('dark') || cmd.includes('night') || cmd.includes('midnight')) {
     speakSiriResponse("Switched to Dark mode.");
     applyTheme('midnight-velvet');
@@ -9360,7 +9413,7 @@ function executeVoiceCommand(cmd) {
     speakSiriResponse("Warm Sepia theme applied.");
     applyTheme('sepia');
 
-  // 9. Modals & Tools
+  // 11. Modals & Tools
   } else if (cmd.includes('citation') || cmd.includes('cite') || cmd.includes('bibliography')) {
     speakSiriResponse("Opening Citations.");
     openCitationModal();
@@ -9377,7 +9430,7 @@ function executeVoiceCommand(cmd) {
     speakSiriResponse("Opening File Importer.");
     openImportModal();
 
-  // 10. AI Information Queries
+  // 12. AI Information Queries
   } else if (cmd.includes('who wrote') || cmd.includes('author of this')) {
     const author = readerBook ? readerBook.author : "the author";
     speakSiriResponse(`Written by ${author}.`);
@@ -9436,4 +9489,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T00:46:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T00:52:00Z -->
