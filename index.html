@@ -1814,6 +1814,34 @@
     .heatmap-cell.level-2 { background: rgba(79, 70, 229, 0.6); }
     .heatmap-cell.level-3 { background: var(--accent); }
     
+    /* Siri AI Voice Assistant Orb Widget */
+    .siri-orb-container {
+      position: fixed; bottom: 2rem; right: 2rem; z-index: 10000;
+      display: flex; align-items: center; gap: 0.75rem; background: rgba(15, 23, 42, 0.92);
+      border: 1.5px solid var(--accent); border-radius: 40px; padding: 0.5rem 1.1rem 0.5rem 0.6rem;
+      box-shadow: 0 8px 32px rgba(79, 70, 229, 0.45); backdrop-filter: blur(12px);
+      cursor: pointer; transition: all 0.3s ease;
+    }
+    .siri-orb {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899, #06b6d4);
+      background-size: 200% 200%;
+      animation: siriGlow 2s ease infinite alternate, siriSpin 4s linear infinite;
+      box-shadow: 0 0 15px #6366f1;
+    }
+    @keyframes siriGlow {
+      0% { transform: scale(0.92); box-shadow: 0 0 10px #6366f1; }
+      100% { transform: scale(1.18); box-shadow: 0 0 24px #ec4899; }
+    }
+    @keyframes siriSpin {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .siri-badge {
+      font-size: 0.82rem; font-weight: 700; color: #ffffff; letter-spacing: 0.3px;
+    }
+    
     .persona-chat-thread {
       max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; padding: 0.5rem; background: var(--bg2); border-radius: 8px; border: 1px solid var(--border);
     }
@@ -3770,29 +3798,38 @@
 
 <!-- Academic Citation Modal -->
 <div id="citation-modal" class="mobile-theme-overlay" onclick="closeCitationModal()">
-  <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width: 500px; width: 92%;">
+  <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width: 520px; width: 92%;">
     <div class="oauth-modal-header" style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:0.75rem;margin-bottom:0.75rem;">
-      <h3 style="margin:0;color:var(--accent);">🎓 1-Click Academic Citations</h3>
+      <h3 style="margin:0;color:var(--accent);">🎓 Academic Citation Generator</h3>
       <button class="close-sheet-btn" style="position:static;transform:none;" onclick="closeCitationModal()">✕</button>
     </div>
+    <button onclick="copyAllCitations()" class="auth-submit-btn" style="margin-bottom:1rem;background:var(--accent);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;gap:0.5rem;">
+      📋 Copy Complete Bibliography (All 3 Formats)
+    </button>
     <div style="display:flex;flex-direction:column;gap:0.8rem;">
       <div style="background:var(--bg2);border:1px solid var(--border);padding:0.75rem;border-radius:8px;">
-        <div style="font-size:0.7rem;font-weight:800;color:var(--accent);margin-bottom:0.3rem;">APA Format</div>
-        <div id="cite-apa" style="font-size:0.8rem;color:var(--text);font-family:monospace;">Loading...</div>
-        <button onclick="copyCitation('cite-apa')" style="margin-top:0.4rem;font-size:0.7rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:0.25rem 0.6rem;color:var(--text);cursor:pointer;">📋 Copy APA</button>
+        <div style="font-size:0.7rem;font-weight:800;color:var(--accent);margin-bottom:0.3rem;">APA Format (7th Edition)</div>
+        <div id="cite-apa" style="font-size:0.8rem;color:var(--text);font-family:monospace;word-break:break-word;">Loading...</div>
+        <button onclick="copyCitation('cite-apa')" style="margin-top:0.4rem;font-size:0.7rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:0.25rem 0.6rem;color:var(--text);cursor:pointer;">📋 Copy APA Only</button>
       </div>
       <div style="background:var(--bg2);border:1px solid var(--border);padding:0.75rem;border-radius:8px;">
-        <div style="font-size:0.7rem;font-weight:800;color:var(--accent);margin-bottom:0.3rem;">MLA Format</div>
-        <div id="cite-mla" style="font-size:0.8rem;color:var(--text);font-family:monospace;">Loading...</div>
-        <button onclick="copyCitation('cite-mla')" style="margin-top:0.4rem;font-size:0.7rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:0.25rem 0.6rem;color:var(--text);cursor:pointer;">📋 Copy MLA</button>
+        <div style="font-size:0.7rem;font-weight:800;color:var(--accent);margin-bottom:0.3rem;">MLA Format (9th Edition)</div>
+        <div id="cite-mla" style="font-size:0.8rem;color:var(--text);font-family:monospace;word-break:break-word;">Loading...</div>
+        <button onclick="copyCitation('cite-mla')" style="margin-top:0.4rem;font-size:0.7rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:0.25rem 0.6rem;color:var(--text);cursor:pointer;">📋 Copy MLA Only</button>
       </div>
       <div style="background:var(--bg2);border:1px solid var(--border);padding:0.75rem;border-radius:8px;">
-        <div style="font-size:0.7rem;font-weight:800;color:var(--accent);margin-bottom:0.3rem;">Chicago Style</div>
-        <div id="cite-chicago" style="font-size:0.8rem;color:var(--text);font-family:monospace;">Loading...</div>
-        <button onclick="copyCitation('cite-chicago')" style="margin-top:0.4rem;font-size:0.7rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:0.25rem 0.6rem;color:var(--text);cursor:pointer;">📋 Copy Chicago</button>
+        <div style="font-size:0.7rem;font-weight:800;color:var(--accent);margin-bottom:0.3rem;">Chicago Style (17th Edition)</div>
+        <div id="cite-chicago" style="font-size:0.8rem;color:var(--text);font-family:monospace;word-break:break-word;">Loading...</div>
+        <button onclick="copyCitation('cite-chicago')" style="margin-top:0.4rem;font-size:0.7rem;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:0.25rem 0.6rem;color:var(--text);cursor:pointer;">📋 Copy Chicago Only</button>
       </div>
     </div>
   </div>
+</div>
+
+<!-- Siri AI Voice Assistant Floating Widget -->
+<div id="siri-voice-orb" class="siri-orb-container" style="display:none;" onclick="toggleVoiceCommands()" title="Siri AI Voice Assistant">
+  <div class="siri-orb"></div>
+  <div class="siri-badge" id="siri-orb-text">Siri AI Listening...</div>
 </div>
           <thead>
             <tr style="border-bottom: 1.5px solid var(--border); background: rgba(255,255,255,0.02);">
@@ -8817,11 +8854,36 @@ function copyCitation(elementId) {
   showNotification('📋 Citation copied to clipboard!');
 }
 
+function copyAllCitations() {
+  const apa = document.getElementById('cite-apa').textContent;
+  const mla = document.getElementById('cite-mla').textContent;
+  const chicago = document.getElementById('cite-chicago').textContent;
+  const bookTitle = readerBook ? readerBook.title : 'Helix Book';
+
+  const fullBibliography = `=== ACADEMIC BIBLIOGRAPHY FOR: ${bookTitle.toUpperCase()} ===\n\n[APA 7th Edition]\n${apa}\n\n[MLA 9th Edition]\n${mla}\n\n[Chicago 17th Style]\n${chicago}\n\nRetrieved from Helix Reader Digital Library Repository.`;
+  navigator.clipboard.writeText(fullBibliography);
+  showNotification('📋 Complete Bibliography (All 3 Formats) copied to clipboard!');
+}
+
 // ════════════════════════════════════════
-// MODULE 6: VOICE-CONTROLLED COMMANDS
+// MODULE 6: SIRI AI VOICE ASSISTANT
 // ════════════════════════════════════════
 let voiceCmdRecognition = null;
 let isVoiceCmdActive = false;
+
+function speakSiriResponse(text) {
+  showNotification(`🤖 Siri AI: "${text}"`);
+  const orbText = document.getElementById('siri-orb-text');
+  if (orbText) orbText.textContent = text;
+  
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+    const synthUtterance = new SpeechSynthesisUtterance(text);
+    synthUtterance.rate = 1.05;
+    synthUtterance.pitch = 1.1;
+    window.speechSynthesis.speak(synthUtterance);
+  }
+}
 
 function toggleVoiceCommands() {
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -8830,11 +8892,13 @@ function toggleVoiceCommands() {
     return;
   }
 
+  const orb = document.getElementById('siri-voice-orb');
   if (isVoiceCmdActive) {
     if (voiceCmdRecognition) voiceCmdRecognition.stop();
     isVoiceCmdActive = false;
     document.getElementById('btn-voice-cmd').classList.remove('active');
-    showNotification('🎙️ Voice Commands deactivated');
+    if (orb) orb.style.display = 'none';
+    showNotification('🎙️ Siri AI Voice Assistant deactivated');
     return;
   }
 
@@ -8846,7 +8910,8 @@ function toggleVoiceCommands() {
   voiceCmdRecognition.onstart = () => {
     isVoiceCmdActive = true;
     document.getElementById('btn-voice-cmd').classList.add('active');
-    showNotification('🎙️ Listening for voice commands... (Try: "next page", "read text", "dark mode")');
+    if (orb) orb.style.display = 'flex';
+    speakSiriResponse("Siri AI listening. How can I assist your reading?");
   };
 
   voiceCmdRecognition.onresult = (event) => {
@@ -8860,29 +8925,85 @@ function toggleVoiceCommands() {
   voiceCmdRecognition.onerror = () => {
     isVoiceCmdActive = false;
     document.getElementById('btn-voice-cmd').classList.remove('active');
+    if (orb) orb.style.display = 'none';
   };
 
   voiceCmdRecognition.start();
 }
 
 function executeVoiceCommand(cmd) {
-  console.log(`Voice Command Received: ${cmd}`);
-  showNotification(`🗣️ Voice Command: "${cmd}"`);
+  console.log(`Siri AI Command Received: ${cmd}`);
 
-  if (cmd.includes('next') || cmd.includes('forward')) {
-    nextEasyPage();
-  } else if (cmd.includes('previous') || cmd.includes('back')) {
-    prevEasyPage();
-  } else if (cmd.includes('read') || cmd.includes('play') || cmd.includes('listen')) {
+  if (cmd.includes('down') || cmd.includes('scroll down') || cmd.includes('next paragraph') || cmd.includes('next page') || cmd.includes('forward')) {
+    window.scrollBy({top: 450, behavior: 'smooth'});
+    speakSiriResponse("Scrolling down text.");
+
+  } else if (cmd.includes('up') || cmd.includes('scroll up') || cmd.includes('previous paragraph') || cmd.includes('previous page') || cmd.includes('back')) {
+    window.scrollBy({top: -450, behavior: 'smooth'});
+    speakSiriResponse("Scrolling up text.");
+
+  } else if (cmd.includes('read') || cmd.includes('play') || cmd.includes('listen') || cmd.includes('start audio')) {
+    speakSiriResponse("Starting voice reading now.");
     startAudio();
+
   } else if (cmd.includes('pause') || cmd.includes('stop')) {
+    speakSiriResponse("Paused voice reading.");
     stopAudio();
+
   } else if (cmd.includes('bionic')) {
+    const newState = !bionicModeActive;
+    speakSiriResponse(newState ? "Enabling Bionic reading mode." : "Disabling Bionic reading mode.");
     toggleBionicReading();
-  } else if (cmd.includes('dark') || cmd.includes('night')) {
-    applyTheme('midnight-velvet');
-  } else if (cmd.includes('ruler') || cmd.includes('focus')) {
+
+  } else if (cmd.includes('ruler') || cmd.includes('focus ruler')) {
+    speakSiriResponse("Toggling reading ruler guide.");
     toggleFocusRuler();
+
+  } else if (cmd.includes('dark') || cmd.includes('night') || cmd.includes('midnight')) {
+    speakSiriResponse("Switching to Midnight Velvet theme.");
+    applyTheme('midnight-velvet');
+
+  } else if (cmd.includes('old money')) {
+    speakSiriResponse("Applying Old Money theme.");
+    applyTheme('old-money');
+
+  } else if (cmd.includes('cyberpunk')) {
+    speakSiriResponse("Applying Cyberpunk theme.");
+    applyTheme('cyberpunk');
+
+  } else if (cmd.includes('nordic')) {
+    speakSiriResponse("Applying Nordic Frost theme.");
+    applyTheme('nordic-frost');
+
+  } else if (cmd.includes('citation') || cmd.includes('cite')) {
+    speakSiriResponse("Opening academic citation generator.");
+    openCitationModal();
+
+  } else if (cmd.includes('analytics') || cmd.includes('speed') || cmd.includes('insights')) {
+    speakSiriResponse("Opening reading insights dashboard.");
+    openAnalyticsModal();
+
+  } else if (cmd.includes('author') || cmd.includes('persona') || cmd.includes('chat')) {
+    speakSiriResponse("Opening AI Author persona chat.");
+    openPersonaChatModal();
+
+  } else if (cmd.includes('import') || cmd.includes('file') || cmd.includes('upload')) {
+    speakSiriResponse("Opening document importer.");
+    openImportModal();
+
+  } else if (cmd.includes('who wrote') || cmd.includes('author of this')) {
+    const author = readerBook ? readerBook.author : "the author";
+    speakSiriResponse(`This book is written by ${author}.`);
+
+  } else if (cmd.includes('time')) {
+    speakSiriResponse(`The current time is ${new Date().toLocaleTimeString()}.`);
+
+  } else if (cmd.includes('summarize') || cmd.includes('summary')) {
+    const summary = readerBook ? readerBook.summary.slice(0, 100) : "No summary available";
+    speakSiriResponse(`Here is the summary: ${summary}...`);
+
+  } else {
+    speakSiriResponse(`Received command: "${cmd}".`);
   }
 }
 
@@ -8927,4 +9048,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T00:10:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T00:25:00Z -->
