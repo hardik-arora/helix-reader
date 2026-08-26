@@ -5575,9 +5575,6 @@ function navigate(pageId) {
   if (pageId !== 'auth' && !currentUser && !bypassed) {
     pageId = 'auth';
     showNotification('🔒 Please Sign In or Continue as Guest first!');
-  } else if (!currentUser && bypassed && pageId !== 'home' && pageId !== 'auth') {
-    showNotification('🔒 Guest Access: Please sign in or create an account to unlock this page!');
-    pageId = 'home';
   }
 
   // Hide/Show main nav bar based on auth page state
@@ -10260,22 +10257,59 @@ function executeToolCall(actionObj) {
     window.scrollBy({ top: -550, behavior: 'smooth' });
   } else if (tool === 'open_book') {
     const titleQ = (params.book_title || '').toLowerCase().trim();
-    let found = null;
-    if (typeof allBooks !== 'undefined' && Array.isArray(allBooks)) {
-      found = allBooks.find(b => b.title.toLowerCase().includes(titleQ) || titleQ.includes(b.title.toLowerCase()));
-    }
-    if (!found && typeof state !== 'undefined' && Array.isArray(state.books)) {
-      found = state.books.find(b => b.title.toLowerCase().includes(titleQ) || titleQ.includes(b.title.toLowerCase()));
-    }
+    const masterList = typeof MASTER_BOOKS !== 'undefined' ? MASTER_BOOKS : [];
+    const cacheList = typeof DYNAMIC_SEARCH_CACHE !== 'undefined' ? DYNAMIC_SEARCH_CACHE : [];
+    const customList = (typeof state !== 'undefined' && state.customBooks) ? state.customBooks : [];
+    const combinedList = [...masterList, ...cacheList, ...customList];
+
+    let found = combinedList.find(b => b.title.toLowerCase().includes(titleQ) || titleQ.includes(b.title.toLowerCase()));
+
     if (found && typeof openBookDetails === 'function') {
-      openBookDetails(found.id);
+      openBookDetails(found.id, true);
+      navigate('book');
+      return;
+    }
+
+    // Dynamic Live Search & Display Fallback
+    if (titleQ.length > 1) {
+      showNotification(`🔍 Fetching "${params.book_title}" from digital library...`);
+      fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(titleQ)}&limit=3`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.docs && data.docs.length > 0) {
+            const doc = data.docs[0];
+            const newBook = {
+              id: 'ol_' + (doc.key ? doc.key.replace('/works/', '') : Math.random().toString(36).substr(2, 6)),
+              title: doc.title || params.book_title,
+              author: (doc.author_name && doc.author_name[0]) ? doc.author_name[0] : 'Classic Author',
+              pages: doc.number_of_pages_median || 280,
+              rating: doc.ratings_average ? doc.ratings_average.toFixed(1) : '4.6',
+              year: doc.first_publish_year || 1900,
+              topic: 'World Literature',
+              lang: 'English',
+              emoji: '📚',
+              summary: (doc.first_sentence && doc.first_sentence[0]) ? doc.first_sentence[0] : `${doc.title} is a celebrated work in world literature.`,
+              excerpt: `${doc.title} by ${doc.author_name ? doc.author_name[0] : 'the author'}. Published in ${doc.first_publish_year || 'classic era'}.`,
+              cover_i: doc.cover_i || null
+            };
+            if (typeof DYNAMIC_SEARCH_CACHE !== 'undefined') {
+              DYNAMIC_SEARCH_CACHE.push(newBook);
+            }
+            if (typeof openBookDetails === 'function') {
+              openBookDetails(newBook.id, true);
+              navigate('book');
+            }
+          } else {
+            showNotification(`⚠️ Could not find "${params.book_title}". Opening discover catalog.`);
+            navigate('discover');
+          }
+        })
+        .catch(err => {
+          console.warn("Library search error:", err);
+          navigate('discover');
+        });
     } else {
       navigate('discover');
-      const input = document.getElementById('search-input');
-      if (input) {
-        input.value = params.book_title || '';
-        if (typeof handleSearch === 'function') handleSearch();
-      }
     }
   }
 }
@@ -10321,4 +10355,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T04:24:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T04:29:00Z -->
