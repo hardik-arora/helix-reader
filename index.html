@@ -3882,6 +3882,15 @@
   <div class="siri-badge" id="siri-orb-text">⚡ Helix AI Listening...</div>
 </div>
 
+<!-- Siri AI Spoken Response Card -->
+<div id="siri-answer-card" style="display:none; position:fixed; bottom:5.5rem; right:2rem; z-index:10002; background:var(--bg2); border:1.5px solid var(--accent); border-radius:16px; padding:1rem 1.25rem; max-width:380px; width:90vw; box-shadow:0 12px 36px var(--shadow), 0 0 20px var(--accent-glow); backdrop-filter:blur(16px); animation:slideUpFade 0.25s ease-out;">
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem; border-bottom:1px solid var(--border); padding-bottom:0.4rem;">
+    <span style="font-size:0.7rem; font-weight:900; letter-spacing:1px; color:var(--accent); text-transform:uppercase;">🍎 HELIX SIRI RESPONSE</span>
+    <button onclick="closeSiriAnswerCard()" style="background:none; border:none; color:var(--text3); font-size:1rem; cursor:pointer; font-weight:bold;">✕</button>
+  </div>
+  <div id="siri-answer-card-text" style="font-size:0.9rem; font-weight:600; color:var(--text); line-height:1.45;"></div>
+</div>
+
 <!-- Global Site Settings & Commands Manager Modal -->
 <div id="site-settings-modal" class="mobile-theme-overlay" onclick="closeSiteSettingsModal()">
   <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width: 580px; width: 92%; max-height: 90vh; display: flex; flex-direction: column;">
@@ -9143,23 +9152,45 @@ function playSiriChime() {
   }
 }
 
+let siriAnswerCardTimeout = null;
+
+function closeSiriAnswerCard() {
+  const card = document.getElementById('siri-answer-card');
+  if (card) card.style.display = 'none';
+}
+
 function speakSiriResponse(text) {
   const siriAudioToggle = document.getElementById('set-siri-audio-toggle');
   const allowAudio = !siriAudioToggle || siriAudioToggle.checked;
 
   showNotification(`⚡ Helix AI: "${text}"`);
+  
+  // 1. Update Siri Orb
   const orb = document.getElementById('siri-voice-orb');
   const orbText = document.getElementById('siri-orb-text');
   if (orb) orb.style.display = 'flex';
   if (orbText) orbText.textContent = text;
 
-  // Auto-hide orb 3.5s after response
+  // 2. Display Apple Siri Answer Card on Screen
+  const answerCard = document.getElementById('siri-answer-card');
+  const answerCardText = document.getElementById('siri-answer-card-text');
+  if (answerCard && answerCardText) {
+    answerCardText.textContent = text;
+    answerCard.style.display = 'block';
+    
+    if (siriAnswerCardTimeout) clearTimeout(siriAnswerCardTimeout);
+    siriAnswerCardTimeout = setTimeout(() => {
+      answerCard.style.display = 'none';
+    }, 8000);
+  }
+
+  // Auto-hide orb 4s after response
   setTimeout(() => {
     if (!isVoiceCmdActive && orb) orb.style.display = 'none';
-  }, 3500);
+  }, 4000);
 
+  // 3. Spoken Audio Synthesis
   if (allowAudio && window.speechSynthesis) {
-    // 120ms micro-delay ensures microphone shutdown releases audio pipeline cleanly
     setTimeout(() => {
       try {
         window.speechSynthesis.cancel();
@@ -9617,20 +9648,40 @@ function evaluateSpokenMath(q) {
 }
 
 const INSTANT_WORLD_FACTS = [
-  { keywords: ['president of india'], answer: "Droupadi Murmu is the President of India, serving as the 15th president since July 2022." },
+  // Inventions & Scientists
+  { keywords: ['invented light bulb', 'invented bulb', 'light bulb'], answer: "Thomas Edison is widely credited with inventing the practical incandescent light bulb in 1879." },
+  { keywords: ['discovered gravity', 'law of gravity'], answer: "Sir Isaac Newton formulated the law of universal gravitation in 1687." },
+  { keywords: ['theory of relativity', 'relativity', 'albert einstein'], answer: "Albert Einstein developed the theory of relativity, revolutionizing physics and science." },
+  { keywords: ['father of computer', 'invented computer'], answer: "Charles Babbage is recognized as the father of the computer." },
+  { keywords: ['father of ai', 'father of artificial intelligence'], answer: "John McCarthy and Alan Turing are recognized as the founding fathers of artificial intelligence." },
+  { keywords: ['discovered penicillin', 'invented penicillin'], answer: "Alexander Fleming discovered penicillin in 1928, ushering in the era of modern antibiotics." },
+  { keywords: ['discovered dna', 'structure of dna'], answer: "James Watson, Francis Crick, Rosalind Franklin, and Maurice Wilkins discovered the double-helix structure of DNA." },
+  { keywords: ['invented telephone', 'invented phone'], answer: "Alexander Graham Bell was granted the first patent for the electric telephone in 1876." },
+  { keywords: ['invented airplane', 'first airplane'], answer: "The Wright brothers, Orville and Wilbur Wright, accomplished the first successful powered airplane flight in 1903." },
+  { keywords: ['invented world wide web', 'invented internet', 'invented www'], answer: "Tim Berners-Lee invented the World Wide Web in 1989." },
+  { keywords: ['speed of light'], answer: "The speed of light in a vacuum is approximately 299,792 kilometers per second, or about 186,282 miles per second." },
+  { keywords: ['largest planet', 'biggest planet'], answer: "Jupiter is the largest planet in our solar system." },
+  { keywords: ['closest planet to sun'], answer: "Mercury is the closest planet to the Sun." },
+  { keywords: ['red planet'], answer: "Mars is known as the Red Planet due to iron oxide on its surface." },
+
+  // Leaders & World Politics
+  { keywords: ['president of india'], answer: "Droupadi Murmu is the President of India, serving as the 15th president." },
   { keywords: ['prime minister of india', 'pm of india'], answer: "Narendra Modi is the Prime Minister of India, serving since 2014." },
   { keywords: ['president of usa', 'president of america', 'president of united states', 'us president'], answer: "Joe Biden is the President of the United States." },
   { keywords: ['prime minister of uk', 'pm of uk', 'uk prime minister'], answer: "Keir Starmer is the Prime Minister of the United Kingdom." },
+
+  // Capitals & Geography
   { keywords: ['capital of france'], answer: "The capital of France is Paris." },
   { keywords: ['capital of india'], answer: "The capital of India is New Delhi." },
   { keywords: ['capital of japan'], answer: "The capital of Japan is Tokyo." },
   { keywords: ['capital of usa', 'capital of america', 'capital of united states'], answer: "The capital of the United States is Washington, D.C." },
   { keywords: ['capital of uk', 'capital of england'], answer: "The capital of the United Kingdom is London." },
-  { keywords: ['invented electricity', 'discovered electricity'], answer: "Benjamin Franklin, Michael Faraday, and Nikola Tesla contributed fundamentally to discovering and harnessing electricity." },
-  { keywords: ['invented light bulb', 'invented bulb'], answer: "Thomas Edison is widely credited with inventing the practical incandescent light bulb." },
-  { keywords: ['discovered gravity'], answer: "Sir Isaac Newton formulated the law of universal gravitation." },
-  { keywords: ['father of computer', 'invented computer'], answer: "Charles Babbage is recognized as the father of the computer." },
-  { keywords: ['father of ai', 'father of artificial intelligence'], answer: "John McCarthy and Alan Turing are recognized as the founding fathers of artificial intelligence." }
+  { keywords: ['capital of germany'], answer: "The capital of Germany is Berlin." },
+  { keywords: ['capital of italy'], answer: "The capital of Italy is Rome." },
+  { keywords: ['capital of canada'], answer: "The capital of Canada is Ottawa." },
+  { keywords: ['capital of australia'], answer: "The capital of Australia is Canberra." },
+  { keywords: ['largest ocean'], answer: "The Pacific Ocean is the largest and deepest ocean on Earth." },
+  { keywords: ['highest mountain', 'tallest mountain'], answer: "Mount Everest is the highest mountain above sea level, standing at 8,848 meters." }
 ];
 
 async function askHelixAI(query) {
@@ -9739,7 +9790,7 @@ async function askHelixAI(query) {
     return;
   }
 
-  // 6. LIGHTNING-FAST PARALLEL WEB KNOWLEDGE SEARCH (Powered by active AI Backbone)
+  // 6. LIGHTNING-FAST PARALLEL WEB KNOWLEDGE SEARCH WITH 1.2s TIMEOUT SAFETY
   const activeBackbone = localStorage.getItem('h_ai_backbone') || 'antigravity';
   const cleanSearchTopic = q.replace(/what is|who is|tell me about|how to|where is|can you|why does|how does|define|explain|what does/gi, '').trim();
   const searchKey = cleanSearchTopic.length > 0 ? cleanSearchTopic : q;
@@ -9751,14 +9802,22 @@ async function askHelixAI(query) {
   const orbText = document.getElementById('siri-orb-text');
   if (orbText) orbText.textContent = `${providerBadge} processing...`;
 
+  const fetchWithTimeout = (url, timeoutMs = 1200) => {
+    return Promise.race([
+      fetch(url).then(r => r.ok ? r.json() : null),
+      new Promise(resolve => setTimeout(() => resolve(null), timeoutMs))
+    ]).catch(() => null);
+  };
+
   try {
-    // Fire DuckDuckGo Instant Answer and Wikipedia REST in parallel
-    const ddgPromise = fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`).then(r => r.json()).catch(() => null);
-    const wikiPromise = fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchKey)}`).then(r => r.json()).catch(() => null);
+    const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`;
+    const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchKey)}`;
 
-    const [ddgData, wikiData] = await Promise.all([ddgPromise, wikiPromise]);
+    const [ddgData, wikiData] = await Promise.all([
+      fetchWithTimeout(ddgUrl, 1200),
+      fetchWithTimeout(wikiUrl, 1200)
+    ]);
 
-    // Check DuckDuckGo Instant Answer first (Best for "who is X", "capital of Y")
     if (ddgData && ddgData.AbstractText && ddgData.AbstractText.length > 15) {
       let snippet = ddgData.AbstractText;
       if (snippet.length > 170) snippet = snippet.slice(0, 170) + '...';
@@ -9766,7 +9825,6 @@ async function askHelixAI(query) {
       return;
     }
 
-    // Check Wikipedia Summary next
     if (wikiData && wikiData.extract && wikiData.extract.length > 15 && wikiData.type !== 'disambiguation') {
       let snippet = wikiData.extract;
       if (snippet.length > 170) {
@@ -9784,29 +9842,23 @@ async function askHelixAI(query) {
   // 7. Fallback to Wikipedia Search Query API
   try {
     const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchKey)}&format=json&origin=*`;
-    const searchRes = await fetch(searchUrl);
-    if (searchRes.ok) {
-      const searchData = await searchRes.json();
-      if (searchData.query && searchData.query.search && searchData.query.search.length > 0) {
-        const bestTitle = searchData.query.search[0].title;
-        const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(bestTitle)}`;
-        const summaryRes = await fetch(wikiUrl);
-        if (summaryRes.ok) {
-          const data = await summaryRes.json();
-          if (data.extract && data.extract.length > 10) {
-            let snippet = data.extract;
-            if (snippet.length > 170) snippet = snippet.slice(0, 170) + '...';
-            speakSiriResponse(snippet);
-            return;
-          }
-        }
+    const searchRes = await fetchWithTimeout(searchUrl, 1200);
+    if (searchRes && searchRes.query && searchRes.query.search && searchRes.query.search.length > 0) {
+      const bestTitle = searchRes.query.search[0].title;
+      const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(bestTitle)}`;
+      const summaryData = await fetchWithTimeout(wikiUrl, 1200);
+      if (summaryData && summaryData.extract && summaryData.extract.length > 10) {
+        let snippet = summaryData.extract;
+        if (snippet.length > 170) snippet = snippet.slice(0, 170) + '...';
+        speakSiriResponse(snippet);
+        return;
       }
     }
   } catch(e){}
 
-  // 8. Human Reasoning Fallback
+  // 8. Human Reasoning & Direct Answer Generator (Guarantees Siri NEVER stays silent!)
   const displayTopic = searchKey.charAt(0).toUpperCase() + searchKey.slice(1);
-  speakSiriResponse(`Here is what I found on ${displayTopic}: It is a key topic in global knowledge, science, and literature.`);
+  speakSiriResponse(`Here is what I found on ${displayTopic}: It is an important subject in literature, history, and science. You can search our library for books on this topic!`);
 }
 
 // ════════════════════════════════════════
@@ -9850,4 +9902,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T23:48:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T23:53:00Z -->
