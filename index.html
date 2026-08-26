@@ -9840,6 +9840,32 @@ const INSTANT_WORLD_FACTS = [
   { keywords: ['sun'], answer: "The Sun is a yellow dwarf star at the center of our solar system, providing the heat and light essential for life on Earth." }
 ];
 
+async function solveMathWithAPI(exprStr) {
+  try {
+    const cleanedExpr = exprStr
+      .replace(/[\u00d7\u2715]/g, '*')
+      .replace(/[\u00f7]/g, '/')
+      .replace(/[\u2013\u2014]/g, '-')
+      .replace(/\bin to\b|\binto\b|\bmultiplied by\b|\btimes\b|\bcross\b/g, '*')
+      .replace(/\bplus\b|\badd\b/g, '+')
+      .replace(/\bminus\b|\bsubtract\b/g, '-')
+      .replace(/\bdivided by\b|\bover\b/g, '/')
+      .replace(/\bsquare root of\b/g, 'sqrt')
+      .replace(/[^\d\+\-\*\/\.\(\)\^sqrt\s]/g, '');
+
+    if (cleanedExpr.trim().length > 0 && /\d/.test(cleanedExpr)) {
+      const res = await fetch(`https://api.mathjs.org/v4/?expr=${encodeURIComponent(cleanedExpr.trim())}`);
+      if (res.ok) {
+        const val = await res.text();
+        if (val && !val.includes('Error')) {
+          return `The mathematical answer for "${exprStr}" is ${val.trim()}.`;
+        }
+      }
+    }
+  } catch(e){}
+  return null;
+}
+
 async function askHelixAI(query) {
   if (!query) return;
   const q = query.toLowerCase().trim();
@@ -9852,6 +9878,15 @@ async function askHelixAI(query) {
   if (mathResult) {
     speakSiriResponse(mathResult, "📐 Symbolic Math Engine");
     return;
+  }
+
+  // 1b. MathJS API Solver for Complex Expressions
+  if (/\d/.test(q) && (q.includes('+') || q.includes('-') || q.includes('*') || q.includes('/') || q.includes('times') || q.includes('plus') || q.includes('divided') || q.includes('sqrt') || q.includes('percent'))) {
+    const apiMathRes = await solveMathWithAPI(q);
+    if (apiMathRes) {
+      speakSiriResponse(apiMathRes, "📐 MathJS Symbolic Solver");
+      return;
+    }
   }
 
   // 2. High-Speed Knowledge Dictionary Index
@@ -9987,4 +10022,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T02:13:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T02:18:00Z -->
