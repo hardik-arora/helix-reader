@@ -9169,31 +9169,33 @@ function startListeningLoop() {
         }
       }
 
-      const rawText = (finalTranscript || interimTranscript).trim();
-      if (!rawText) return;
-
-      // NOISE DISCRIMINATOR: Filter out throat clears, background clicks, and noise sounds
-      const cleanWords = rawText.toLowerCase().split(/\s+/).filter(w => w.length > 1 && !['um', 'uh', 'a', 'm', 'shh', 'oh', 'ts', 't'].includes(w));
-      if (cleanWords.length === 0) return; // Ignore background noise!
-
-      // New spoken input overrides previous Siri speech!
-      isSpeakingSiri = false;
-
-      const filteredSentence = cleanWords.join(' ');
-      if (filteredSentence !== lastSpokenCommand) {
-        lastSpokenCommand = filteredSentence;
-        updateSiriLiveUI(rawText, "Listening to your question...", "listening");
+      // 1. FINAL SPEECH RESULTS: Execute IMMEDIATELY!
+      if (finalTranscript.trim()) {
+        const finalCmd = finalTranscript.trim();
+        if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
+        lastSpokenCommand = '';
+        updateSiriLiveUI(finalCmd, "⚡ Antigravity AI Synthesizing...", "thinking");
+        executeVoiceCommand(finalCmd);
+        return;
       }
 
-      // VOICE STABILITY WINDOW (350ms): Ensures steady speech pause before triggering execution
+      // 2. INTERIM SPEECH RESULTS
+      const rawText = interimTranscript.trim();
+      if (!rawText) return;
+
+      const cleanWords = rawText.toLowerCase().split(/\s+/).filter(w => w.length > 1 && !['um', 'uh', 'a', 'm', 'shh', 'oh', 'ts', 't'].includes(w));
+      if (cleanWords.length === 0) return;
+
+      const filteredSentence = cleanWords.join(' ');
+      updateSiriLiveUI(rawText, "Listening to your question...", "listening");
+
+      // Short 400ms interim stability timer
       if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
       speechSilenceTimer = setTimeout(() => {
-        if (lastSpokenCommand.trim()) {
-          const commandToExecute = lastSpokenCommand.toLowerCase().trim();
-          lastSpokenCommand = '';
-          executeVoiceCommand(commandToExecute);
+        if (filteredSentence && filteredSentence.length > 2) {
+          executeVoiceCommand(filteredSentence);
         }
-      }, 350);
+      }, 400);
     };
 
     voiceCmdRecognition.onerror = (e) => {
@@ -9987,4 +9989,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T02:28:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T02:35:00Z -->
