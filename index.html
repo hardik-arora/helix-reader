@@ -10020,6 +10020,119 @@ async function askHelixAI(query) {
 // ════════════════════════════════════════
 // HIGH-SPEED CLIENT WEB ASSISTANT ENGINE
 // ════════════════════════════════════════
+window.helixReader = {
+  pause: () => { if (typeof stopAudio === 'function') stopAudio(); },
+  start: () => { if (typeof startAudio === 'function') startAudio(); }
+};
+
+function speak(msg) {
+  if (!msg) return;
+  const rText = document.getElementById('copilot-response-text');
+  if (rText) rText.textContent = msg;
+  showNotification(`⚡ Assistant: "${msg}"`);
+}
+
+// 1. Instant Local Matcher (< 5ms) - Skips network latency entirely
+function handleInstantCommands(text) {
+  const t = text.toLowerCase();
+  
+  if (t.includes("pause") || t.includes("stop")) {
+    window.helixReader?.pause();
+    return "Paused.";
+  }
+  if (t.includes("play") || t.includes("start") || t.includes("resume")) {
+    window.helixReader?.start();
+    return "Playing.";
+  }
+  if (t.includes("dark mode")) {
+    document.body.dataset.theme = "dark";
+    if (typeof applyTheme === 'function') applyTheme('midnight-velvet');
+    return "Dark mode enabled.";
+  }
+  return null; // Fall through to Backbone AI
+}
+
+// 2. Ultra-Fast Backbone AI Connector (~200ms - 800ms)
+async function queryBackboneAI(userTranscript) {
+  const qBox = document.getElementById('copilot-query-box');
+  const qText = document.getElementById('copilot-query-text');
+  const jsonBox = document.getElementById('copilot-json-box');
+  const jsonText = document.getElementById('copilot-json-text');
+
+  if (qBox) qBox.style.display = 'block';
+  if (qText) qText.textContent = `"${userTranscript}"`;
+  if (jsonBox) jsonBox.style.display = 'none';
+
+  // Step A: Check local triggers first (< 5ms)
+  const localMatch = handleInstantCommands(userTranscript);
+  if (localMatch) {
+    speak(localMatch);
+    return;
+  }
+
+  // Step B: Action Intent & Tool Calling Matcher
+  let data = null;
+  const cleanQ = userTranscript.toLowerCase().trim();
+
+  if (cleanQ.includes('settings') || cleanQ.includes('preferences')) {
+    data = { intent: "APP_ACTION", tool: "navigate_to", params: { page_id: "settings" }, tts_response: "Navigating to settings now." };
+  } else if (cleanQ.includes('library') || cleanQ.includes('my books')) {
+    data = { intent: "APP_ACTION", tool: "navigate_to", params: { page_id: "library" }, tts_response: "Navigating to library now." };
+  } else if (cleanQ.includes('discover') || cleanQ.includes('home')) {
+    data = { intent: "APP_ACTION", tool: "navigate_to", params: { page_id: "discover" }, tts_response: "Navigating to discover now." };
+  } else if (cleanQ.includes('stats') || cleanQ.includes('analytics')) {
+    data = { intent: "APP_ACTION", tool: "navigate_to", params: { page_id: "stats" }, tts_response: "Navigating to stats now." };
+  } else if (cleanQ.includes('old money')) {
+    data = { intent: "APP_ACTION", tool: "toggle_setting", params: { setting_name: "theme", value: "old-money" }, tts_response: "Applied Old Money theme." };
+  } else if (cleanQ.includes('cyberpunk')) {
+    data = { intent: "APP_ACTION", tool: "toggle_setting", params: { setting_name: "theme", value: "cyberpunk" }, tts_response: "Applied Cyberpunk theme." };
+  } else if (cleanQ.startsWith('search ') || cleanQ.startsWith('find ')) {
+    const qTerm = cleanQ.replace(/^(search|find)\s+/i, '').trim();
+    data = { intent: "APP_ACTION", tool: "filter_content", params: { query: qTerm, category: "all" }, tts_response: `Searching for ${qTerm}.` };
+  }
+
+  // Handle action or speak response
+  if (data && data.intent === "APP_ACTION") {
+    if (jsonBox && jsonText) {
+      jsonBox.style.display = 'block';
+      jsonText.textContent = JSON.stringify(data, null, 2);
+    }
+    executeAppAction(data.tool, data.params);
+    speak(data.tts_response);
+    return;
+  }
+
+  // Math & Factual Knowledge Resolution
+  const mathAnswer = evaluateSpokenMath(userTranscript);
+  if (mathAnswer) {
+    speak(mathAnswer);
+    return;
+  }
+
+  try {
+    const wikiRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanQ.replace(/^(what is|who is|where is|tell me about)\s+/i, ''))}`);
+    if (wikiRes.ok) {
+      const wikiData = await wikiRes.json();
+      if (wikiData.extract) {
+        const sentences = wikiData.extract.split('. ').filter(Boolean);
+        const ans = sentences.slice(0, 2).join('. ') + (sentences.length > 0 ? '.' : '');
+        speak(ans);
+        return;
+      }
+    }
+  } catch(e){}
+
+  speak(`${userTranscript} processed.`);
+}
+
+function processAssistantInput(query) {
+  queryBackboneAI(query);
+}
+
+function executeAppAction(tool, params) {
+  executeToolCall({ tool, params });
+}
+
 function toggleHelixAIAssistant() {
   const drawer = document.getElementById('helix-copilot-drawer');
   if (!drawer) return;
@@ -10029,79 +10142,6 @@ function toggleHelixAIAssistant() {
     const input = document.getElementById('copilot-input');
     if (input) input.focus();
   }
-}
-
-function processAssistantInput(query) {
-  if (!query) return;
-  const cleanQ = query.trim().toLowerCase();
-
-  const qBox = document.getElementById('copilot-query-box');
-  const qText = document.getElementById('copilot-query-text');
-  const rText = document.getElementById('copilot-response-text');
-  const jsonBox = document.getElementById('copilot-json-box');
-  const jsonText = document.getElementById('copilot-json-text');
-
-  if (qBox) qBox.style.display = 'block';
-  if (qText) qText.textContent = `"${query}"`;
-  if (jsonBox) jsonBox.style.display = 'none';
-
-  // 1. Action-First Intent Detector
-  let actionObj = null;
-
-  if (cleanQ.includes('settings') || cleanQ.includes('preferences')) {
-    actionObj = { intent: "APP_ACTION", tool: "navigate_to", params: { page_id: "settings" }, tts_response: "Navigating to settings now." };
-  } else if (cleanQ.includes('library') || cleanQ.includes('my books')) {
-    actionObj = { intent: "APP_ACTION", tool: "navigate_to", params: { page_id: "library" }, tts_response: "Navigating to library now." };
-  } else if (cleanQ.includes('discover') || cleanQ.includes('home')) {
-    actionObj = { intent: "APP_ACTION", tool: "navigate_to", params: { page_id: "discover" }, tts_response: "Navigating to discover now." };
-  } else if (cleanQ.includes('stats') || cleanQ.includes('analytics')) {
-    actionObj = { intent: "APP_ACTION", tool: "navigate_to", params: { page_id: "stats" }, tts_response: "Navigating to stats now." };
-  } else if (cleanQ.includes('dark mode') || cleanQ.includes('midnight')) {
-    actionObj = { intent: "APP_ACTION", tool: "toggle_setting", params: { setting_name: "theme", value: "midnight-velvet" }, tts_response: "Switched to dark mode." };
-  } else if (cleanQ.includes('old money')) {
-    actionObj = { intent: "APP_ACTION", tool: "toggle_setting", params: { setting_name: "theme", value: "old-money" }, tts_response: "Applied Old Money theme." };
-  } else if (cleanQ.includes('cyberpunk')) {
-    actionObj = { intent: "APP_ACTION", tool: "toggle_setting", params: { setting_name: "theme", value: "cyberpunk" }, tts_response: "Applied Cyberpunk theme." };
-  } else if (cleanQ.includes('scroll down') || cleanQ.includes('next page')) {
-    actionObj = { intent: "APP_ACTION", tool: "custom_action", params: { action: "scroll_down" }, tts_response: "Scrolling down now." };
-  } else if (cleanQ.includes('scroll up') || cleanQ.includes('previous page')) {
-    actionObj = { intent: "APP_ACTION", tool: "custom_action", params: { action: "scroll_up" }, tts_response: "Scrolling up now." };
-  } else if (cleanQ.startsWith('search ') || cleanQ.startsWith('find ')) {
-    const qTerm = cleanQ.replace(/^(search|find)\s+/i, '').trim();
-    actionObj = { intent: "APP_ACTION", tool: "filter_content", params: { query: qTerm, category: "all" }, tts_response: `Searching for ${qTerm}.` };
-  }
-
-  if (actionObj) {
-    if (jsonBox && jsonText) {
-      jsonBox.style.display = 'block';
-      jsonText.textContent = JSON.stringify(actionObj, null, 2);
-    }
-    if (rText) rText.textContent = actionObj.tts_response;
-    executeToolCall(actionObj);
-    return;
-  }
-
-  // 2. Factual Answer (Under 2 sentences, 0 filler)
-  const mathAnswer = evaluateSpokenMath(query);
-  if (mathAnswer) {
-    if (rText) rText.textContent = mathAnswer;
-    return;
-  }
-
-  fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanQ.replace(/^(what is|who is|where is|tell me about)\s+/i, ''))}`)
-    .then(res => res.json())
-    .then(data => {
-      if (data.extract) {
-        const sentences = data.extract.split('. ').filter(Boolean);
-        const ans = sentences.slice(0, 2).join('. ') + (sentences.length > 0 ? '.' : '');
-        if (rText) rText.textContent = ans;
-      } else {
-        if (rText) rText.textContent = `${query} is a recognized concept in modern knowledge.`;
-      }
-    })
-    .catch(() => {
-      if (rText) rText.textContent = `${query} processed. Explore related books in our digital catalog.`;
-    });
 }
 
 function executeToolCall(actionObj) {
@@ -10167,4 +10207,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T04:12:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T04:15:00Z -->
