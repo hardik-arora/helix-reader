@@ -9139,7 +9139,7 @@ function startListeningLoop() {
     }
     voiceCmdRecognition = new SpeechRec();
     voiceCmdRecognition.continuous = true;
-    voiceCmdRecognition.interimResults = false;
+    voiceCmdRecognition.interimResults = true;
     voiceCmdRecognition.lang = 'en-US';
 
     voiceCmdRecognition.onstart = () => {
@@ -9155,13 +9155,29 @@ function startListeningLoop() {
       if (orbText && !orbText.textContent.includes('Helix AI:')) {
         orbText.textContent = "⚡ Siri AI Listening...";
       }
-      updateSiriLiveUI(null, null, 'listening');
+      updateSiriLiveUI(null, "Listening to your spoken question...", 'listening');
     };
 
     voiceCmdRecognition.onresult = (event) => {
-      const lastResult = event.results[event.results.length - 1];
-      if (lastResult.isFinal) {
-        const command = lastResult[0].transcript.toLowerCase().trim();
+      let interimTranscript = '';
+      let finalTranscript = '';
+
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
+      }
+
+      // Display user's spoken words on screen in real time as they speak!
+      const liveText = (finalTranscript || interimTranscript).trim();
+      if (liveText) {
+        updateSiriLiveUI(liveText, "Listening...", "listening");
+      }
+
+      if (finalTranscript.trim()) {
+        const command = finalTranscript.toLowerCase().trim();
         executeVoiceCommand(command);
       }
     };
@@ -9171,7 +9187,6 @@ function startListeningLoop() {
     };
 
     voiceCmdRecognition.onend = () => {
-      // If voice mode is still active and Siri isn't currently speaking, restart recognition loop!
       if (isVoiceCmdActive && !isSpeakingSiri) {
         setTimeout(() => {
           if (isVoiceCmdActive && !isSpeakingSiri) {
@@ -9242,199 +9257,27 @@ function executeVoiceCommand(cmd) {
   console.log(`Siri AI Command Received: ${cmd}`);
 
   // Display user's spoken question on screen immediately in Siri Live Card!
-  updateSiriLiveUI(cmd, "Processing your question...", "thinking");
+  updateSiriLiveUI(cmd, "Processing in Antigravity AI Backbone...", "thinking");
 
   // 1. Check Custom Commands Registry first
   for (const custom of customVoiceCommands) {
-    if (cmd.includes(custom.trigger.toLowerCase())) {
+    if (cmd === custom.trigger.toLowerCase()) {
       runCustomAction(custom.action);
       return;
     }
   }
 
-  // 2. SPOKEN MATH EVALUATION FIRST ("5 into 20", "what is 10 plus 10")
-  const mathRes = evaluateSpokenMath(cmd);
-  if (mathRes) {
-    speakSiriResponse(mathRes);
-    return;
-  }
+  // 2. EXPLICIT SYSTEM COMMAND SHORTCUTS ONLY
+  if (cmd === 'scroll down' || cmd === 'next page') { runCustomAction('scroll_down'); return; }
+  if (cmd === 'scroll up' || cmd === 'previous page') { runCustomAction('scroll_up'); return; }
+  if (cmd === 'pause' || cmd === 'pause audio' || cmd === 'stop audio') { runCustomAction('pause_read'); return; }
+  if (cmd === 'start audio' || cmd === 'read out loud') { runCustomAction('start_read'); return; }
+  if (cmd === 'dark mode' || cmd === 'midnight mode') { runCustomAction('theme_dark'); return; }
+  if (cmd === 'bionic mode') { runCustomAction('bionic_mode'); return; }
+  if (cmd === 'focus ruler' || cmd === 'toggle ruler') { runCustomAction('focus_ruler'); return; }
 
-  // 3. QUESTION & AI DOUBT RESOLUTION ROUTER (Checks for any general knowledge / question intent)
-  const isQuestionOrDoubt = /^(who|what|where|when|why|how|tell|explain|describe|define|meaning|is|are|can|could|which|give|about)\b/i.test(cmd) ||
-                            cmd.includes('who is') || cmd.includes('what is') || cmd.includes('where is') ||
-                            cmd.includes('how to') || cmd.includes('why does') || cmd.includes('how does') ||
-                            cmd.includes('tell me') || cmd.includes('explain') || cmd.includes('meaning of') ||
-                            cmd.includes('definition') || cmd.includes('capital of') || cmd.includes('president of') ||
-                            cmd.includes('prime minister') || cmd.includes('discovered') || cmd.includes('invented');
-
-  if (isQuestionOrDoubt) {
-    askHelixAI(cmd);
-    return;
-  }
-
-  // 4. EMOTIONAL & COMPANIONSHIP PHRASES
-  if (cmd.includes('friend') || cmd.includes('lonely') || cmd.includes('tired') || cmd.includes('happy') || cmd.includes('sad') || cmd.includes('good morning') || cmd.includes('goodnight')) {
-    askHelixAI(cmd);
-    return;
-  }
-
-  // 5. EXPLICIT BOOK OPENING & READING COMMANDS ONLY
-  if (cmd.includes('open') || cmd.includes('read') || cmd.includes('book') || cmd.includes('author') || cmd.includes('excerpt')) {
-    const matchedBook = findBookFromSpeech(cmd);
-    if (matchedBook) {
-      if (cmd.includes('excerpt') || cmd.includes('read') || cmd.includes('text') || cmd.includes('page')) {
-        openReader(matchedBook.id, true);
-        speakSiriResponse(`Opening excerpt for ${matchedBook.title}.`);
-      } else {
-        openBookDetails(matchedBook.id, true);
-        speakSiriResponse(`Opening ${matchedBook.title}.`);
-      }
-      return;
-    }
-  }
-
-  // Fallback for general 'open book' / 'read book' without specific title
-  if (cmd.includes('open book') || cmd.includes('read book') || cmd.includes('open excerpt') || cmd.includes('show book')) {
-    const targetId = activeBookId || (readerBook ? readerBook.id : (MASTER_BOOKS[0] ? MASTER_BOOKS[0].id : 'b1'));
-    openReader(targetId, true);
-    speakSiriResponse("Opening book excerpt.");
-    return;
-  }
-
-  // 6. Catalog Browsing & Search Queries
-  if (cmd.includes('browse') || cmd.includes('catalog') || cmd.includes('show books') || cmd.includes('all books')) {
-    speakSiriResponse("Opening Library catalog.");
-    navigate('search');
-    window.scrollTo({top: 0, behavior: 'smooth'});
-    return;
-  }
-
-  if (cmd.includes('search for') || cmd.includes('find ')) {
-    const query = cmd.replace('search for', '').replace('find', '').trim();
-    if (query) {
-      navigate('search');
-      const pageInput = document.getElementById('page-search-input');
-      const globalInput = document.getElementById('global-search-input');
-      if (pageInput) pageInput.value = query;
-      if (globalInput) globalInput.value = query;
-      handleSearch(query);
-      speakSiriResponse(`Searching for ${query}.`);
-      return;
-    }
-  }
-
-  // 7. Navigation & Page Controls
-  if (cmd.includes('home') || cmd.includes('discover')) {
-    speakSiriResponse("Opening Discover.");
-    navigate('discover');
-
-  } else if (cmd.includes('search') || cmd.includes('library')) {
-    speakSiriResponse("Opening Search.");
-    navigate('search');
-
-  } else if (cmd.includes('dashboard') || cmd.includes('stats') || cmd.includes('profile')) {
-    speakSiriResponse("Opening Dashboard.");
-    navigate('dashboard');
-
-  } else if (cmd.includes('settings') || cmd.includes('preferences') || cmd.includes('config')) {
-    speakSiriResponse("Opening Settings.");
-    openSiteSettingsModal();
-
-  } else if (cmd.includes('telemetry') || cmd.includes('audit') || cmd.includes('security log')) {
-    speakSiriResponse("Opening Security Logs.");
-    openAdminTelemetryModal();
-
-  // 8. Audio Reading & TTS Controls
-  } else if (cmd.includes('start audio') || cmd.includes('read out loud') || cmd.includes('play audio') || cmd.includes('listen')) {
-    speakSiriResponse("Reading out loud.");
-    startAudio();
-
-  } else if (cmd.includes('pause') || cmd.includes('stop') || cmd.includes('mute') || cmd.includes('quiet')) {
-    speakSiriResponse("Paused.");
-    stopAudio();
-
-  // 9. Scrolling Controls
-  } else if (cmd.includes('down') || cmd.includes('scroll down') || cmd.includes('next paragraph') || cmd.includes('next page') || cmd.includes('forward')) {
-    window.scrollBy({top: 450, behavior: 'smooth'});
-    speakSiriResponse("Scrolling down.");
-
-  } else if (cmd.includes('up') || cmd.includes('scroll up') || cmd.includes('previous paragraph') || cmd.includes('previous page') || cmd.includes('back')) {
-    window.scrollBy({top: -450, behavior: 'smooth'});
-    speakSiriResponse("Scrolling up.");
-
-  // 10. Soundscapes
-  } else if (cmd.includes('rain')) {
-    speakSiriResponse("Playing Rain soundscape.");
-    changeSoundscape('rain');
-
-  } else if (cmd.includes('cafe') || cmd.includes('coffee')) {
-    speakSiriResponse("Playing Cafe soundscape.");
-    changeSoundscape('cafe');
-
-  } else if (cmd.includes('fire') || cmd.includes('fireplace')) {
-    speakSiriResponse("Playing Fireplace soundscape.");
-    changeSoundscape('fireplace');
-
-  } else if (cmd.includes('lofi') || cmd.includes('synth') || cmd.includes('cosmic')) {
-    speakSiriResponse("Playing Lofi Synth.");
-    changeSoundscape('lofi');
-
-  // 11. Font Size Controls
-  } else if (cmd.includes('bigger') || cmd.includes('increase font') || cmd.includes('larger text')) {
-    speakSiriResponse("Increasing text size.");
-    changeFontSize(2);
-
-  } else if (cmd.includes('smaller') || cmd.includes('decrease font') || cmd.includes('tiny text')) {
-    speakSiriResponse("Decreasing text size.");
-    changeFontSize(-2);
-
-  // 12. Accessibility Reading Guides
-  } else if (cmd.includes('bionic')) {
-    const newState = !bionicModeActive;
-    speakSiriResponse(newState ? "Bionic mode on." : "Bionic mode off.");
-    toggleBionicReading();
-
-  } else if (cmd.includes('ruler') || cmd.includes('focus')) {
-    speakSiriResponse("Toggling reading ruler.");
-    toggleFocusRuler();
-
-  // 13. Themes
-  } else if (cmd.includes('dark') || cmd.includes('night') || cmd.includes('midnight')) {
-    speakSiriResponse("Switched to Dark mode.");
-    applyTheme('midnight-velvet');
-
-  } else if (cmd.includes('old money')) {
-    speakSiriResponse("Old Money theme applied.");
-    applyTheme('old-money');
-
-  } else if (cmd.includes('cyberpunk')) {
-    speakSiriResponse("Cyberpunk theme applied.");
-    applyTheme('cyberpunk');
-
-  } else if (cmd.includes('nordic') || cmd.includes('frost')) {
-    speakSiriResponse("Nordic Frost theme applied.");
-    applyTheme('nordic-frost');
-
-  } else if (cmd.includes('sepia')) {
-    speakSiriResponse("Warm Sepia theme applied.");
-    applyTheme('sepia');
-
-  // 14. AI Information Queries
-  } else if (cmd.includes('who wrote') || cmd.includes('author of this')) {
-    const author = readerBook ? readerBook.author : "the author";
-    speakSiriResponse(`Written by ${author}.`);
-
-  } else if (cmd.includes('time') || cmd.includes('clock')) {
-    speakSiriResponse(`It's ${new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}.`);
-
-  } else if (cmd.includes('summarize') || cmd.includes('summary') || cmd.includes('about')) {
-    const summary = readerBook ? readerBook.summary.slice(0, 100) : "No summary available";
-    speakSiriResponse(`Here is the summary: ${summary}.`);
-
-  // 15. Conversational Helix AI Engine (Answers ANY question asked by the user out loud!)
-  } else {
-    askHelixAI(cmd);
-  }
+  // 3. DIRECT ROUTE ALL QUESTIONS, DOUBTS, SCIENCE, HISTORY, AND GENERAL KNOWLEDGE TO ANTIGRAVITY AI BACKBONE!
+  askHelixAI(cmd);
 }
 
 function addCustomVoiceCommand(e) {
@@ -10149,4 +9992,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T00:53:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T01:00:00Z -->
