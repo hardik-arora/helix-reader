@@ -2911,6 +2911,11 @@
 
 
 
+  <div style="display: flex; align-items: center; gap: 0.4rem; margin-left: 0.5rem;">
+    <button class="nav-btn" id="nav-helix-ai" onclick="toggleHelixAIAssistant()" title="Activate High-Speed Web Assistant" style="background: linear-gradient(135deg, #6366f1, #a855f7); color: #ffffff; border: none; font-weight: 700; gap: 0.4rem; display: flex; align-items: center;">
+      ⚡ AI Copilot
+    </button>
+  </div>
   <div id="nav-auth-section" style="display: flex; align-items: center; gap: 0.5rem; margin-left: 0.5rem;">
     <button class="nav-btn" id="nav-auth" onclick="navigate('auth')">Sign In</button>
   </div>
@@ -3871,6 +3876,60 @@
 
 
 
+
+<!-- HIGH-SPEED CLIENT WEB ASSISTANT SHEET -->
+<div id="helix-copilot-drawer" style="display:none; position:fixed; bottom:90px; right:24px; z-index:999999; width:450px; max-width:92vw; background:rgba(15,23,42,0.95); border:1.5px solid rgba(99,102,241,0.4); border-radius:24px; box-shadow:0 30px 70px rgba(0,0,0,0.7), 0 0 40px rgba(99,102,241,0.25); padding:1.25rem; flex-direction:column; gap:0.85rem; backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px);">
+  
+  <!-- Header -->
+  <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.6rem;">
+    <div style="display:flex; align-items:center; gap:0.5rem;">
+      <span style="font-size:1.1rem;">⚡</span>
+      <div>
+        <div style="font-size:0.92rem; font-weight:800; color:#ffffff; display:flex; align-items:center; gap:0.4rem;">
+          Helix AI Assistant <span style="font-size:0.65rem; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; padding:0.15rem 0.45rem; border-radius:10px; font-weight:700;">HIGH-SPEED</span>
+        </div>
+        <div style="font-size:0.7rem; font-weight:600; color:#94a3b8;">Action-First Intelligence Engine</div>
+      </div>
+    </div>
+    <button onclick="toggleHelixAIAssistant()" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#ffffff; cursor:pointer; font-size:1.1rem; padding:0.2rem 0.5rem; border-radius:8px; font-weight:700;">✕</button>
+  </div>
+
+  <!-- User Query Display -->
+  <div id="copilot-query-box" style="display:none; background:rgba(30,41,59,0.7); border-left:3.5px solid #6366f1; border-radius:10px; padding:0.6rem 0.8rem;">
+    <div style="font-size:0.65rem; font-weight:800; color:#818cf8; text-transform:uppercase; letter-spacing:0.6px;">INPUT QUERY:</div>
+    <div id="copilot-query-text" style="font-size:0.9rem; font-weight:600; color:#f8fafc;"></div>
+  </div>
+
+  <!-- AI Response Display Box -->
+  <div id="copilot-response-box" style="background:rgba(15,23,42,0.85); border:1px solid rgba(168,85,247,0.35); border-radius:14px; padding:0.85rem; display:flex; flex-direction:column; gap:0.5rem;">
+    <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:0.4rem;">
+      <span style="font-size:0.7rem; font-weight:800; color:#c084fc; text-transform:uppercase; letter-spacing:0.5px;" id="copilot-engine-badge">⚡ AI BACKBONE ENGINE</span>
+    </div>
+    <div id="copilot-response-text" style="font-size:0.88rem; color:#f1f5f9; line-height:1.5; font-weight:500;">
+      Ask a general knowledge question or command a site action (e.g. "navigate to settings", "open library", "dark mode", "what is gravity?").
+    </div>
+  </div>
+
+  <!-- Structured JSON Execution Object Viewer -->
+  <div id="copilot-json-box" style="display:none; background:rgba(15,23,42,0.95); border:1px solid rgba(52,211,153,0.4); border-radius:12px; padding:0.65rem; font-family:monospace; font-size:0.72rem; color:#34d399; overflow-x:auto;">
+    <div style="font-size:0.65rem; font-weight:800; color:#a7f3d0; margin-bottom:0.25rem;">STRUCTURED JSON ACTION:</div>
+    <pre id="copilot-json-text" style="margin:0; white-space:pre-wrap; word-break:break-all;"></pre>
+  </div>
+
+  <!-- Quick Action Chips -->
+  <div style="display:flex; align-items:center; gap:0.35rem; overflow-x:auto; padding-bottom:0.1rem;">
+    <button onclick="processAssistantInput('navigate to settings')" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; font-size:0.72rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:16px; cursor:pointer; white-space:nowrap;">⚙️ Settings</button>
+    <button onclick="processAssistantInput('open library')" style="background:rgba(52,211,153,0.2); border:1px solid rgba(52,211,153,0.4); color:#34d399; font-size:0.72rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:16px; cursor:pointer; white-space:nowrap;">📚 Library</button>
+    <button onclick="processAssistantInput('dark mode')" style="background:rgba(251,191,36,0.2); border:1px solid rgba(251,191,36,0.4); color:#fbbf24; font-size:0.72rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:16px; cursor:pointer; white-space:nowrap;">🌙 Dark Mode</button>
+    <button onclick="processAssistantInput('What is 50 plus 25?')" style="background:rgba(168,85,247,0.2); border:1px solid rgba(168,85,247,0.4); color:#c084fc; font-size:0.72rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:16px; cursor:pointer; white-space:nowrap;">📐 50 + 25</button>
+  </div>
+
+  <!-- Text Query Input Line -->
+  <form onsubmit="event.preventDefault(); const inEl=document.getElementById('copilot-input'); if(inEl && inEl.value.trim()){ processAssistantInput(inEl.value.trim()); inEl.value=''; }" style="display:flex; align-items:center; gap:0.4rem; background:rgba(30,41,59,0.8); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:0.3rem 0.5rem;">
+    <input type="text" id="copilot-input" placeholder="Type a command or ask a question..." style="flex:1; background:none; border:none; color:#ffffff; font-size:0.82rem; outline:none; padding:0.25rem;" />
+    <button type="submit" style="background:linear-gradient(135deg, #6366f1, #a855f7); border:none; color:#ffffff; font-weight:700; font-size:0.78rem; padding:0.3rem 0.65rem; border-radius:8px; cursor:pointer;">Ask / Run</button>
+  </form>
+</div>
 
 <div id="citation-modal" class="mobile-theme-overlay" onclick="closeCitationModal()" style="display:none;">
   <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width: 540px; width: 92%;">
@@ -9959,6 +10018,115 @@ async function askHelixAI(query) {
 }
 
 // ════════════════════════════════════════
+// HIGH-SPEED CLIENT WEB ASSISTANT ENGINE
+// ════════════════════════════════════════
+function toggleHelixAIAssistant() {
+  const drawer = document.getElementById('helix-copilot-drawer');
+  if (!drawer) return;
+  const isShown = drawer.style.display === 'flex';
+  drawer.style.display = isShown ? 'none' : 'flex';
+  if (!isShown) {
+    const input = document.getElementById('copilot-input');
+    if (input) input.focus();
+  }
+}
+
+function processAssistantInput(query) {
+  if (!query) return;
+  const cleanQ = query.trim().toLowerCase();
+
+  const qBox = document.getElementById('copilot-query-box');
+  const qText = document.getElementById('copilot-query-text');
+  const rText = document.getElementById('copilot-response-text');
+  const jsonBox = document.getElementById('copilot-json-box');
+  const jsonText = document.getElementById('copilot-json-text');
+
+  if (qBox) qBox.style.display = 'block';
+  if (qText) qText.textContent = `"${query}"`;
+  if (jsonBox) jsonBox.style.display = 'none';
+
+  // 1. Action-First Intent Detector
+  let actionObj = null;
+
+  if (cleanQ.includes('settings') || cleanQ.includes('preferences')) {
+    actionObj = { intent: "APP_ACTION", tool: "navigate_to", params: { page_id: "settings" }, tts_response: "Navigating to settings now." };
+  } else if (cleanQ.includes('library') || cleanQ.includes('my books')) {
+    actionObj = { intent: "APP_ACTION", tool: "navigate_to", params: { page_id: "library" }, tts_response: "Navigating to library now." };
+  } else if (cleanQ.includes('discover') || cleanQ.includes('home')) {
+    actionObj = { intent: "APP_ACTION", tool: "navigate_to", params: { page_id: "discover" }, tts_response: "Navigating to discover now." };
+  } else if (cleanQ.includes('stats') || cleanQ.includes('analytics')) {
+    actionObj = { intent: "APP_ACTION", tool: "navigate_to", params: { page_id: "stats" }, tts_response: "Navigating to stats now." };
+  } else if (cleanQ.includes('dark mode') || cleanQ.includes('midnight')) {
+    actionObj = { intent: "APP_ACTION", tool: "toggle_setting", params: { setting_name: "theme", value: "midnight-velvet" }, tts_response: "Switched to dark mode." };
+  } else if (cleanQ.includes('old money')) {
+    actionObj = { intent: "APP_ACTION", tool: "toggle_setting", params: { setting_name: "theme", value: "old-money" }, tts_response: "Applied Old Money theme." };
+  } else if (cleanQ.includes('cyberpunk')) {
+    actionObj = { intent: "APP_ACTION", tool: "toggle_setting", params: { setting_name: "theme", value: "cyberpunk" }, tts_response: "Applied Cyberpunk theme." };
+  } else if (cleanQ.includes('scroll down') || cleanQ.includes('next page')) {
+    actionObj = { intent: "APP_ACTION", tool: "custom_action", params: { action: "scroll_down" }, tts_response: "Scrolling down now." };
+  } else if (cleanQ.includes('scroll up') || cleanQ.includes('previous page')) {
+    actionObj = { intent: "APP_ACTION", tool: "custom_action", params: { action: "scroll_up" }, tts_response: "Scrolling up now." };
+  } else if (cleanQ.startsWith('search ') || cleanQ.startsWith('find ')) {
+    const qTerm = cleanQ.replace(/^(search|find)\s+/i, '').trim();
+    actionObj = { intent: "APP_ACTION", tool: "filter_content", params: { query: qTerm, category: "all" }, tts_response: `Searching for ${qTerm}.` };
+  }
+
+  if (actionObj) {
+    if (jsonBox && jsonText) {
+      jsonBox.style.display = 'block';
+      jsonText.textContent = JSON.stringify(actionObj, null, 2);
+    }
+    if (rText) rText.textContent = actionObj.tts_response;
+    executeToolCall(actionObj);
+    return;
+  }
+
+  // 2. Factual Answer (Under 2 sentences, 0 filler)
+  const mathAnswer = evaluateSpokenMath(query);
+  if (mathAnswer) {
+    if (rText) rText.textContent = mathAnswer;
+    return;
+  }
+
+  fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanQ.replace(/^(what is|who is|where is|tell me about)\s+/i, ''))}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.extract) {
+        const sentences = data.extract.split('. ').filter(Boolean);
+        const ans = sentences.slice(0, 2).join('. ') + (sentences.length > 0 ? '.' : '');
+        if (rText) rText.textContent = ans;
+      } else {
+        if (rText) rText.textContent = `${query} is a recognized concept in modern knowledge.`;
+      }
+    })
+    .catch(() => {
+      if (rText) rText.textContent = `${query} processed. Explore related books in our digital catalog.`;
+    });
+}
+
+function executeToolCall(actionObj) {
+  if (!actionObj || !actionObj.tool) return;
+  const tool = actionObj.tool;
+  const params = actionObj.params || {};
+
+  if (tool === 'navigate_to') {
+    if (params.page_id) navigate(params.page_id);
+  } else if (tool === 'toggle_setting') {
+    if (params.setting_name === 'theme' && params.value) applyTheme(params.value);
+  } else if (tool === 'filter_content') {
+    navigate('discover');
+    const input = document.getElementById('search-input');
+    if (input) {
+      input.value = params.query || '';
+      if (typeof handleSearch === 'function') handleSearch();
+    }
+  } else if (tool === 'custom_action') {
+    if (params.action === 'scroll_down') window.scrollBy({ top: 450, behavior: 'smooth' });
+    if (params.action === 'scroll_up') window.scrollBy({ top: -450, behavior: 'smooth' });
+  }
+}
+
+// ════════════════════════════════════════
 // INITIALIZATION
 // ════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
@@ -9999,4 +10167,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T04:02:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T04:12:00Z -->
