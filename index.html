@@ -10193,15 +10193,35 @@ async function queryBackboneAI(userTranscript) {
     return;
   }
 
-  // Math & Factual Knowledge Resolution
+  // Math & Direct Factual Knowledge Resolution
   const mathAnswer = evaluateSpokenMath(userTranscript);
   if (mathAnswer) {
-    speak(mathAnswer);
+    // If output starts with "Result: 100", extract the number cleanly
+    const numOnly = mathAnswer.replace(/^(Result:|The answer is)\s*/i, '').trim();
+    speak(numOnly);
     return;
   }
 
+  // Direct Factual Lookup Map for Instant High-Precision Answers
+  const factualMap = {
+    'national bird of india': 'The national bird of India is the Indian Peacock.',
+    'president of india': 'The President of India is Droupadi Murmu.',
+    'prime minister of india': 'The Prime Minister of India is Narendra Modi.',
+    'capital of india': 'The capital of India is New Delhi.',
+    'capital of france': 'The capital of France is Paris.',
+    'capital of japan': 'The capital of Japan is Tokyo.',
+    'speed of light': 'The speed of light in a vacuum is approximately 299,792,458 meters per second.'
+  };
+
+  for (const [k, v] of Object.entries(factualMap)) {
+    if (cleanQ.includes(k)) {
+      speak(v);
+      return;
+    }
+  }
+
   try {
-    const wikiRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanQ.replace(/^(what is|who is|where is|tell me about)\s+/i, ''))}`);
+    const wikiRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanQ.replace(/^(what is|who is|where is|tell me about|what was|who was)\s+/i, ''))}`);
     if (wikiRes.ok) {
       const wikiData = await wikiRes.json();
       if (wikiData.extract) {
@@ -10213,7 +10233,7 @@ async function queryBackboneAI(userTranscript) {
     }
   } catch(e){}
 
-  speak(`${userTranscript} processed.`);
+  speak(`Information for ${userTranscript} is unavailable.`);
 }
 
 async function handleAIResponse(userQuery) {
@@ -10414,4 +10434,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T04:35:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T04:40:00Z -->
