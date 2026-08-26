@@ -3916,17 +3916,10 @@
     <pre id="copilot-json-text" style="margin:0; white-space:pre-wrap; word-break:break-all;"></pre>
   </div>
 
-  <!-- Quick Action Chips -->
-  <div style="display:flex; align-items:center; gap:0.35rem; overflow-x:auto; padding-bottom:0.1rem;">
-    <button onclick="processAssistantInput('navigate to settings')" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; font-size:0.72rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:16px; cursor:pointer; white-space:nowrap;">⚙️ Settings</button>
-    <button onclick="processAssistantInput('open library')" style="background:rgba(52,211,153,0.2); border:1px solid rgba(52,211,153,0.4); color:#34d399; font-size:0.72rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:16px; cursor:pointer; white-space:nowrap;">📚 Library</button>
-    <button onclick="processAssistantInput('dark mode')" style="background:rgba(251,191,36,0.2); border:1px solid rgba(251,191,36,0.4); color:#fbbf24; font-size:0.72rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:16px; cursor:pointer; white-space:nowrap;">🌙 Dark Mode</button>
-    <button onclick="processAssistantInput('What is 50 plus 25?')" style="background:rgba(168,85,247,0.2); border:1px solid rgba(168,85,247,0.4); color:#c084fc; font-size:0.72rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:16px; cursor:pointer; white-space:nowrap;">📐 50 + 25</button>
-  </div>
-
-  <!-- Text Query Input Line -->
+  <!-- Text Query & Voice Microphone Input Line -->
   <form onsubmit="event.preventDefault(); const inEl=document.getElementById('copilot-input'); if(inEl && inEl.value.trim()){ processAssistantInput(inEl.value.trim()); inEl.value=''; }" style="display:flex; align-items:center; gap:0.4rem; background:rgba(30,41,59,0.8); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:0.3rem 0.5rem;">
-    <input type="text" id="copilot-input" placeholder="Type a command or ask a question..." style="flex:1; background:none; border:none; color:#ffffff; font-size:0.82rem; outline:none; padding:0.25rem;" />
+    <input type="text" id="copilot-input" placeholder="Type or tap 🎙️ to speak..." style="flex:1; background:none; border:none; color:#ffffff; font-size:0.82rem; outline:none; padding:0.25rem;" />
+    <button type="button" id="copilot-mic-btn" onclick="toggleCopilotVoiceInput()" title="Speak Voice Command" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#ffffff; font-weight:700; font-size:0.85rem; padding:0.3rem 0.55rem; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center;">🎙️</button>
     <button type="submit" style="background:linear-gradient(135deg, #6366f1, #a855f7); border:none; color:#ffffff; font-weight:700; font-size:0.78rem; padding:0.3rem 0.65rem; border-radius:8px; cursor:pointer;">Ask / Run</button>
   </form>
 </div>
@@ -10052,6 +10045,94 @@ function handleInstantCommands(text) {
   return null; // Fall through to Backbone AI
 }
 
+let copilotVoiceRec = null;
+let isCopilotVoiceActive = false;
+
+function toggleCopilotVoiceInput() {
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const micBtn = document.getElementById('copilot-mic-btn');
+  const inputEl = document.getElementById('copilot-input');
+
+  if (!SpeechRec) {
+    showNotification("⚠️ Voice recognition is not supported in this browser.");
+    return;
+  }
+
+  if (isCopilotVoiceActive) {
+    if (copilotVoiceRec) {
+      try { copilotVoiceRec.stop(); } catch(e){}
+    }
+    isCopilotVoiceActive = false;
+    if (micBtn) {
+      micBtn.innerHTML = '🎙️';
+      micBtn.style.background = 'rgba(255,255,255,0.1)';
+      micBtn.style.border = '1px solid rgba(255,255,255,0.2)';
+    }
+    return;
+  }
+
+  try {
+    copilotVoiceRec = new SpeechRec();
+    copilotVoiceRec.continuous = false;
+    copilotVoiceRec.interimResults = true;
+    copilotVoiceRec.lang = 'en-US';
+
+    copilotVoiceRec.onstart = () => {
+      isCopilotVoiceActive = true;
+      if (micBtn) {
+        micBtn.innerHTML = '🔴 Listening...';
+        micBtn.style.background = 'rgba(239, 68, 68, 0.4)';
+        micBtn.style.border = '1px solid rgba(239, 68, 68, 0.7)';
+      }
+      if (inputEl) inputEl.placeholder = "Listening to your voice command...";
+    };
+
+    copilotVoiceRec.onresult = (event) => {
+      let finalTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else if (inputEl) {
+          inputEl.value = event.results[i][0].transcript;
+        }
+      }
+
+      if (finalTranscript.trim()) {
+        const spokenText = finalTranscript.trim();
+        if (inputEl) inputEl.value = spokenText;
+        processAssistantInput(spokenText);
+        try { copilotVoiceRec.stop(); } catch(e){}
+      }
+    };
+
+    copilotVoiceRec.onerror = (e) => {
+      console.warn("Copilot voice error:", e);
+      isCopilotVoiceActive = false;
+      if (micBtn) {
+        micBtn.innerHTML = '🎙️';
+        micBtn.style.background = 'rgba(255,255,255,0.1)';
+        micBtn.style.border = '1px solid rgba(255,255,255,0.2)';
+      }
+      if (inputEl) inputEl.placeholder = "Type or tap 🎙️ to speak...";
+    };
+
+    copilotVoiceRec.onend = () => {
+      isCopilotVoiceActive = false;
+      if (micBtn) {
+        micBtn.innerHTML = '🎙️';
+        micBtn.style.background = 'rgba(255,255,255,0.1)';
+        micBtn.style.border = '1px solid rgba(255,255,255,0.2)';
+      }
+      if (inputEl) inputEl.placeholder = "Type or tap 🎙️ to speak...";
+    };
+
+    copilotVoiceRec.start();
+  } catch(err) {
+    console.error("Failed to start voice recognition:", err);
+    isCopilotVoiceActive = false;
+  }
+}
+
 // 2. Ultra-Fast Backbone AI Connector (~200ms - 800ms)
 async function queryBackboneAI(userTranscript) {
   const qBox = document.getElementById('copilot-query-box');
@@ -10074,21 +10155,34 @@ async function queryBackboneAI(userTranscript) {
   let data = null;
   const cleanQ = userTranscript.toLowerCase().trim();
 
-  if (cleanQ.includes('settings') || cleanQ.includes('preferences')) {
-    data = { status: "success", intent: "APP_ACTION", action: "navigate_to", parameters: { page_id: "settings" }, tts_response: "Navigating to settings now." };
-  } else if (cleanQ.includes('library') || cleanQ.includes('my books')) {
-    data = { status: "success", intent: "APP_ACTION", action: "navigate_to", parameters: { page_id: "library" }, tts_response: "Navigating to library now." };
-  } else if (cleanQ.includes('discover') || cleanQ.includes('home')) {
-    data = { status: "success", intent: "APP_ACTION", action: "navigate_to", parameters: { page_id: "discover" }, tts_response: "Navigating to discover now." };
-  } else if (cleanQ.includes('stats') || cleanQ.includes('analytics')) {
-    data = { status: "success", intent: "APP_ACTION", action: "navigate_to", parameters: { page_id: "stats" }, tts_response: "Navigating to stats now." };
-  } else if (cleanQ.includes('old money')) {
-    data = { status: "success", intent: "APP_ACTION", action: "toggle_setting", parameters: { setting_name: "theme", value: "old-money" }, tts_response: "Applied Old Money theme." };
-  } else if (cleanQ.includes('cyberpunk')) {
-    data = { status: "success", intent: "APP_ACTION", action: "toggle_setting", parameters: { setting_name: "theme", value: "cyberpunk" }, tts_response: "Applied Cyberpunk theme." };
-  } else if (cleanQ.startsWith('search ') || cleanQ.startsWith('find ')) {
-    const qTerm = cleanQ.replace(/^(search|find)\s+/i, '').trim();
-    data = { status: "success", intent: "APP_ACTION", action: "filter_content", parameters: { query: qTerm, category: "all" }, tts_response: `Searching for ${qTerm}.` };
+  if (cleanQ.includes('scroll down') || cleanQ.includes('go down') || cleanQ.includes('page down') || cleanQ === 'down') {
+    data = { status: "success", intent: "APP_ACTION", action: "scroll_down", parameters: { direction: "down" }, tts_response: "Scrolling down." };
+  } else if (cleanQ.includes('scroll up') || cleanQ.includes('go up') || cleanQ.includes('page up') || cleanQ === 'up') {
+    data = { status: "success", intent: "APP_ACTION", action: "scroll_up", parameters: { direction: "up" }, tts_response: "Scrolling up." };
+  } else if (cleanQ.startsWith('open book ') || cleanQ.startsWith('read book ') || cleanQ.startsWith('open ') || cleanQ.startsWith('read ') || cleanQ.startsWith('show book ')) {
+    const bookTitleStr = cleanQ.replace(/^(open book|read book|open|read|show book)\s+/i, '').trim();
+    if (bookTitleStr && !['settings', 'library', 'discover', 'home', 'stats', 'analytics'].includes(bookTitleStr)) {
+      data = { status: "success", intent: "APP_ACTION", action: "open_book", parameters: { book_title: bookTitleStr }, tts_response: `Opening ${bookTitleStr} for you now.` };
+    }
+  }
+
+  if (!data) {
+    if (cleanQ.includes('settings') || cleanQ.includes('preferences')) {
+      data = { status: "success", intent: "APP_ACTION", action: "navigate_to", parameters: { page_id: "settings" }, tts_response: "Navigating to settings now." };
+    } else if (cleanQ.includes('library') || cleanQ.includes('my books')) {
+      data = { status: "success", intent: "APP_ACTION", action: "navigate_to", parameters: { page_id: "library" }, tts_response: "Navigating to library now." };
+    } else if (cleanQ.includes('discover') || cleanQ.includes('home')) {
+      data = { status: "success", intent: "APP_ACTION", action: "navigate_to", parameters: { page_id: "discover" }, tts_response: "Navigating to discover now." };
+    } else if (cleanQ.includes('stats') || cleanQ.includes('analytics')) {
+      data = { status: "success", intent: "APP_ACTION", action: "navigate_to", parameters: { page_id: "stats" }, tts_response: "Navigating to stats now." };
+    } else if (cleanQ.includes('old money')) {
+      data = { status: "success", intent: "APP_ACTION", action: "toggle_setting", parameters: { setting_name: "theme", value: "old-money" }, tts_response: "Applied Old Money theme." };
+    } else if (cleanQ.includes('cyberpunk')) {
+      data = { status: "success", intent: "APP_ACTION", action: "toggle_setting", parameters: { setting_name: "theme", value: "cyberpunk" }, tts_response: "Applied Cyberpunk theme." };
+    } else if (cleanQ.startsWith('search ') || cleanQ.startsWith('find ')) {
+      const qTerm = cleanQ.replace(/^(search|find)\s+/i, '').trim();
+      data = { status: "success", intent: "APP_ACTION", action: "filter_content", parameters: { query: qTerm, category: "all" }, tts_response: `Searching for ${qTerm}.` };
+    }
   }
 
   // Handle action or speak response
@@ -10145,9 +10239,9 @@ function toggleHelixAIAssistant() {
 }
 
 function executeToolCall(actionObj) {
-  if (!actionObj || !actionObj.tool) return;
-  const tool = actionObj.tool;
-  const params = actionObj.params || {};
+  if (!actionObj) return;
+  const tool = actionObj.tool || actionObj.action;
+  const params = actionObj.params || actionObj.parameters || {};
 
   if (tool === 'navigate_to') {
     if (params.page_id) navigate(params.page_id);
@@ -10160,9 +10254,29 @@ function executeToolCall(actionObj) {
       input.value = params.query || '';
       if (typeof handleSearch === 'function') handleSearch();
     }
-  } else if (tool === 'custom_action') {
-    if (params.action === 'scroll_down') window.scrollBy({ top: 450, behavior: 'smooth' });
-    if (params.action === 'scroll_up') window.scrollBy({ top: -450, behavior: 'smooth' });
+  } else if (tool === 'scroll_down' || (tool === 'custom_action' && params.action === 'scroll_down')) {
+    window.scrollBy({ top: 550, behavior: 'smooth' });
+  } else if (tool === 'scroll_up' || (tool === 'custom_action' && params.action === 'scroll_up')) {
+    window.scrollBy({ top: -550, behavior: 'smooth' });
+  } else if (tool === 'open_book') {
+    const titleQ = (params.book_title || '').toLowerCase().trim();
+    let found = null;
+    if (typeof allBooks !== 'undefined' && Array.isArray(allBooks)) {
+      found = allBooks.find(b => b.title.toLowerCase().includes(titleQ) || titleQ.includes(b.title.toLowerCase()));
+    }
+    if (!found && typeof state !== 'undefined' && Array.isArray(state.books)) {
+      found = state.books.find(b => b.title.toLowerCase().includes(titleQ) || titleQ.includes(b.title.toLowerCase()));
+    }
+    if (found && typeof openBookDetails === 'function') {
+      openBookDetails(found.id);
+    } else {
+      navigate('discover');
+      const input = document.getElementById('search-input');
+      if (input) {
+        input.value = params.book_title || '';
+        if (typeof handleSearch === 'function') handleSearch();
+      }
+    }
   }
 }
 
@@ -10207,4 +10321,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T04:20:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T04:24:00Z -->
