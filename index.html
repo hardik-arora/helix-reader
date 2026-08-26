@@ -10524,6 +10524,72 @@ document.addEventListener('DOMContentLoaded', () => {
     checkBadgesUnlock();
   }
 });
+
+// Speech Recognition Initialization
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+if (SpeechRecognition) {
+  try {
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.lang = 'en-US';
+  } catch(e){}
+}
+
+const siriHud = document.getElementById("siri-hud");
+const userCaption = document.getElementById("siri-user-text");
+const aiCaption = document.getElementById("siri-ai-text");
+const orbBtn = document.getElementById("siri-trigger-btn");
+
+// Start listening when clicking the glowing orb
+if (orbBtn) {
+  orbBtn.addEventListener("click", () => {
+    const hudEl = document.getElementById("siri-hud");
+    const uCap = document.getElementById("siri-user-text");
+    const aCap = document.getElementById("siri-ai-text");
+    if (hudEl) hudEl.classList.add("listening");
+    if (uCap) uCap.textContent = "Listening...";
+    if (aCap) aCap.textContent = "";
+    if (recognition) {
+      try { recognition.start(); } catch(e){}
+    }
+  });
+}
+
+// Process Voice Input
+if (recognition) {
+  recognition.onresult = async (event) => {
+    const hudEl = document.getElementById("siri-hud");
+    const uCap = document.getElementById("siri-user-text");
+    const aCap = document.getElementById("siri-ai-text");
+    if (hudEl) hudEl.classList.remove("listening");
+    const transcript = event.results[0][0].transcript;
+    if (uCap) uCap.textContent = `"${transcript}"`;
+    if (aCap) aCap.textContent = "Thinking...";
+    
+    await handleAIResponse(transcript);
+  };
+
+  recognition.onerror = () => {
+    const hudEl = document.getElementById("siri-hud");
+    const uCap = document.getElementById("siri-user-text");
+    const aCap = document.getElementById("siri-ai-text");
+    if (hudEl) hudEl.classList.remove("listening");
+    if (uCap) uCap.textContent = "";
+    if (aCap) aCap.textContent = "Could not hear audio.";
+  };
+}
+
+// Text-to-Speech Output
+function speak(text) {
+  window.speechSynthesis.cancel();
+  const aCap = document.getElementById("siri-ai-text");
+  if (aCap) aCap.textContent = text;
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 1.05;
+  window.speechSynthesis.speak(utterance);
+}
 </script>
 <!-- Siri Assistant Floating HUD -->
 <div id="siri-hud" class="siri-hud">
@@ -10541,4 +10607,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T04:46:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T04:47:00Z -->
