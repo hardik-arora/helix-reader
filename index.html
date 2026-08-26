@@ -9219,7 +9219,7 @@ function speakSiriResponse(text) {
   const orbText = document.getElementById('siri-orb-text');
   if (orb) orb.style.display = 'flex';
   if (orbText) {
-    orbText.innerHTML = `<strong>🍎 Siri AI:</strong> ${text}`;
+    orbText.textContent = text;
   }
 
   if (allowAudio && window.speechSynthesis) {
@@ -9841,4 +9841,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T00:05:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T00:10:00Z -->
