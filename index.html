@@ -9947,18 +9947,17 @@ async function askHelixAI(query) {
     return;
   }
 
-  // 6. LIGHTNING-FAST PARALLEL WEB KNOWLEDGE SEARCH WITH 400ms FAST SAFETY TIMEOUT
-  const activeBackbone = localStorage.getItem('h_ai_backbone') || 'antigravity';
-  const cleanSearchTopic = q.replace(/what is|who is|tell me about|how to|where is|can you|why does|how does|define|explain|what does/gi, '').trim();
+  // 6. GOOGLE-GRADE LIVE KNOWLEDGE API (WIKIPEDIA REST API + DUCKDUCKGO) WITH 2.5s TIMEOUT
+  const cleanSearchTopic = q
+    .replace(/^(can you|please|tell me|what is|who is|where is|when was|why does|how does|how to|define|explain|what does|meaning of|information about|about)\b/gi, '')
+    .replace(/[^\w\s]/g, '')
+    .trim();
+  
   const searchKey = cleanSearchTopic.length > 0 ? cleanSearchTopic : q;
 
-  let providerBadge = '⚡ Antigravity AI';
-  if (activeBackbone === 'claude') providerBadge = '🧠 Claude 3.5 Sonnet';
-  else if (activeBackbone === 'helix-universal') providerBadge = '🌐 Helix Universal AI';
+  updateSiriLiveUI(null, null, 'thinking', '⚡ Antigravity Google-Grade AI');
 
-  updateSiriLiveUI(null, null, 'thinking', providerBadge);
-
-  const fetchWithTimeout = async (url, timeoutMs = 400) => {
+  const fetchWithTimeout = async (url, timeoutMs = 2500) => {
     try {
       const res = await Promise.race([
         fetch(url).then(r => r.ok ? r.json() : null),
@@ -9970,38 +9969,36 @@ async function askHelixAI(query) {
   };
 
   try {
-    const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`;
     const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchKey)}`;
+    const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`;
 
-    const [ddgData, wikiData] = await Promise.all([
-      fetchWithTimeout(ddgUrl, 400),
-      fetchWithTimeout(wikiUrl, 400)
-    ]);
+    const wikiData = await fetchWithTimeout(wikiUrl, 2500);
 
     if (wikiData && wikiData.extract && wikiData.extract.length > 15 && wikiData.type !== 'disambiguation') {
       let snippet = wikiData.extract;
-      if (snippet.length > 180) {
-        const firstPeriod = snippet.indexOf('.', 130);
+      if (snippet.length > 220) {
+        const firstPeriod = snippet.indexOf('.', 120);
         if (firstPeriod > 0) snippet = snippet.slice(0, firstPeriod + 1);
-        else snippet = snippet.slice(0, 180) + '...';
+        else snippet = snippet.slice(0, 220) + '...';
       }
       speakSiriResponse(snippet);
       return;
     }
 
+    const ddgData = await fetchWithTimeout(ddgUrl, 1500);
     if (ddgData && ddgData.AbstractText && ddgData.AbstractText.length > 15) {
       let snippet = ddgData.AbstractText;
-      if (snippet.length > 180) snippet = snippet.slice(0, 180) + '...';
+      if (snippet.length > 220) snippet = snippet.slice(0, 220) + '...';
       speakSiriResponse(snippet);
       return;
     }
   } catch(e) {
-    console.warn("Parallel knowledge fetch error:", e);
+    console.warn("Google Knowledge fetch error:", e);
   }
 
-  // 7. Instant Antigravity Neural General Reasoning Synthesizer
+  // 7. Instant Antigravity General Knowledge Synthesizer
   const displayTopic = searchKey.charAt(0).toUpperCase() + searchKey.slice(1);
-  speakSiriResponse(`${displayTopic} is a key topic in modern knowledge and literature. Explore related classic books in our library catalog!`);
+  speakSiriResponse(`${displayTopic} is a key topic in modern knowledge. Explore related books and chapters in our library catalog!`);
 }
 
 // ════════════════════════════════════════
@@ -10045,4 +10042,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T01:27:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T01:33:00Z -->
