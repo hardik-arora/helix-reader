@@ -9209,28 +9209,38 @@ if (window.speechSynthesis) {
 }
 
 function speakSiriResponse(text) {
+  if (!text) return;
   const siriAudioToggle = document.getElementById('set-siri-audio-toggle');
   const allowAudio = !siriAudioToggle || siriAudioToggle.checked;
 
   showNotification(`⚡ Helix AI: "${text}"`);
+  
   const orb = document.getElementById('siri-voice-orb');
   const orbText = document.getElementById('siri-orb-text');
   if (orb) orb.style.display = 'flex';
-  if (orbText) orbText.textContent = text;
-  
+  if (orbText) {
+    orbText.innerHTML = `<strong>🍎 Siri AI:</strong> ${text}`;
+  }
+
   if (allowAudio && window.speechSynthesis) {
-    window.speechSynthesis.cancel();
-    const synthUtterance = new SpeechSynthesisUtterance(text);
-    
-    const siriVoice = getBestSiriVoice();
-    if (siriVoice) {
-      synthUtterance.voice = siriVoice;
+    try {
+      window.speechSynthesis.cancel();
+      setTimeout(() => {
+        const synthUtterance = new SpeechSynthesisUtterance(text);
+        const siriVoice = getBestSiriVoice();
+        if (siriVoice) synthUtterance.voice = siriVoice;
+        synthUtterance.rate = 0.98;
+        synthUtterance.pitch = 1.0;
+        synthUtterance.volume = 1.0;
+        
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+        window.speechSynthesis.speak(synthUtterance);
+      }, 80);
+    } catch(err) {
+      console.warn("Speech synthesis audio error:", err);
     }
-    
-    synthUtterance.rate = 0.96;
-    synthUtterance.pitch = 1.0;
-    
-    window.speechSynthesis.speak(synthUtterance);
   }
 }
 
@@ -9348,32 +9358,33 @@ function executeVoiceCommand(cmd) {
     }
   }
 
-  // 2. SPOKEN MATH EVALUATION FIRST (Guarantees math like "5 into 20" or "what is 10 plus 10" is NEVER intercepted by book matcher!)
+  // 2. SPOKEN MATH EVALUATION FIRST ("5 into 20", "what is 10 plus 10")
   const mathRes = evaluateSpokenMath(cmd);
   if (mathRes) {
     speakSiriResponse(mathRes);
     return;
   }
 
-  // 3. DICTIONARY & WORD MEANING QUERIES FIRST ("meaning of", "define", "what does")
-  if (cmd.includes('meaning of') || cmd.includes('define') || cmd.includes('definition of') || cmd.includes('what does')) {
+  // 3. QUESTION & AI DOUBT RESOLUTION ROUTER (Checks for any general knowledge / question intent)
+  const isQuestionOrDoubt = /^(who|what|where|when|why|how|tell|explain|describe|define|meaning|is|are|can|could|which|give|about)\b/i.test(cmd) ||
+                            cmd.includes('who is') || cmd.includes('what is') || cmd.includes('where is') ||
+                            cmd.includes('how to') || cmd.includes('why does') || cmd.includes('how does') ||
+                            cmd.includes('tell me') || cmd.includes('explain') || cmd.includes('meaning of') ||
+                            cmd.includes('definition') || cmd.includes('capital of') || cmd.includes('president of') ||
+                            cmd.includes('prime minister') || cmd.includes('discovered') || cmd.includes('invented');
+
+  if (isQuestionOrDoubt) {
     askHelixAI(cmd);
     return;
   }
 
-  // 4. INSTANT KNOWLEDGE & WORLD DOUBTS FIRST ("who is", "what is", "capital of", "president of", "prime minister of", "who invented", "discovered", "how do", "why do")
-  if (cmd.includes('who is') || cmd.includes('what is') || cmd.includes('capital of') || cmd.includes('president of') || cmd.includes('prime minister of') || cmd.includes('who invented') || cmd.includes('discovered') || cmd.includes('how do') || cmd.includes('why do') || cmd.includes('where is')) {
-    askHelixAI(cmd);
-    return;
-  }
-
-  // 5. EMOTIONAL & COMPANIONSHIP PHRASES
+  // 4. EMOTIONAL & COMPANIONSHIP PHRASES
   if (cmd.includes('friend') || cmd.includes('lonely') || cmd.includes('tired') || cmd.includes('happy') || cmd.includes('sad') || cmd.includes('good morning') || cmd.includes('goodnight')) {
     askHelixAI(cmd);
     return;
   }
 
-  // 6. EXPLICIT BOOK OPENING & READING COMMANDS ONLY
+  // 5. EXPLICIT BOOK OPENING & READING COMMANDS ONLY
   if (cmd.includes('open') || cmd.includes('read') || cmd.includes('book') || cmd.includes('author') || cmd.includes('excerpt')) {
     const matchedBook = findBookFromSpeech(cmd);
     if (matchedBook) {
@@ -9396,7 +9407,7 @@ function executeVoiceCommand(cmd) {
     return;
   }
 
-  // 3. Catalog Browsing & Search Queries
+  // 6. Catalog Browsing & Search Queries
   if (cmd.includes('browse') || cmd.includes('catalog') || cmd.includes('show books') || cmd.includes('all books')) {
     speakSiriResponse("Opening Library catalog.");
     navigate('search');
@@ -9418,7 +9429,7 @@ function executeVoiceCommand(cmd) {
     }
   }
 
-  // 4. Navigation & Page Controls
+  // 7. Navigation & Page Controls
   if (cmd.includes('home') || cmd.includes('discover')) {
     speakSiriResponse("Opening Discover.");
     navigate('discover');
@@ -9439,7 +9450,7 @@ function executeVoiceCommand(cmd) {
     speakSiriResponse("Opening Security Logs.");
     openAdminTelemetryModal();
 
-  // 5. Audio Reading & TTS Controls
+  // 8. Audio Reading & TTS Controls
   } else if (cmd.includes('start audio') || cmd.includes('read out loud') || cmd.includes('play audio') || cmd.includes('listen')) {
     speakSiriResponse("Reading out loud.");
     startAudio();
@@ -9448,7 +9459,7 @@ function executeVoiceCommand(cmd) {
     speakSiriResponse("Paused.");
     stopAudio();
 
-  // 6. Scrolling Controls
+  // 9. Scrolling Controls
   } else if (cmd.includes('down') || cmd.includes('scroll down') || cmd.includes('next paragraph') || cmd.includes('next page') || cmd.includes('forward')) {
     window.scrollBy({top: 450, behavior: 'smooth'});
     speakSiriResponse("Scrolling down.");
@@ -9457,7 +9468,7 @@ function executeVoiceCommand(cmd) {
     window.scrollBy({top: -450, behavior: 'smooth'});
     speakSiriResponse("Scrolling up.");
 
-  // 7. Soundscapes
+  // 10. Soundscapes
   } else if (cmd.includes('rain')) {
     speakSiriResponse("Playing Rain soundscape.");
     changeSoundscape('rain');
@@ -9474,7 +9485,7 @@ function executeVoiceCommand(cmd) {
     speakSiriResponse("Playing Lofi Synth.");
     changeSoundscape('lofi');
 
-  // 8. Font Size Controls
+  // 11. Font Size Controls
   } else if (cmd.includes('bigger') || cmd.includes('increase font') || cmd.includes('larger text')) {
     speakSiriResponse("Increasing text size.");
     changeFontSize(2);
@@ -9483,7 +9494,7 @@ function executeVoiceCommand(cmd) {
     speakSiriResponse("Decreasing text size.");
     changeFontSize(-2);
 
-  // 9. Accessibility Reading Guides
+  // 12. Accessibility Reading Guides
   } else if (cmd.includes('bionic')) {
     const newState = !bionicModeActive;
     speakSiriResponse(newState ? "Bionic mode on." : "Bionic mode off.");
@@ -9493,7 +9504,7 @@ function executeVoiceCommand(cmd) {
     speakSiriResponse("Toggling reading ruler.");
     toggleFocusRuler();
 
-  // 10. Themes
+  // 13. Themes
   } else if (cmd.includes('dark') || cmd.includes('night') || cmd.includes('midnight')) {
     speakSiriResponse("Switched to Dark mode.");
     applyTheme('midnight-velvet');
@@ -9514,7 +9525,7 @@ function executeVoiceCommand(cmd) {
     speakSiriResponse("Warm Sepia theme applied.");
     applyTheme('sepia');
 
-  // 11. AI Information Queries
+  // 14. AI Information Queries
   } else if (cmd.includes('who wrote') || cmd.includes('author of this')) {
     const author = readerBook ? readerBook.author : "the author";
     speakSiriResponse(`Written by ${author}.`);
@@ -9526,7 +9537,7 @@ function executeVoiceCommand(cmd) {
     const summary = readerBook ? readerBook.summary.slice(0, 100) : "No summary available";
     speakSiriResponse(`Here is the summary: ${summary}.`);
 
-  // 13. Conversational Helix AI Engine (Answers ANY question asked by the user out loud!)
+  // 15. Conversational Helix AI Engine (Answers ANY question asked by the user out loud!)
   } else {
     askHelixAI(cmd);
   }
@@ -9537,64 +9548,33 @@ function evaluateSpokenMath(q) {
   
   let norm = q.toLowerCase();
   
-  // Replace unicode multiplication/division/minus signs from Chrome Web Speech API
   norm = norm.replace(/[\u00d7\u2715]/g, ' * ')
              .replace(/[\u00f7]/g, ' / ')
              .replace(/[\u2013\u2014]/g, ' - ');
   
-  // Replace spoken phrase variations
   norm = norm.replace(/\bin to\b/g, ' * ')
              .replace(/\binto\b/g, ' * ')
              .replace(/\bmultiplied by\b/g, ' * ')
              .replace(/\btimes\b/g, ' * ')
              .replace(/\bcross\b/g, ' * ')
-             .replace(/\bstar\b/g, ' * ')
-             .replace(/\bby\b/g, ' * ')
-             .replace(/\bdivided by\b/g, ' / ')
-             .replace(/\bover\b/g, ' / ')
              .replace(/\bplus\b/g, ' + ')
-             .replace(/\bminus\b/g, ' - ');
+             .replace(/\badd\b/g, ' + ')
+             .replace(/\bminus\b/g, ' - ')
+             .replace(/\bsubtract\b/g, ' - ')
+             .replace(/\bdivided by\b/g, ' / ');
 
-  // Replace spoken number words to digits
-  const numberWordMap = {
-    'zero': 0, 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
-    'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
-    'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14, 'fifteen': 15,
-    'sixteen': 16, 'seventeen': 17, 'eighteen': 18, 'nineteen': 19, 'twenty': 20,
-    'thirty': 30, 'forty': 40, 'fifty': 50, 'sixty': 60, 'seventy': 70, 'eighty': 80, 'ninety': 90,
-    'hundred': 100
-  };
-
-  for (const [w, val] of Object.entries(numberWordMap)) {
-    const reg = new RegExp(`\\b${w}\\b`, 'g');
-    norm = norm.replace(reg, val);
-  }
-
-  // Combine compound numbers like "20 8" -> 28
-  norm = norm.replace(/\b(\d0)\s+(\d)\b/g, (m, tens, units) => parseInt(tens) + parseInt(units));
-
-  // Extract ANY expression containing: [number] [operator] [number]
-  const mathRegex = /(\d+(?:\.\d+)?)\s*([\+\-\*\/xX])\s*(\d+(?:\.\d+)?)/i;
-  const match = norm.match(mathRegex);
-
+  const match = norm.match(/(\d+(?:\.\d+)?)\s*([\+\-\*\/])\s*(\d+(?:\.\d+)?)/);
   if (match) {
     const n1 = parseFloat(match[1]);
-    const opStr = match[2].toLowerCase();
+    const op = match[2];
     const n2 = parseFloat(match[3]);
 
     let result = 0;
-    let opName = 'times';
-
-    if (opStr === '*' || opStr === 'x') {
-      result = n1 * n2;
-      opName = 'times';
-    } else if (opStr === '+') {
-      result = n1 + n2;
-      opName = 'plus';
-    } else if (opStr === '-') {
-      result = n1 - n2;
-      opName = 'minus';
-    } else if (opStr === '/') {
+    let opName = '';
+    if (op === '+') { result = n1 + n2; opName = 'plus'; }
+    else if (op === '-') { result = n1 - n2; opName = 'minus'; }
+    else if (op === '*') { result = n1 * n2; opName = 'times'; }
+    else if (op === '/') {
       if (n2 === 0) return "Division by zero is undefined.";
       result = n1 / n2;
       opName = 'divided by';
@@ -9861,4 +9841,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T00:00:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T00:05:00Z -->
