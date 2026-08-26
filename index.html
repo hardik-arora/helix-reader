@@ -9086,20 +9086,7 @@ function speakSiriResponse(text, engineName) {
   const allowAudio = !siriAudioToggle || siriAudioToggle.checked;
 
   showNotification(`⚡ Helix Siri: "${text}"`);
-
-  // Update Live UI Card
-  updateSiriLiveUI(null, text, 'speaking', engineName || '⚡ ANTIGRAVITY BACKBONE AI');
-
   isSpeakingSiri = true;
-
-  // Safety fallback: Reset speaking flag after 4 seconds max so mic is guaranteed ready
-  if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
-  setTimeout(() => {
-    if (isSpeakingSiri) {
-      isSpeakingSiri = false;
-      updateSiriLiveUI(null, null, 'listening');
-    }
-  }, 4000);
 
   if (allowAudio && window.speechSynthesis) {
     try {
@@ -9114,12 +9101,14 @@ function speakSiriResponse(text, engineName) {
       
       synthUtterance.onend = () => {
         isSpeakingSiri = false;
-        updateSiriLiveUI(null, null, 'listening');
+        const statusEl = document.getElementById('siri-status-badge') || document.getElementById('siri-status-indicator');
+        if (statusEl) statusEl.innerHTML = `<span style="color:#34d399;font-weight:700;">🟢 Siri Listening...</span>`;
       };
 
       synthUtterance.onerror = () => {
         isSpeakingSiri = false;
-        updateSiriLiveUI(null, null, 'listening');
+        const statusEl = document.getElementById('siri-status-badge') || document.getElementById('siri-status-indicator');
+        if (statusEl) statusEl.innerHTML = `<span style="color:#34d399;font-weight:700;">🟢 Siri Listening...</span>`;
       };
 
       if (window.speechSynthesis.paused) {
@@ -9129,11 +9118,9 @@ function speakSiriResponse(text, engineName) {
     } catch(err) {
       console.warn("Speech synthesis audio error:", err);
       isSpeakingSiri = false;
-      updateSiriLiveUI(null, null, 'listening');
     }
   } else {
     isSpeakingSiri = false;
-    updateSiriLiveUI(null, null, 'listening');
   }
 }
 
@@ -9938,13 +9925,13 @@ async function askHelixAI(query) {
   const q = query.toLowerCase().trim();
   console.log("askHelixAI executing for query:", q);
 
-  // 1. Display user question live on Siri Glass HUD immediately
-  updateSiriLiveUI(query, "⚡ Antigravity AI Synthesizing...", "thinking", "⚡ ANTIGRAVITY AI ENGINE");
-
-  // 2. Synthesize answer INSTANTLY (Synchronously 0ms delay - NO network blocking!)
+  // 1. Synthesize answer INSTANTLY in 0ms (NO network blocking!)
   const result = getInstantAIResponse(q);
   
-  // 3. Speak and display response immediately!
+  // 2. Update Live Siri Glass Card UI immediately with real calculated answer text!
+  updateSiriLiveUI(query, result.answer, "speaking", result.engine);
+
+  // 3. Speak the calculated answer out loud!
   speakSiriResponse(result.answer, result.engine);
 }
 
@@ -9989,4 +9976,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T02:35:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T02:38:00Z -->
