@@ -2658,6 +2658,12 @@
   border-radius: 36px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 210, 255, 0.15);
   z-index: 99999;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+.siri-hud:active {
+  cursor: grabbing;
 }
 
 /* Glowing Orb */
@@ -10590,6 +10596,87 @@ function speak(text) {
   utterance.rate = 1.05;
   window.speechSynthesis.speak(utterance);
 }
+
+// Make Siri HUD Draggable across screen
+(function makeSiriHudDraggable() {
+  const hud = document.getElementById("siri-hud");
+  if (!hud) return;
+
+  let isDragging = false;
+  let hasMoved = false;
+  let startX = 0, startY = 0;
+  let initialLeft = 0, initialTop = 0;
+
+  function onDragStart(e) {
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    const rect = hud.getBoundingClientRect();
+    
+    // Switch from bottom/translateX to explicit left/top on drag
+    hud.style.bottom = 'auto';
+    hud.style.transform = 'none';
+    hud.style.left = rect.left + 'px';
+    hud.style.top = rect.top + 'px';
+
+    isDragging = true;
+    hasMoved = false;
+    startX = clientX;
+    startY = clientY;
+    initialLeft = rect.left;
+    initialTop = rect.top;
+  }
+
+  function onDragMove(e) {
+    if (!isDragging) return;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    const dx = clientX - startX;
+    const dy = clientY - startY;
+
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+      hasMoved = true;
+    }
+
+    const rect = hud.getBoundingClientRect();
+    let newLeft = initialLeft + dx;
+    let newTop = initialTop + dy;
+
+    // Viewport boundary check
+    const maxLeft = window.innerWidth - rect.width;
+    const maxTop = window.innerHeight - rect.height;
+    newLeft = Math.max(10, Math.min(newLeft, maxLeft - 10));
+    newTop = Math.max(10, Math.min(newTop, maxTop - 10));
+
+    hud.style.left = newLeft + 'px';
+    hud.style.top = newTop + 'px';
+  }
+
+  function onDragEnd() {
+    isDragging = false;
+  }
+
+  hud.addEventListener("mousedown", onDragStart);
+  document.addEventListener("mousemove", onDragMove);
+  document.addEventListener("mouseup", onDragEnd);
+
+  hud.addEventListener("touchstart", onDragStart, { passive: true });
+  document.addEventListener("touchmove", onDragMove, { passive: true });
+  document.addEventListener("touchend", onDragEnd);
+
+  // Prevent speech trigger click if the HUD was dragged
+  const triggerBtn = document.getElementById("siri-trigger-btn");
+  if (triggerBtn) {
+    triggerBtn.addEventListener("click", (e) => {
+      if (hasMoved) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        hasMoved = false;
+      }
+    }, true);
+  }
+})();
 </script>
 <!-- Siri Assistant Floating HUD -->
 <div id="siri-hud" class="siri-hud">
@@ -10607,4 +10694,4 @@ function speak(text) {
 
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T04:47:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T04:52:00Z -->
