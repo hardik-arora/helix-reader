@@ -10427,6 +10427,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
+<!-- Siri Assistant Floating HUD -->
+<div id="siri-hud" class="siri-hud">
+  <div class="siri-orb-container" id="siri-trigger-btn" onclick="toggleCopilotVoiceInput()">
+    <div class="siri-orb-core"></div>
+    <div class="siri-orb-wave wave-1"></div>
+    <div class="siri-orb-wave wave-2"></div>
+  </div>
+
+  <div class="siri-captions">
+    <p id="siri-user-text" class="caption-user"></p>
+    <p id="siri-ai-text" class="caption-ai"></p>
+  </div>
+</div>
+
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T04:41:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T04:44:00Z -->
