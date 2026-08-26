@@ -4010,10 +4010,12 @@
       <!-- Tab 2: Siri AI Settings -->
       <div id="set-content-siri" style="display:none;flex-direction:column;gap:0.8rem;">
         <div style="background:var(--surface);border:1px solid var(--accent);padding:0.8rem;border-radius:8px;">
-          <label style="font-size:0.85rem;font-weight:700;color:var(--accent);display:block;margin-bottom:0.3rem;">⚡ AI Intelligence Backbone</label>
-          <div style="font-size:0.78rem;color:var(--text);font-weight:600;display:flex;align-items:center;gap:0.4rem;">
-            <span>🟢 Active Backbone: <strong>Antigravity AI (Powered by Google DeepMind)</strong></span>
-          </div>
+          <label style="font-size:0.85rem;font-weight:700;color:var(--accent);display:block;margin-bottom:0.4rem;">⚡ Select AI Backbone Provider</label>
+          <select id="set-ai-backbone-provider" class="auth-input-group" style="width:100%;padding:0.5rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:600;" onchange="saveSiteSettings()">
+            <option value="antigravity" selected>⚡ Google DeepMind Antigravity AI Backbone (Recommended)</option>
+            <option value="helix_neural">🧠 Helix Neural Knowledge Engine</option>
+            <option value="symbolic_math">📐 Symbolic Math & Logic Solver</option>
+          </select>
         </div>
         
         <div style="background:var(--surface);border:1px solid var(--border);padding:0.8rem;border-radius:8px;display:flex;align-items:center;justify-content:space-between;">
@@ -7002,10 +7004,13 @@ function renderReaderBodyContent(text) {
 
   if (easyModeActive) {
     target.innerHTML = `<p id="r-para-0">${wrapWordsWithSpans(easySegments[easyActiveIndex] || '', 0)}</p>`;
-    // Update easy progress indicator
-    document.getElementById('easy-page-indicator').textContent = `Segment ${easyActiveIndex + 1} / ${easySegments.length}`;
-    document.getElementById('easy-prev-btn').disabled = easyActiveIndex === 0;
-    document.getElementById('easy-next-btn').disabled = easyActiveIndex === easySegments.length - 1;
+    // Update easy progress indicator safely
+    const pInd = document.getElementById('easy-page-indicator');
+    const pPrev = document.getElementById('easy-prev-btn');
+    const pNext = document.getElementById('easy-next-btn');
+    if (pInd) pInd.textContent = `Segment ${easyActiveIndex + 1} / ${easySegments.length}`;
+    if (pPrev) pPrev.disabled = easyActiveIndex === 0;
+    if (pNext) pNext.disabled = easyActiveIndex === easySegments.length - 1;
   } else {
     const paras = (mainText || '').split('\n\n').filter(Boolean);
     target.innerHTML = paras.map((p, idx) => `<p id="r-para-${idx}">${wrapWordsWithSpans(p, idx)}</p>`).join('');
@@ -10025,4 +10030,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T02:44:30Z -->
+<!-- Build Force Timestamp: 2026-08-27T02:46:50Z -->
