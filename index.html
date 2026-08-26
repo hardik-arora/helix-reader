@@ -3928,6 +3928,15 @@
     </div>
   </div>
 
+  <!-- 1-Tap Quick Action AI Prompt Chips -->
+  <div style="display:flex; align-items:center; gap:0.4rem; overflow-x:auto; padding-bottom:0.2rem;">
+    <button onclick="executeVoiceCommand('What is 50 plus 25?')" style="background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#a5b4fc; font-size:0.75rem; font-weight:700; padding:0.25rem 0.6rem; border-radius:20px; cursor:pointer; white-space:nowrap; transition:all 0.2s;" onhover="this.style.background='rgba(99,102,241,0.4)'">📐 50 + 25</button>
+    <button onclick="executeVoiceCommand('What is gravity?')" style="background:rgba(168,85,247,0.2); border:1px solid rgba(168,85,247,0.4); color:#c084fc; font-size:0.75rem; font-weight:700; padding:0.25rem 0.6rem; border-radius:20px; cursor:pointer; white-space:nowrap; transition:all 0.2s;">🔬 What is gravity?</button>
+    <button onclick="executeVoiceCommand('Who was Albert Einstein?')" style="background:rgba(244,114,182,0.2); border:1px solid rgba(244,114,182,0.4); color:#f472b6; font-size:0.75rem; font-weight:700; padding:0.25rem 0.6rem; border-radius:20px; cursor:pointer; white-space:nowrap; transition:all 0.2s;">📚 Who was Einstein?</button>
+    <button onclick="executeVoiceCommand('open library')" style="background:rgba(52,211,153,0.2); border:1px solid rgba(52,211,153,0.4); color:#34d399; font-size:0.75rem; font-weight:700; padding:0.25rem 0.6rem; border-radius:20px; cursor:pointer; white-space:nowrap; transition:all 0.2s;">⚡ Open Library</button>
+    <button onclick="executeVoiceCommand('dark mode')" style="background:rgba(251,191,36,0.2); border:1px solid rgba(251,191,36,0.4); color:#fbbf24; font-size:0.75rem; font-weight:700; padding:0.25rem 0.6rem; border-radius:20px; cursor:pointer; white-space:nowrap; transition:all 0.2s;">🌙 Dark Mode</button>
+  </div>
+
   <!-- Optional Text Query Input Line for Typing Backup -->
   <form onsubmit="event.preventDefault(); const inEl=document.getElementById('siri-type-input'); if(inEl && inEl.value.trim()){ executeVoiceCommand(inEl.value.trim()); inEl.value=''; }" style="display:flex; align-items:center; gap:0.5rem; background:rgba(30,41,59,0.8); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:0.35rem 0.6rem;">
     <input type="text" id="siri-type-input" placeholder="Type a question here if mic is muted..." style="flex:1; background:none; border:none; color:#ffffff; font-size:0.85rem; outline:none; padding:0.3rem;" />
@@ -10084,4 +10093,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T03:45:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T03:47:00Z -->
