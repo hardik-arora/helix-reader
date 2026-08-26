@@ -9027,6 +9027,8 @@ function saveSiteSettings() {
 // ════════════════════════════════════════
 // MODULE 6: SIRI AI VOICE ASSISTANT
 // ════════════════════════════════════════
+let voiceCmdRecognition = null;
+let isVoiceCmdActive = false;
 let isSpeakingSiri = false;
 
 function updateSiriLiveUI(question, answer, status, engine) {
@@ -9599,151 +9601,6 @@ if (window.speechSynthesis) {
   window.speechSynthesis.onvoiceschanged = () => { getBestSiriVoice(); };
 }
 
-function speakSiriResponse(text) {
-  if (!text) return;
-  const siriAudioToggle = document.getElementById('set-siri-audio-toggle');
-  const allowAudio = !siriAudioToggle || siriAudioToggle.checked;
-
-  showNotification(`⚡ Helix AI: "${text}"`);
-  
-  const orb = document.getElementById('siri-voice-orb');
-  const orbText = document.getElementById('siri-orb-text');
-  if (orb) orb.style.display = 'flex';
-  if (orbText) {
-    orbText.textContent = text;
-  }
-
-  if (allowAudio && window.speechSynthesis) {
-    try {
-      window.speechSynthesis.cancel();
-      
-      // Temporarily pause recognition while speaking to prevent microphone loop
-      if (voiceCmdRecognition && isVoiceCmdActive) {
-        isSpeakingSiri = true;
-        try { voiceCmdRecognition.stop(); } catch(e){}
-      }
-
-      setTimeout(() => {
-        const synthUtterance = new SpeechSynthesisUtterance(text);
-        const siriVoice = getBestSiriVoice();
-        if (siriVoice) synthUtterance.voice = siriVoice;
-        synthUtterance.rate = 0.98;
-        synthUtterance.pitch = 1.0;
-        synthUtterance.volume = 1.0;
-        
-        synthUtterance.onend = () => {
-          isSpeakingSiri = false;
-          if (isVoiceCmdActive) {
-            startListeningLoop();
-          }
-        };
-
-        synthUtterance.onerror = () => {
-          isSpeakingSiri = false;
-          if (isVoiceCmdActive) {
-            startListeningLoop();
-          }
-        };
-
-        if (window.speechSynthesis.paused) {
-          window.speechSynthesis.resume();
-        }
-        window.speechSynthesis.speak(synthUtterance);
-      }, 80);
-    } catch(err) {
-      console.warn("Speech synthesis audio error:", err);
-      isSpeakingSiri = false;
-    }
-  }
-}
-
-function startListeningLoop() {
-  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRec || isSpeakingSiri) return;
-
-  try {
-    if (voiceCmdRecognition) {
-      try { voiceCmdRecognition.stop(); } catch(e){}
-    }
-    voiceCmdRecognition = new SpeechRec();
-    voiceCmdRecognition.continuous = true;
-    voiceCmdRecognition.interimResults = false;
-    voiceCmdRecognition.lang = 'en-US';
-
-    voiceCmdRecognition.onstart = () => {
-      isVoiceCmdActive = true;
-      const navBtn = document.getElementById('nav-siri-ai');
-      const readerBtn = document.getElementById('btn-voice-cmd');
-      const orb = document.getElementById('siri-voice-orb');
-      const orbText = document.getElementById('siri-orb-text');
-
-      if (navBtn) navBtn.classList.add('active');
-      if (readerBtn) readerBtn.classList.add('active');
-      if (orb) orb.style.display = 'flex';
-      if (orbText && !orbText.textContent.includes('Helix AI:')) {
-        orbText.textContent = "⚡ Siri AI Listening...";
-      }
-    };
-
-    voiceCmdRecognition.onresult = (event) => {
-      const lastResult = event.results[event.results.length - 1];
-      if (lastResult.isFinal) {
-        const command = lastResult[0].transcript.toLowerCase().trim();
-        executeVoiceCommand(command);
-      }
-    };
-
-    voiceCmdRecognition.onerror = (e) => {
-      console.warn("Speech recognition error:", e);
-    };
-
-    voiceCmdRecognition.onend = () => {
-      // If voice mode is still active and Siri isn't currently speaking, restart recognition loop!
-      if (isVoiceCmdActive && !isSpeakingSiri) {
-        setTimeout(() => {
-          if (isVoiceCmdActive && !isSpeakingSiri) {
-            try { voiceCmdRecognition.start(); } catch(e){}
-          }
-        }, 300);
-      }
-    };
-
-    voiceCmdRecognition.start();
-  } catch(e) {
-    console.warn("Speech recognition start failed:", e);
-  }
-}
-
-function toggleVoiceCommands() {
-  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRec) {
-    showNotification('❌ Voice Recognition is not supported in this browser.');
-    return;
-  }
-
-  const orb = document.getElementById('siri-voice-orb');
-  const navBtn = document.getElementById('nav-siri-ai');
-  const readerBtn = document.getElementById('btn-voice-cmd');
-
-  if (isVoiceCmdActive) {
-    isVoiceCmdActive = false;
-    isSpeakingSiri = false;
-    if (window.speechSynthesis) window.speechSynthesis.cancel();
-    if (voiceCmdRecognition) {
-      try { voiceCmdRecognition.stop(); } catch(e){}
-    }
-    if (navBtn) navBtn.classList.remove('active');
-    if (readerBtn) readerBtn.classList.remove('active');
-    if (orb) orb.style.display = 'none';
-    showNotification('🎙️ Siri AI Voice Assistant deactivated');
-    return;
-  }
-
-  isVoiceCmdActive = true;
-  showNotification('🎙️ Siri AI Voice Assistant active & listening...');
-  startListeningLoop();
-}
-
 function findBookFromSpeech(cmd) {
   const allBooks = [...MASTER_BOOKS, ...(typeof DYNAMIC_SEARCH_CACHE !== 'undefined' ? DYNAMIC_SEARCH_CACHE : []), ...((state && state.customBooks) ? state.customBooks : [])];
   
@@ -10282,4 +10139,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T00:33:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T00:36:00Z -->
