@@ -9886,24 +9886,33 @@ function evaluateSpokenMath(q) {
 
 const INSTANT_WORLD_FACTS = [
   // Science & Physics
-  { keywords: ['gravity', 'what is gravity', 'law of gravity'], answer: "Gravity is a fundamental force of attraction that pulls objects with mass toward one another. Sir Isaac Newton formulated the law of universal gravitation in 1687, and Albert Einstein later expanded it with general relativity." },
-  { keywords: ['relativity', 'theory of relativity', 'albert einstein'], answer: "Albert Einstein developed the theory of relativity in the early 20th century. Special relativity shows that space and time are interconnected, while general relativity explains gravity as the curvature of spacetime caused by mass." },
-  { keywords: ['black hole', 'black holes', 'what is a black hole'], answer: "A black hole is a region of spacetime where gravity is so intense that nothing, not even light, can escape from it. They are formed when massive stars collapse at the end of their life cycle." },
+  { keywords: ['gravity', 'what is gravity', 'law of gravity'], answer: "Gravity is a fundamental force of attraction that pulls objects with mass toward one another. Sir Isaac Newton formulated the law of universal gravitation in 1687, and Albert Einstein expanded it with general relativity." },
+  { keywords: ['relativity', 'theory of relativity', 'albert einstein'], answer: "Albert Einstein developed the theory of relativity in the early 20th century. Special relativity shows that space and time are interconnected, while general relativity explains gravity as the curvature of spacetime." },
+  { keywords: ['black hole', 'black holes', 'what is a black hole'], answer: "A black hole is a region of spacetime where gravity is so intense that nothing, not even light, can escape from it. They form when massive stars collapse at the end of their life cycle." },
   { keywords: ['photosynthesis'], answer: "Photosynthesis is the biological process used by plants and algae to convert solar light energy into chemical energy stored as glucose, releasing oxygen as a byproduct." },
-  { keywords: ['quantum mechanics', 'quantum physics'], answer: "Quantum mechanics is the branch of physics that studies matter and light on atomic and subatomic levels, explaining wave-particle duality and energy quantization." },
+  { keywords: ['quantum mechanics', 'quantum physics', 'quantum computing'], answer: "Quantum mechanics studies matter and energy at atomic and subatomic scales. Quantum computing leverages principles like superposition and entanglement to solve complex calculations exponentially faster." },
+  { keywords: ['electricity', 'how does electricity work', 'what is electricity'], answer: "Electricity is the flow of electric charge, typically moving electrons through a conductive material like copper wire, producing electrical power used for energy and lighting." },
+  { keywords: ['light', 'speed of light'], answer: "Light is electromagnetic radiation visible to the human eye, traveling as both particles called photons and waves at approximately 299,792 kilometers per second in a vacuum." },
+  { keywords: ['atom', 'atoms', 'structure of atom'], answer: "An atom is the basic unit of matter, consisting of a central nucleus containing protons and neutrons, surrounded by a cloud of negatively charged electrons." },
   { keywords: ['evolution', 'charles darwin', 'theory of evolution'], answer: "Charles Darwin proposed the theory of evolution by natural selection in his 1859 book On the Origin of Species, explaining how species adapt and change over generations." },
-  { keywords: ['dna', 'structure of dna', 'discovered dna'], answer: "DNA, or deoxyribonucleic acid, contains genetic blueprints for living organisms. Its double-helix structure was discovered in 1953 by James Watson, Francis Crick, Rosalind Franklin, and Maurice Wilkins." },
+  { keywords: ['dna', 'structure of dna', 'discovered dna'], answer: "DNA, or deoxyribonucleic acid, contains genetic blueprints for living organisms. Its double-helix structure was discovered in 1953 by Watson, Crick, Franklin, and Wilkins." },
   { keywords: ['penicillin', 'discovered penicillin'], answer: "Alexander Fleming discovered penicillin in 1928, creating the world's first effective antibiotic and saving millions of lives." },
+
+  // Technology & Artificial Intelligence
+  { keywords: ['artificial intelligence', 'what is ai', 'father of ai'], answer: "Artificial intelligence refers to computer systems engineered to perform tasks that typically require human intelligence, such as reasoning, learning, and language understanding. Alan Turing and John McCarthy are key pioneers." },
+  { keywords: ['machine learning', 'what is machine learning'], answer: "Machine learning is a branch of artificial intelligence where computer algorithms automatically learn and improve from data experience without being explicitly programmed for every scenario." },
+  { keywords: ['computer', 'invented computer', 'father of computer'], answer: "Charles Babbage is recognized as the father of the computer for conceptualizing the mechanical Analytical Engine, while Alan Turing laid the theoretical foundation for digital computers." },
+  { keywords: ['internet', 'world wide web', 'invented internet'], answer: "Sir Tim Berners-Lee invented the World Wide Web in 1989 at CERN, revolutionizing global digital information sharing." },
 
   // Famous Historical Figures & Literature
   { keywords: ['shakespeare', 'william shakespeare', 'who was shakespeare'], answer: "William Shakespeare was an English playwright and poet widely regarded as the greatest writer in the English language, famous for works like Hamlet, Romeo and Juliet, and Macbeth." },
-  { keywords: ['isaac newton', 'newton'], answer: "Sir Isaac Newton was an English mathematician and physicist who formulated the laws of motion and universal gravitation, laying the foundation for classical physics." },
+  { keywords: ['isaac newton', 'newton'], answer: "Sir Isaac Newton was an English mathematician and physicist who formulated the laws of motion and universal gravitation, laying the foundation for classical mechanics." },
   { keywords: ['edison', 'thomas edison', 'light bulb'], answer: "Thomas Edison was an American inventor who developed the practical incandescent light bulb, the phonograph, and the motion picture camera." },
   { keywords: ['tesla', 'nikola tesla'], answer: "Nikola Tesla was a visionary inventor and electrical engineer who developed alternating current electricity systems and radio technology." },
   { keywords: ['babbage', 'charles babbage'], answer: "Charles Babbage was an English polymath credited with originating the concept of a programmable mechanical computer, known as the Analytical Engine." },
   { keywords: ['turing', 'alan turing'], answer: "Alan Turing was a pioneering British mathematician and computer scientist who cracked the Enigma code in WWII and laid the theoretical foundations of modern computer science and artificial intelligence." },
   { keywords: ['wright brothers', 'first airplane'], answer: "Orville and Wilbur Wright were American aviation pioneers who achieved the world's first successful powered airplane flight on December 17, 1903." },
-  { keywords: ['tim berners lee', 'invented internet', 'invented world wide web'], answer: "Sir Tim Berners-Lee invented the World Wide Web in 1989 at CERN, revolutionizing global information sharing." },
+  { keywords: ['napoleon', 'napoleon bonaparte'], answer: "Napoleon Bonaparte was a French military commander and emperor who conquered much of Europe in the early 19th century and reformed legal systems with the Napoleonic Code." },
 
   // World Capitals & Geography
   { keywords: ['capital of france'], answer: "The capital of France is Paris." },
@@ -9922,7 +9931,6 @@ const INSTANT_WORLD_FACTS = [
   { keywords: ['highest mountain', 'tallest mountain'], answer: "Mount Everest is the highest mountain above sea level, standing at 8,848 meters." },
 
   // Space & Solar System
-  { keywords: ['speed of light'], answer: "The speed of light in a vacuum is approximately 299,792 kilometers per second, or about 186,282 miles per second." },
   { keywords: ['largest planet', 'biggest planet'], answer: "Jupiter is the largest planet in our solar system." },
   { keywords: ['closest planet to sun'], answer: "Mercury is the closest planet to the Sun." },
   { keywords: ['red planet'], answer: "Mars is known as the Red Planet due to iron oxide on its surface." },
@@ -10035,7 +10043,7 @@ async function askHelixAI(query) {
     return;
   }
 
-  // 6. LIGHTNING-FAST PARALLEL WEB KNOWLEDGE SEARCH WITH CORS PROXY FALLBACK
+  // 6. LIGHTNING-FAST PARALLEL WEB KNOWLEDGE SEARCH WITH FAST 800ms TIMEOUT
   const activeBackbone = localStorage.getItem('h_ai_backbone') || 'antigravity';
   const cleanSearchTopic = q.replace(/what is|who is|tell me about|how to|where is|can you|why does|how does|define|explain|what does/gi, '').trim();
   const searchKey = cleanSearchTopic.length > 0 ? cleanSearchTopic : q;
@@ -10046,7 +10054,7 @@ async function askHelixAI(query) {
 
   updateSiriLiveUI(null, null, 'thinking', providerBadge);
 
-  const fetchWithTimeout = async (url, timeoutMs = 1500) => {
+  const fetchWithTimeout = async (url, timeoutMs = 800) => {
     try {
       const res = await Promise.race([
         fetch(url).then(r => r.ok ? r.json() : null),
@@ -10070,8 +10078,8 @@ async function askHelixAI(query) {
     const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchKey)}`;
 
     const [ddgData, wikiData] = await Promise.all([
-      fetchWithTimeout(ddgUrl, 1500),
-      fetchWithTimeout(wikiUrl, 1500)
+      fetchWithTimeout(ddgUrl, 800),
+      fetchWithTimeout(wikiUrl, 800)
     ]);
 
     if (wikiData && wikiData.extract && wikiData.extract.length > 15 && wikiData.type !== 'disambiguation') {
@@ -10095,9 +10103,9 @@ async function askHelixAI(query) {
     console.warn("Parallel knowledge fetch error:", e);
   }
 
-  // 7. Intelligent Reasoning Synthesis Fallback
+  // 7. Intelligent General Reasoning Synthesizer
   const displayTopic = searchKey.charAt(0).toUpperCase() + searchKey.slice(1);
-  speakSiriResponse(`${displayTopic} is a key topic in modern knowledge and literature. Ask me more details or explore books on ${displayTopic} in our catalog!`);
+  speakSiriResponse(`${displayTopic} is a key topic in modern knowledge and literature. Ask me specific questions or explore books on ${displayTopic} in our library!`);
 }
 
 // ════════════════════════════════════════
@@ -10141,4 +10149,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T00:43:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T00:53:00Z -->
