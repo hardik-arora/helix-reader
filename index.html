@@ -10253,68 +10253,79 @@ async function queryBackboneAI(userTranscript) {
   }
 
   // Step B: Action Intent & Tool Calling Matcher
-  let data = null;
+  let actionJSON = null;
   const cleanQ = userTranscript.toLowerCase().trim();
 
   if (cleanQ.includes('scroll down') || cleanQ.includes('go down') || cleanQ.includes('page down') || cleanQ === 'down') {
-    data = { status: "success", intent: "APP_ACTION", action: "scroll_down", parameters: { direction: "down" }, tts_response: "Scrolling down." };
+    actionJSON = { action: "SCROLL", value: "down", speech: "Scrolling down." };
+    executeToolCall({ tool: "scroll_down" });
   } else if (cleanQ.includes('scroll up') || cleanQ.includes('go up') || cleanQ.includes('page up') || cleanQ === 'up') {
-    data = { status: "success", intent: "APP_ACTION", action: "scroll_up", parameters: { direction: "up" }, tts_response: "Scrolling up." };
-  } else if (cleanQ.startsWith('open book ') || cleanQ.startsWith('read book ') || cleanQ.startsWith('open ') || cleanQ.startsWith('read ') || cleanQ.startsWith('show book ')) {
-    const bookTitleStr = cleanQ.replace(/^(open book|read book|open|read|show book)\s+/i, '').trim();
+    actionJSON = { action: "SCROLL", value: "up", speech: "Scrolling up." };
+    executeToolCall({ tool: "scroll_up" });
+  } else if (cleanQ.includes('dark mode') || cleanQ.includes('dark theme')) {
+    actionJSON = { action: "SET_THEME", value: "dark", speech: "Switched to dark mode." };
+    applyTheme('midnight-velvet');
+  } else if (cleanQ.includes('light mode') || cleanQ.includes('light theme')) {
+    actionJSON = { action: "SET_THEME", value: "light", speech: "Switched to light mode." };
+    applyTheme('paperback');
+  } else if (cleanQ.includes('old money')) {
+    actionJSON = { action: "SET_THEME", value: "old-money", speech: "Applied Old Money theme." };
+    applyTheme('old-money');
+  } else if (cleanQ.includes('cyberpunk')) {
+    actionJSON = { action: "SET_THEME", value: "cyberpunk", speech: "Applied Cyberpunk theme." };
+    applyTheme('cyberpunk');
+  } else if (cleanQ.includes('settings') || cleanQ.includes('preferences')) {
+    actionJSON = { action: "NAVIGATE", value: "settings", speech: "Navigating to settings now." };
+    navigate('settings');
+  } else if (cleanQ.includes('library') || cleanQ.includes('my books')) {
+    actionJSON = { action: "NAVIGATE", value: "library", speech: "Navigating to library now." };
+    navigate('library');
+  } else if (cleanQ.includes('discover') || cleanQ.includes('home')) {
+    actionJSON = { action: "NAVIGATE", value: "discover", speech: "Navigating to discover now." };
+    navigate('discover');
+  } else if (cleanQ.includes('stats') || cleanQ.includes('analytics')) {
+    actionJSON = { action: "NAVIGATE", value: "stats", speech: "Navigating to stats now." };
+    navigate('stats');
+  } else if (cleanQ.startsWith('open book ') || cleanQ.startsWith('read book ') || cleanQ.startsWith('open ') || cleanQ.startsWith('read ')) {
+    const bookTitleStr = cleanQ.replace(/^(open book|read book|open|read)\s+/i, '').trim();
     if (bookTitleStr && !['settings', 'library', 'discover', 'home', 'stats', 'analytics'].includes(bookTitleStr)) {
-      data = { status: "success", intent: "APP_ACTION", action: "open_book", parameters: { book_title: bookTitleStr }, tts_response: `Opening ${bookTitleStr} for you now.` };
+      actionJSON = { action: "OPEN_BOOK", value: bookTitleStr, speech: `Opening ${bookTitleStr} for you now.` };
+      executeToolCall({ tool: "open_book", params: { book_title: bookTitleStr } });
     }
   }
 
-  if (!data) {
-    if (cleanQ.includes('settings') || cleanQ.includes('preferences')) {
-      data = { status: "success", intent: "APP_ACTION", action: "navigate_to", parameters: { page_id: "settings" }, tts_response: "Navigating to settings now." };
-    } else if (cleanQ.includes('library') || cleanQ.includes('my books')) {
-      data = { status: "success", intent: "APP_ACTION", action: "navigate_to", parameters: { page_id: "library" }, tts_response: "Navigating to library now." };
-    } else if (cleanQ.includes('discover') || cleanQ.includes('home')) {
-      data = { status: "success", intent: "APP_ACTION", action: "navigate_to", parameters: { page_id: "discover" }, tts_response: "Navigating to discover now." };
-    } else if (cleanQ.includes('stats') || cleanQ.includes('analytics')) {
-      data = { status: "success", intent: "APP_ACTION", action: "navigate_to", parameters: { page_id: "stats" }, tts_response: "Navigating to stats now." };
-    } else if (cleanQ.includes('old money')) {
-      data = { status: "success", intent: "APP_ACTION", action: "toggle_setting", parameters: { setting_name: "theme", value: "old-money" }, tts_response: "Applied Old Money theme." };
-    } else if (cleanQ.includes('cyberpunk')) {
-      data = { status: "success", intent: "APP_ACTION", action: "toggle_setting", parameters: { setting_name: "theme", value: "cyberpunk" }, tts_response: "Applied Cyberpunk theme." };
-    } else if (cleanQ.startsWith('search ') || cleanQ.startsWith('find ')) {
-      const qTerm = cleanQ.replace(/^(search|find)\s+/i, '').trim();
-      data = { status: "success", intent: "APP_ACTION", action: "filter_content", parameters: { query: qTerm, category: "all" }, tts_response: `Searching for ${qTerm}.` };
-    }
-  }
-
-  // Handle action or speak response
-  if (data && data.intent === "APP_ACTION") {
+  if (actionJSON) {
     if (jsonBox && jsonText) {
       jsonBox.style.display = 'block';
-      jsonText.textContent = JSON.stringify(data, null, 2);
+      jsonText.textContent = JSON.stringify(actionJSON, null, 2);
     }
-    executeAppAction(data.action || data.tool, data.parameters || data.params);
-    speak(data.tts_response);
+    speak(actionJSON.speech);
     return;
   }
 
   // Math & Direct Factual Knowledge Resolution
   const mathAnswer = evaluateSpokenMath(userTranscript);
   if (mathAnswer) {
-    // If output starts with "Result: 100", extract the number cleanly
     const numOnly = mathAnswer.replace(/^(Result:|The answer is)\s*/i, '').trim();
     speak(numOnly);
     return;
   }
 
-  // Direct Factual Lookup Map for Instant High-Precision Answers
+  // Direct Factual Lookup Map for Instant Open-Domain Knowledge
   const factualMap = {
-    'national bird of india': 'The national bird of India is the Indian Peacock.',
     'president of india': 'The President of India is Droupadi Murmu.',
-    'prime minister of india': 'The Prime Minister of India is Narendra Modi.',
-    'capital of india': 'The capital of India is New Delhi.',
+    'national bird of india': 'The national bird of India is the Indian Peacock (Pavo cristatus).',
     'capital of france': 'The capital of France is Paris.',
+    'capital of india': 'The capital of India is New Delhi.',
+    'prime minister of india': 'The Prime Minister of India is Narendra Modi.',
     'capital of japan': 'The capital of Japan is Tokyo.',
-    'speed of light': 'The speed of light in a vacuum is approximately 299,792,458 meters per second.'
+    'capital of united states': 'The capital of the United States is Washington, D.C.',
+    'capital of america': 'The capital of the United States is Washington, D.C.',
+    'capital of usa': 'The capital of the United States is Washington, D.C.',
+    'speed of light': 'The speed of light in a vacuum is approximately 299,792,458 meters per second.',
+    'highest mountain': 'Mount Everest is the highest mountain in the world at 8,848.86 meters.',
+    'tallest mountain': 'Mount Everest is the highest mountain in the world at 8,848.86 meters.',
+    'largest ocean': 'The Pacific Ocean is the largest ocean on Earth.'
   };
 
   for (const [k, v] of Object.entries(factualMap)) {
@@ -10325,7 +10336,8 @@ async function queryBackboneAI(userTranscript) {
   }
 
   try {
-    const wikiRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanQ.replace(/^(what is|who is|where is|tell me about|what was|who was)\s+/i, ''))}`);
+    const queryTerm = cleanQ.replace(/^(what is|who is|where is|tell me about|what was|who was|which is)\s+/i, '');
+    const wikiRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(queryTerm)}`);
     if (wikiRes.ok) {
       const wikiData = await wikiRes.json();
       if (wikiData.extract) {
@@ -10337,7 +10349,7 @@ async function queryBackboneAI(userTranscript) {
     }
   } catch(e){}
 
-  speak(`Information for ${userTranscript} is unavailable.`);
+  speak(`Direct answer for ${userTranscript} is currently unavailable.`);
 }
 
 async function handleAIResponse(userQuery) {
@@ -10704,4 +10716,4 @@ setTimeout(initSiriHudDraggable, 500);
 
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T05:02:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T05:06:00Z -->
