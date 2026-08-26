@@ -9263,29 +9263,78 @@ function executeVoiceCommand(cmd) {
   }
 
   if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
-  console.log(`Siri AI Command Received: ${cmd}`);
+  const cleanCmd = cmd.toLowerCase().trim();
+  console.log(`Siri AI Command Received: ${cleanCmd}`);
 
   // Display user's spoken question on screen immediately in Siri Live Card HUD!
-  updateSiriLiveUI(cmd, "⚡ Processing query in Antigravity AI Backbone...", "thinking");
+  updateSiriLiveUI(cmd, "⚡ Processing task in Antigravity AI Backbone...", "thinking", "⚡ ANTIGRAVITY AI BACKBONE");
 
   // 1. Check Custom Commands Registry first
   for (const custom of customVoiceCommands) {
-    if (cmd === custom.trigger.toLowerCase()) {
+    if (cleanCmd === custom.trigger.toLowerCase()) {
       runCustomAction(custom.action);
       return;
     }
   }
 
-  // 2. EXPLICIT SYSTEM COMMAND SHORTCUTS ONLY
-  if (cmd === 'scroll down' || cmd === 'next page') { runCustomAction('scroll_down'); return; }
-  if (cmd === 'scroll up' || cmd === 'previous page') { runCustomAction('scroll_up'); return; }
-  if (cmd === 'pause' || cmd === 'pause audio' || cmd === 'stop audio') { runCustomAction('pause_read'); return; }
-  if (cmd === 'start audio' || cmd === 'read out loud') { runCustomAction('start_read'); return; }
-  if (cmd === 'dark mode' || cmd === 'midnight mode') { runCustomAction('theme_dark'); return; }
-  if (cmd === 'bionic mode') { runCustomAction('bionic_mode'); return; }
-  if (cmd === 'focus ruler' || cmd === 'toggle ruler') { runCustomAction('focus_ruler'); return; }
+  // 2. EXPLICIT SITE APP TASKS & CONTROLS
+  if (cleanCmd.includes('scroll down') || cleanCmd.includes('next page')) { runCustomAction('scroll_down'); return; }
+  if (cleanCmd.includes('scroll up') || cleanCmd.includes('previous page')) { runCustomAction('scroll_up'); return; }
+  if (cleanCmd.includes('pause audio') || cleanCmd.includes('stop audio') || cleanCmd.includes('pause reading') || cleanCmd === 'pause' || cleanCmd === 'stop') { runCustomAction('pause_read'); return; }
+  if (cleanCmd.includes('start audio') || cleanCmd.includes('read out loud') || cleanCmd.includes('start reading') || cleanCmd.includes('play audio')) { runCustomAction('start_read'); return; }
+  
+  // Theme Controls
+  if (cleanCmd.includes('dark mode') || cleanCmd.includes('midnight mode')) { runCustomAction('theme_dark'); return; }
+  if (cleanCmd.includes('old money') || cleanCmd.includes('classic mode')) { runCustomAction('theme_oldmoney'); return; }
+  if (cleanCmd.includes('cyberpunk') || cleanCmd.includes('neon mode')) { runCustomAction('theme_cyberpunk'); return; }
 
-  // 3. DIRECT ROUTE ALL QUESTIONS TO ANTIGRAVITY AI BACKBONE!
+  // Reading Accessibility Tools
+  if (cleanCmd.includes('bionic mode') || cleanCmd.includes('bionic reading')) { runCustomAction('bionic_mode'); return; }
+  if (cleanCmd.includes('focus ruler') || cleanCmd.includes('reading ruler') || cleanCmd.includes('toggle ruler')) { runCustomAction('focus_ruler'); return; }
+
+  // Site Navigation Tasks
+  if (cleanCmd === 'open discover' || cleanCmd === 'go home' || cleanCmd === 'open home' || cleanCmd === 'discover') {
+    navigate('discover');
+    updateSiriLiveUI(cmd, "Opened Discover Page.", "speaking", "⚡ SITE TASK EXECUTOR");
+    speakSiriResponse("Opened Discover Page.");
+    return;
+  }
+  if (cleanCmd === 'open library' || cleanCmd === 'my library' || cleanCmd === 'go to library') {
+    navigate('library');
+    updateSiriLiveUI(cmd, "Opened Library Page.", "speaking", "⚡ SITE TASK EXECUTOR");
+    speakSiriResponse("Opened Library Page.");
+    return;
+  }
+  if (cleanCmd === 'open stats' || cleanCmd === 'statistics' || cleanCmd === 'reading stats') {
+    navigate('stats');
+    updateSiriLiveUI(cmd, "Opened Reading Statistics Page.", "speaking", "⚡ SITE TASK EXECUTOR");
+    speakSiriResponse("Opened Reading Statistics.");
+    return;
+  }
+  if (cleanCmd === 'open settings' || cleanCmd === 'preferences') {
+    navigate('settings');
+    updateSiriLiveUI(cmd, "Opened Settings Page.", "speaking", "⚡ SITE TASK EXECUTOR");
+    speakSiriResponse("Opened Settings Page.");
+    return;
+  }
+
+  // Site Search Book Task: e.g., "search harry potter" or "find to kill a mockingbird"
+  if (cleanCmd.startsWith('search ') || cleanCmd.startsWith('find book ') || cleanCmd.startsWith('look up ')) {
+    const searchQuery = cleanCmd.replace(/^(search|find book|look up)\s+/i, '').trim();
+    if (searchQuery) {
+      navigate('discover');
+      const searchInput = document.getElementById('search-input') || document.querySelector('.search-bar input');
+      if (searchInput) {
+        searchInput.value = searchQuery;
+        if (typeof handleSearch === 'function') handleSearch();
+      }
+      updateSiriLiveUI(cmd, `Searching library catalog for "${searchQuery}"...`, "speaking", "⚡ SITE TASK EXECUTOR");
+      speakSiriResponse(`Searching library catalog for "${searchQuery}".`);
+      return;
+    }
+  }
+
+  // 3. DIRECT ROUTE ALL GENERAL KNOWLEDGE, QUESTIONS, SCIENCE, HISTORY & MATH TO ANTIGRAVITY AI BACKBONE!
   askHelixAI(cmd);
 }
 
@@ -9976,4 +10025,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T02:38:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T02:42:00Z -->
