@@ -10238,60 +10238,55 @@ async function queryBackboneAI(userTranscript) {
 
 async function handleAIResponse(userQuery) {
   try {
-    // Step A: Check local instant triggers first (< 5ms)
-    const localMatch = handleInstantCommands(userQuery);
-    if (localMatch) {
-      speak(localMatch);
-      return;
-    }
-
-    // Step B: Send to fast backbone API (or client action resolver fallback)
+    let data = null;
     let rawText = null;
-    const cleanQ = userQuery.toLowerCase().trim();
 
-    if (cleanQ.includes('dark mode') || cleanQ.includes('midnight')) {
-      rawText = JSON.stringify({ action: "SET_THEME", value: "dark", speech: "Switched to dark mode." });
-    } else if (cleanQ.includes('old money')) {
-      rawText = JSON.stringify({ action: "SET_THEME", value: "old-money", speech: "Applied Old Money theme." });
-    } else if (cleanQ.includes('cyberpunk')) {
-      rawText = JSON.stringify({ action: "SET_THEME", value: "cyberpunk", speech: "Applied Cyberpunk theme." });
+    // Try fetching from endpoint if configured
+    if (typeof API_ENDPOINT !== 'undefined' && API_ENDPOINT && API_ENDPOINT !== "YOUR_API_ENDPOINT") {
+      try {
+        const response = await fetch(API_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: userQuery })
+        });
+        data = await response.json();
+        rawText = data.text || data.response || data.message || data.output || data;
+      } catch(err){}
     }
 
     if (!rawText) {
-      // Execute queryBackboneAI flow
+      // Fallback to client high-speed backbone engine
       await queryBackboneAI(userQuery);
       return;
     }
 
-    const qBox = document.getElementById('copilot-query-box');
-    const qText = document.getElementById('copilot-query-text');
-    const jsonBox = document.getElementById('copilot-json-box');
-    const jsonText = document.getElementById('copilot-json-text');
-    if (qBox) qBox.style.display = 'block';
-    if (qText) qText.textContent = `"${userQuery}"`;
+    if (typeof rawText === "object") {
+      rawText = JSON.stringify(rawText);
+    }
 
-    // Check if the response is a JSON action command
-    if (typeof rawText === "string" && rawText.trim().startsWith("{")) {
+    rawText = rawText.trim();
+
+    // Handle site action commands (JSON)
+    if (rawText.startsWith("{") && rawText.endsWith("}")) {
       const parsed = JSON.parse(rawText);
-      if (jsonBox && jsonText) {
-        jsonBox.style.display = 'block';
-        jsonText.textContent = JSON.stringify(parsed, null, 2);
-      }
-      
-      // Handle site actions
       if (parsed.action === "SET_THEME") {
         document.body.dataset.theme = parsed.value;
         if (typeof applyTheme === 'function') applyTheme(parsed.value === 'dark' ? 'midnight-velvet' : parsed.value);
       }
-      
-      speak(parsed.speech);
-    } else {
-      if (jsonBox) jsonBox.style.display = 'none';
-      // Direct general knowledge answer
-      speak(typeof rawText === "string" ? rawText : JSON.stringify(rawText));
+      speak(parsed.speech || "Done.");
+      return;
     }
+
+    // Clean any accidental "processed" suffix if returned by legacy endpoints
+    let cleanedAnswer = rawText.replace(/\b(is processed|processed)\b/gi, "").trim();
+    if (!cleanedAnswer) cleanedAnswer = rawText;
+
+    // Speak and display the actual factual answer
+    speak(cleanedAnswer);
+
   } catch (error) {
     console.error("Error handling AI response:", error);
+    speak("I ran into an issue finding that answer.");
   }
 }
 
@@ -10434,4 +10429,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T04:40:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T04:41:00Z -->
