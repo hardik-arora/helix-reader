@@ -10075,20 +10075,20 @@ async function queryBackboneAI(userTranscript) {
   const cleanQ = userTranscript.toLowerCase().trim();
 
   if (cleanQ.includes('settings') || cleanQ.includes('preferences')) {
-    data = { intent: "APP_ACTION", tool: "navigate_to", params: { page_id: "settings" }, tts_response: "Navigating to settings now." };
+    data = { status: "success", intent: "APP_ACTION", action: "navigate_to", parameters: { page_id: "settings" }, tts_response: "Navigating to settings now." };
   } else if (cleanQ.includes('library') || cleanQ.includes('my books')) {
-    data = { intent: "APP_ACTION", tool: "navigate_to", params: { page_id: "library" }, tts_response: "Navigating to library now." };
+    data = { status: "success", intent: "APP_ACTION", action: "navigate_to", parameters: { page_id: "library" }, tts_response: "Navigating to library now." };
   } else if (cleanQ.includes('discover') || cleanQ.includes('home')) {
-    data = { intent: "APP_ACTION", tool: "navigate_to", params: { page_id: "discover" }, tts_response: "Navigating to discover now." };
+    data = { status: "success", intent: "APP_ACTION", action: "navigate_to", parameters: { page_id: "discover" }, tts_response: "Navigating to discover now." };
   } else if (cleanQ.includes('stats') || cleanQ.includes('analytics')) {
-    data = { intent: "APP_ACTION", tool: "navigate_to", params: { page_id: "stats" }, tts_response: "Navigating to stats now." };
+    data = { status: "success", intent: "APP_ACTION", action: "navigate_to", parameters: { page_id: "stats" }, tts_response: "Navigating to stats now." };
   } else if (cleanQ.includes('old money')) {
-    data = { intent: "APP_ACTION", tool: "toggle_setting", params: { setting_name: "theme", value: "old-money" }, tts_response: "Applied Old Money theme." };
+    data = { status: "success", intent: "APP_ACTION", action: "toggle_setting", parameters: { setting_name: "theme", value: "old-money" }, tts_response: "Applied Old Money theme." };
   } else if (cleanQ.includes('cyberpunk')) {
-    data = { intent: "APP_ACTION", tool: "toggle_setting", params: { setting_name: "theme", value: "cyberpunk" }, tts_response: "Applied Cyberpunk theme." };
+    data = { status: "success", intent: "APP_ACTION", action: "toggle_setting", parameters: { setting_name: "theme", value: "cyberpunk" }, tts_response: "Applied Cyberpunk theme." };
   } else if (cleanQ.startsWith('search ') || cleanQ.startsWith('find ')) {
     const qTerm = cleanQ.replace(/^(search|find)\s+/i, '').trim();
-    data = { intent: "APP_ACTION", tool: "filter_content", params: { query: qTerm, category: "all" }, tts_response: `Searching for ${qTerm}.` };
+    data = { status: "success", intent: "APP_ACTION", action: "filter_content", parameters: { query: qTerm, category: "all" }, tts_response: `Searching for ${qTerm}.` };
   }
 
   // Handle action or speak response
@@ -10097,7 +10097,7 @@ async function queryBackboneAI(userTranscript) {
       jsonBox.style.display = 'block';
       jsonText.textContent = JSON.stringify(data, null, 2);
     }
-    executeAppAction(data.tool, data.params);
+    executeAppAction(data.action || data.tool, data.parameters || data.params);
     speak(data.tts_response);
     return;
   }
@@ -10207,4 +10207,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T04:15:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T04:20:00Z -->
