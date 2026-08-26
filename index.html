@@ -9107,6 +9107,42 @@ if (window.speechSynthesis) {
   window.speechSynthesis.onvoiceschanged = () => { getBestSiriVoice(); };
 }
 
+// Apple Siri Synthesized Dual Chime Tone
+function playSiriChime() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    
+    // Tone 1: C5 (523.25 Hz)
+    const osc1 = audioCtx.createOscillator();
+    const gain1 = audioCtx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+    gain1.gain.setValueAtTime(0.15, audioCtx.currentTime);
+    gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
+    osc1.connect(gain1);
+    gain1.connect(audioCtx.destination);
+    osc1.start(audioCtx.currentTime);
+    osc1.stop(audioCtx.currentTime + 0.18);
+
+    // Tone 2: E5 (659.25 Hz)
+    const osc2 = audioCtx.createOscillator();
+    const gain2 = audioCtx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.09);
+    gain2.gain.setValueAtTime(0.2, audioCtx.currentTime + 0.09);
+    gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+    osc2.connect(gain2);
+    gain2.connect(audioCtx.destination);
+    osc2.start(audioCtx.currentTime + 0.09);
+    osc2.stop(audioCtx.currentTime + 0.35);
+  } catch(e) {
+    console.warn("Siri chime error:", e);
+  }
+}
+
 function speakSiriResponse(text) {
   const siriAudioToggle = document.getElementById('set-siri-audio-toggle');
   const allowAudio = !siriAudioToggle || siriAudioToggle.checked;
@@ -9117,24 +9153,32 @@ function speakSiriResponse(text) {
   if (orb) orb.style.display = 'flex';
   if (orbText) orbText.textContent = text;
 
-  // Auto-hide orb 3.2 seconds after answering unless user taps again
+  // Auto-hide orb 3.5s after response
   setTimeout(() => {
     if (!isVoiceCmdActive && orb) orb.style.display = 'none';
-  }, 3200);
+  }, 3500);
 
   if (allowAudio && window.speechSynthesis) {
-    window.speechSynthesis.cancel();
-    const synthUtterance = new SpeechSynthesisUtterance(text);
-    
-    const siriVoice = getBestSiriVoice();
-    if (siriVoice) {
-      synthUtterance.voice = siriVoice;
-    }
-    
-    synthUtterance.rate = 0.98;
-    synthUtterance.pitch = 1.0;
-    
-    window.speechSynthesis.speak(synthUtterance);
+    // 120ms micro-delay ensures microphone shutdown releases audio pipeline cleanly
+    setTimeout(() => {
+      try {
+        window.speechSynthesis.cancel();
+        const synthUtterance = new SpeechSynthesisUtterance(text);
+        
+        const siriVoice = getBestSiriVoice();
+        if (siriVoice) {
+          synthUtterance.voice = siriVoice;
+        }
+        
+        synthUtterance.rate = 0.98;
+        synthUtterance.pitch = 1.0;
+        synthUtterance.volume = 1.0;
+        
+        window.speechSynthesis.speak(synthUtterance);
+      } catch(err) {
+        console.warn("Speech synthesis failed:", err);
+      }
+    }, 120);
   }
 }
 
@@ -9179,13 +9223,16 @@ function toggleVoiceCommands() {
     return;
   }
 
+  // Play iconic Apple Siri activation chime!
+  playSiriChime();
+
   const orb = document.getElementById('siri-voice-orb');
   const orbText = document.getElementById('siri-orb-text');
   const navBtn = document.getElementById('nav-siri-ai');
   const readerBtn = document.getElementById('btn-voice-cmd');
 
   voiceCmdRecognition = new SpeechRec();
-  voiceCmdRecognition.continuous = false; // Apple Siri single-session tap-to-talk mode
+  voiceCmdRecognition.continuous = false; // Apple Siri tap-to-talk mode
   voiceCmdRecognition.interimResults = true;
   voiceCmdRecognition.lang = 'en-US';
 
@@ -9197,7 +9244,7 @@ function toggleVoiceCommands() {
       orb.style.display = 'flex';
       orb.classList.add('listening');
     }
-    if (orbText) orbText.textContent = 'Listening...';
+    if (orbText) orbText.textContent = 'Listening... (Say "Hey Helix")';
     
     if (siriListenTimeout) clearTimeout(siriListenTimeout);
     siriListenTimeout = setTimeout(() => {
@@ -9216,17 +9263,24 @@ function toggleVoiceCommands() {
       transcript += event.results[i][0].transcript;
     }
 
+    const cleanText = transcript.toLowerCase().trim();
     if (orbText) orbText.textContent = `"${transcript}"`;
+
+    // "Hey Helix" / "Helix" wake-word processing
+    let targetCommand = cleanText;
+    if (cleanText.includes('hey helix') || cleanText.includes('helix') || cleanText.includes('hey siri')) {
+      playSiriChime();
+      targetCommand = cleanText.replace(/hey\s*helix/g, '').replace(/helix/g, '').replace(/hey\s*siri/g, '').trim();
+    }
 
     const lastResult = event.results[event.results.length - 1];
     if (lastResult.isFinal) {
-      const finalCommand = transcript.toLowerCase().trim();
-      
-      // Stop microphone listening immediately upon receiving command
+      // Stop microphone listening immediately
       stopVoiceCommands(true);
       
-      // Execute command & speak natural Siri response
-      executeVoiceCommand(finalCommand);
+      // Execute command & speak response
+      const finalCmd = targetCommand.length > 0 ? targetCommand : cleanText;
+      executeVoiceCommand(finalCmd);
     }
   };
 
@@ -9796,4 +9850,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T23:42:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T23:48:00Z -->
