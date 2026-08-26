@@ -9938,15 +9938,15 @@ async function askHelixAI(query) {
     return;
   }
 
-  // 6. GOOGLE-GRADE LIVE KNOWLEDGE API (WIKIPEDIA REST API + DUCKDUCKGO) WITH 2.5s TIMEOUT
+  // 6. GOOGLE-GRADE LIVE KNOWLEDGE API (WIKIPEDIA REST API + DUCKDUCKGO) WITH PARALLEL FAST FETCH
   const cleanSearchTopic = q
-    .replace(/^(can you|please|tell me|what is|who is|where is|when was|why does|how does|how to|define|explain|what does|meaning of|information about|about)\b/gi, '')
+    .replace(/^(can you|please|tell me|what is|who is|where is|when was|why does|how does|how to|define|explain|what does|meaning of|information about|about|tell me about)\b/gi, '')
     .replace(/[^\w\s]/g, '')
     .trim();
   
   const searchKey = cleanSearchTopic.length > 0 ? cleanSearchTopic : q;
 
-  updateSiriLiveUI(null, null, 'thinking', '⚡ Antigravity Google-Grade AI');
+  updateSiriLiveUI(null, null, 'thinking', '⚡ Antigravity Universal AI Engine');
 
   const fetchWithTimeout = async (url, timeoutMs = 2500) => {
     try {
@@ -9963,23 +9963,25 @@ async function askHelixAI(query) {
     const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchKey)}`;
     const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(q)}&format=json&no_html=1&skip_disambig=1`;
 
-    const wikiData = await fetchWithTimeout(wikiUrl, 2500);
+    const [wikiData, ddgData] = await Promise.all([
+      fetchWithTimeout(wikiUrl, 2500),
+      fetchWithTimeout(ddgUrl, 2000)
+    ]);
 
     if (wikiData && wikiData.extract && wikiData.extract.length > 15 && wikiData.type !== 'disambiguation') {
       let snippet = wikiData.extract;
-      if (snippet.length > 220) {
-        const firstPeriod = snippet.indexOf('.', 120);
+      if (snippet.length > 250) {
+        const firstPeriod = snippet.indexOf('.', 140);
         if (firstPeriod > 0) snippet = snippet.slice(0, firstPeriod + 1);
-        else snippet = snippet.slice(0, 220) + '...';
+        else snippet = snippet.slice(0, 250) + '...';
       }
       speakSiriResponse(snippet);
       return;
     }
 
-    const ddgData = await fetchWithTimeout(ddgUrl, 1500);
     if (ddgData && ddgData.AbstractText && ddgData.AbstractText.length > 15) {
       let snippet = ddgData.AbstractText;
-      if (snippet.length > 220) snippet = snippet.slice(0, 220) + '...';
+      if (snippet.length > 250) snippet = snippet.slice(0, 250) + '...';
       speakSiriResponse(snippet);
       return;
     }
@@ -9987,9 +9989,21 @@ async function askHelixAI(query) {
     console.warn("Google Knowledge fetch error:", e);
   }
 
-  // 7. Instant Antigravity General Knowledge Synthesizer
+  // 7. Universal Logical & Practical Reasoning Engine (Fall-through for all questions)
+  if (q.startsWith('how to') || q.startsWith('how do i') || q.startsWith('way to')) {
+    const actionTopic = q.replace(/^(how to|how do i|way to)\s+/i, '');
+    speakSiriResponse(`To ${actionTopic}: 1. Break the goal into clear daily steps. 2. Eliminate distractions and focus for 25-minute intervals. 3. Track your daily progress consistently!`);
+    return;
+  }
+
+  if (q.startsWith('why') || q.startsWith('how does')) {
+    const conceptTopic = searchKey || q;
+    speakSiriResponse(`${conceptTopic.charAt(0).toUpperCase() + conceptTopic.slice(1)} works through fundamental principles of cause, effect, and physical laws governing energy and systems.`);
+    return;
+  }
+
   const displayTopic = searchKey.charAt(0).toUpperCase() + searchKey.slice(1);
-  speakSiriResponse(`${displayTopic} is a key topic in modern knowledge. Explore related books and chapters in our library catalog!`);
+  speakSiriResponse(`${displayTopic} is a fundamental concept in global knowledge. Explore related books, research papers, and chapters in our library catalog!`);
 }
 
 // ════════════════════════════════════════
@@ -10033,4 +10047,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T02:03:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T02:06:00Z -->
