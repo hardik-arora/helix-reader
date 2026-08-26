@@ -9696,52 +9696,100 @@ function executeVoiceCommand(cmd) {
 
 function evaluateSpokenMath(q) {
   if (!q) return null;
-  
-  let norm = q.toLowerCase();
-  
-  norm = norm.replace(/[\u00d7\u2715]/g, ' * ')
-             .replace(/[\u00f7]/g, ' / ')
-             .replace(/[\u2013\u2014]/g, ' - ');
-  
-  norm = norm.replace(/\bin to\b/g, ' * ')
-             .replace(/\binto\b/g, ' * ')
-             .replace(/\bmultiplied by\b/g, ' * ')
-             .replace(/\btimes\b/g, ' * ')
-             .replace(/\bcross\b/g, ' * ')
-             .replace(/\bplus\b/g, ' + ')
-             .replace(/\badd\b/g, ' + ')
-             .replace(/\bminus\b/g, ' - ')
-             .replace(/\bsubtract\b/g, ' - ')
-             .replace(/\bdivided by\b/g, ' / ');
+  const norm = q.toLowerCase().trim();
 
-  const match = norm.match(/(\d+(?:\.\d+)?)\s*([\+\-\*\/])\s*(\d+(?:\.\d+)?)/);
-  if (match) {
-    const n1 = parseFloat(match[1]);
-    const op = match[2];
-    const n2 = parseFloat(match[3]);
+  // 1. Percentages ("what is 15 percent of 200", "20% of 500")
+  const pctMatch = norm.match(/(\d+(?:\.\d+)?)\s*(?:percent|%)\s*of\s*(\d+(?:\.\d+)?)/);
+  if (pctMatch) {
+    const pct = parseFloat(pctMatch[1]);
+    const val = parseFloat(pctMatch[2]);
+    const res = (pct / 100.0) * val;
+    const resStr = Number(res.toFixed(2)).toString();
+    return `${pct}% of ${val} is ${resStr}.`;
+  }
 
-    let result = 0;
+  // 2. Square Root ("square root of 144", "sqrt of 81")
+  const sqrtMatch = norm.match(/(?:square root|sqrt)\s*of\s*(\d+(?:\.\d+)?)/);
+  if (sqrtMatch) {
+    const val = parseFloat(sqrtMatch[1]);
+    const res = Math.sqrt(val);
+    const resStr = Number(res.toFixed(2)).toString();
+    return `The square root of ${val} is ${resStr}.`;
+  }
+
+  // 3. Powers / Exponents ("2 to the power of 8", "5 squared", "10 cubed")
+  const powMatch = norm.match(/(\d+(?:\.\d+)?)\s*to the power of\s*(\d+(?:\.\d+)?)/);
+  if (powMatch) {
+    const base = parseFloat(powMatch[1]);
+    const exp = parseFloat(powMatch[2]);
+    const res = Math.pow(base, exp);
+    const resStr = Number(res.toFixed(2)).toString();
+    return `${base} to the power of ${exp} is ${resStr}.`;
+  }
+
+  const sqMatch = norm.match(/(\d+(?:\.\d+)?)\s*squared/);
+  if (sqMatch) {
+    const base = parseFloat(sqMatch[1]);
+    const res = base * base;
+    const resStr = Number(res.toFixed(2)).toString();
+    return `${base} squared is ${resStr}.`;
+  }
+
+  const cbMatch = norm.match(/(\d+(?:\.\d+)?)\s*cubed/);
+  if (cbMatch) {
+    const base = parseFloat(cbMatch[1]);
+    const res = base * base * base;
+    const resStr = Number(res.toFixed(2)).toString();
+    return `${base} cubed is ${resStr}.`;
+  }
+
+  // 4. Standard Arithmetic ("50 plus 25", "100 divided by 4", "12 into 12")
+  let clean = norm;
+  clean = clean.replace(/[\u00d7\u2715]/g, ' * ')
+               .replace(/[\u00f7]/g, ' / ')
+               .replace(/[\u2013\u2014]/g, ' - ');
+
+  clean = clean.replace(/\bin to\b|\binto\b|\bmultiplied by\b|\btimes\b|\bcross\b/g, ' * ')
+               .replace(/\bplus\b|\badd\b|\band\b/g, ' + ')
+               .replace(/\bminus\b|\bsubtract\b|\btake away\b/g, ' - ')
+               .replace(/\bdivided by\b|\bover\b/g, ' / ');
+
+  const arithMatch = clean.match(/(\d+(?:\.\d+)?)\s*([\+\-\*\/])\s*(\d+(?:\.\d+)?)/);
+  if (arithMatch) {
+    const n1 = parseFloat(arithMatch[1]);
+    const op = arithMatch[2];
+    const n2 = parseFloat(arithMatch[3]);
+
+    let res = 0;
     let opName = '';
-    if (op === '+') { result = n1 + n2; opName = 'plus'; }
-    else if (op === '-') { result = n1 - n2; opName = 'minus'; }
-    else if (op === '*') { result = n1 * n2; opName = 'times'; }
+    if (op === '+') { res = n1 + n2; opName = 'plus'; }
+    else if (op === '-') { res = n1 - n2; opName = 'minus'; }
+    else if (op === '*') { res = n1 * n2; opName = 'times'; }
     else if (op === '/') {
       if (n2 === 0) return "Division by zero is undefined.";
-      result = n1 / n2;
-      opName = 'divided by';
+      res = n1 / n2; opName = 'divided by';
     }
 
-    return `${n1} ${opName} ${n2} is ${result}.`;
+    const n1Str = Number(n1.toFixed(2)).toString();
+    const n2Str = Number(n2.toFixed(2)).toString();
+    const resStr = Number(res.toFixed(2)).toString();
+    return `${n1Str} ${opName} ${n2Str} is ${resStr}.`;
   }
 
   return null;
 }
 
 const INSTANT_WORLD_FACTS = [
+  // Everyday Questions & Popular Science
+  { keywords: ['why is the sky blue', 'sky blue'], answer: "The sky appears blue because sunlight scatters off gases in Earth's atmosphere through Rayleigh scattering, which disperses shorter blue wavelengths more than other colors." },
+  { keywords: ['how does a car engine work', 'car engine'], answer: "A car engine operates through internal combustion, igniting a mixture of fuel and air inside cylinders to drive pistons that rotate the vehicle's crankshaft." },
+  { keywords: ['what causes rain', 'causes rain', 'how does rain form'], answer: "Rain forms when water vapor in the atmosphere cools and condenses into cloud droplets, becoming heavy enough to fall to Earth under gravity." },
+  { keywords: ['what is inflation', 'inflation'], answer: "Inflation is the gradual increase in general price levels across an economy over time, which reduces the purchasing power of money." },
+
   // Science & Physics
-  { keywords: ['gravity', 'what is gravity', 'law of gravity'], answer: "Gravity is a fundamental force of attraction that pulls objects with mass toward one another. Sir Isaac Newton formulated the law of universal gravitation in 1687, and Albert Einstein expanded it with general relativity." },
-  { keywords: ['relativity', 'theory of relativity', 'albert einstein'], answer: "Albert Einstein developed the theory of relativity in the early 20th century. Special relativity shows that space and time are interconnected, while general relativity explains gravity as the curvature of spacetime." },
-  { keywords: ['black hole', 'black holes', 'what is a black hole'], answer: "A black hole is a region of spacetime where gravity is so intense that nothing, not even light, can escape from it. They form when massive stars collapse at the end of their life cycle." },
+  { keywords: ['gravity', 'what is gravity', 'law of gravity'], answer: "Gravity is a fundamental force of attraction that pulls objects with mass toward one another. Sir Isaac Newton formulated universal gravitation in 1687, and Albert Einstein expanded it with general relativity." },
+  { keywords: ['relativity', 'theory of relativity', 'albert einstein'], answer: "Albert Einstein developed the theory of relativity in the early 20th century. Special relativity shows that space and time are interconnected, while general relativity explains gravity as spacetime curvature." },
+  { keywords: ['black hole', 'black holes', 'what is a black hole'], answer: "A black hole is a region of spacetime where gravity is so intense that nothing, not even light, can escape from it. They form when massive stars collapse." },
   { keywords: ['photosynthesis'], answer: "Photosynthesis is the biological process used by plants and algae to convert solar light energy into chemical energy stored as glucose, releasing oxygen as a byproduct." },
   { keywords: ['quantum mechanics', 'quantum physics', 'quantum computing'], answer: "Quantum mechanics studies matter and energy at atomic and subatomic scales. Quantum computing leverages principles like superposition and entanglement to solve complex calculations exponentially faster." },
   { keywords: ['electricity', 'how does electricity work', 'what is electricity'], answer: "Electricity is the flow of electric charge, typically moving electrons through a conductive material like copper wire, producing electrical power used for energy and lighting." },
@@ -9997,4 +10045,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T01:16:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T01:27:00Z -->
