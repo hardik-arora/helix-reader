@@ -3997,14 +3997,11 @@
       
       <!-- Tab 2: Siri AI Settings -->
       <div id="set-content-siri" style="display:none;flex-direction:column;gap:0.8rem;">
-        <div style="background:var(--surface);border:1px solid var(--border);padding:0.8rem;border-radius:8px;">
-          <label style="font-size:0.85rem;font-weight:700;color:var(--accent);display:block;margin-bottom:0.3rem;">🧠 AI Intelligence Backbone Provider</label>
-          <div style="font-size:0.75rem;color:var(--text3);margin-bottom:0.5rem;">Choose the Super-AI Backbone powering Helix Siri's answers to all your doubts & questions:</div>
-          <select id="set-ai-backbone-provider" class="auth-input-group" style="width:100%;padding:0.6rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:600;" onchange="saveSiteSettings()">
-            <option value="antigravity" selected>⚡ Antigravity AI Backbone (Powered by Google DeepMind)</option>
-            <option value="claude">🧠 Claude 3.5 Sonnet Backbone (Anthropic AI)</option>
-            <option value="helix-universal">🌐 Helix Universal Knowledge Engine (Web + Wiki + Dictionary)</option>
-          </select>
+        <div style="background:var(--surface);border:1px solid var(--accent);padding:0.8rem;border-radius:8px;">
+          <label style="font-size:0.85rem;font-weight:700;color:var(--accent);display:block;margin-bottom:0.3rem;">⚡ AI Intelligence Backbone</label>
+          <div style="font-size:0.78rem;color:var(--text);font-weight:600;display:flex;align-items:center;gap:0.4rem;">
+            <span>🟢 Active Backbone: <strong>Antigravity AI (Powered by Google DeepMind)</strong></span>
+          </div>
         </div>
         
         <div style="background:var(--surface);border:1px solid var(--border);padding:0.8rem;border-radius:8px;display:flex;align-items:center;justify-content:space-between;">
@@ -9030,6 +9027,8 @@ function saveSiteSettings() {
 let voiceCmdRecognition = null;
 let isVoiceCmdActive = false;
 let isSpeakingSiri = false;
+let speechSilenceTimer = null;
+let lastSpokenCommand = '';
 
 function updateSiriLiveUI(question, answer, status, engine) {
   const card = document.getElementById('siri-live-card');
@@ -9172,13 +9171,21 @@ function startListeningLoop() {
 
       // Display user's spoken words on screen in real time as they speak!
       const liveText = (finalTranscript || interimTranscript).trim();
-      if (liveText) {
+      if (liveText && liveText !== lastSpokenCommand) {
+        lastSpokenCommand = liveText;
         updateSiriLiveUI(liveText, "Listening...", "listening");
       }
 
-      if (finalTranscript.trim()) {
-        const command = finalTranscript.toLowerCase().trim();
-        executeVoiceCommand(command);
+      // Instant 350ms Speech Silence Detector: triggers executeVoiceCommand in 0.35s after user pauses!
+      if (liveText) {
+        if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
+        speechSilenceTimer = setTimeout(() => {
+          if (lastSpokenCommand.trim() && !isSpeakingSiri) {
+            const commandToExecute = lastSpokenCommand.toLowerCase().trim();
+            lastSpokenCommand = '';
+            executeVoiceCommand(commandToExecute);
+          }
+        }, 350);
       }
     };
 
@@ -9217,6 +9224,7 @@ function toggleVoiceCommands() {
   if (isVoiceCmdActive) {
     isVoiceCmdActive = false;
     isSpeakingSiri = false;
+    if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     if (voiceCmdRecognition) {
       try { voiceCmdRecognition.stop(); } catch(e){}
@@ -9254,6 +9262,8 @@ function findBookFromSpeech(cmd) {
 }
 
 function executeVoiceCommand(cmd) {
+  if (!cmd || isSpeakingSiri) return;
+  if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
   console.log(`Siri AI Command Received: ${cmd}`);
 
   // Display user's spoken question on screen immediately in Siri Live Card!
@@ -9987,4 +9997,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T01:07:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T01:12:00Z -->
