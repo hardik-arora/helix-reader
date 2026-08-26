@@ -9046,6 +9046,7 @@ let isVoiceCmdActive = false;
 let isSpeakingSiri = false;
 let speechSilenceTimer = null;
 let lastSpokenCommand = '';
+let siriUtterance = null;
 
 function updateSiriLiveUI(question, answer, status, engine) {
   const card = document.getElementById('helix-siri-drawer') || document.getElementById('siri-live-card');
@@ -9077,6 +9078,8 @@ function updateSiriLiveUI(question, answer, status, engine) {
       statusEl.innerHTML = `<span style="color:#fbbf24;font-weight:700;">⚡ Antigravity AI Thinking...</span>`;
     } else if (status === 'speaking') {
       statusEl.innerHTML = `<span style="color:#c084fc;font-weight:700;">🔊 Siri Speaking...</span>`;
+    } else if (status === 'error') {
+      statusEl.innerHTML = `<span style="color:#f87171;font-weight:700;">⚠️ Mic Muted — Type Question Below</span>`;
     }
   }
 
@@ -9097,20 +9100,20 @@ function speakSiriResponse(text, engineName) {
     try {
       window.speechSynthesis.cancel();
       
-      const synthUtterance = new SpeechSynthesisUtterance(text);
+      siriUtterance = new SpeechSynthesisUtterance(text);
       const siriVoice = getBestSiriVoice();
-      if (siriVoice) synthUtterance.voice = siriVoice;
-      synthUtterance.rate = 1.0;
-      synthUtterance.pitch = 1.0;
-      synthUtterance.volume = 1.0;
+      if (siriVoice) siriUtterance.voice = siriVoice;
+      siriUtterance.rate = 1.0;
+      siriUtterance.pitch = 1.0;
+      siriUtterance.volume = 1.0;
       
-      synthUtterance.onend = () => {
+      siriUtterance.onend = () => {
         isSpeakingSiri = false;
         const statusEl = document.getElementById('siri-status-badge') || document.getElementById('siri-status-indicator');
         if (statusEl) statusEl.innerHTML = `<span style="color:#34d399;font-weight:700;">🟢 Siri Listening...</span>`;
       };
 
-      synthUtterance.onerror = () => {
+      siriUtterance.onerror = () => {
         isSpeakingSiri = false;
         const statusEl = document.getElementById('siri-status-badge') || document.getElementById('siri-status-indicator');
         if (statusEl) statusEl.innerHTML = `<span style="color:#34d399;font-weight:700;">🟢 Siri Listening...</span>`;
@@ -9119,7 +9122,7 @@ function speakSiriResponse(text, engineName) {
       if (window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
       }
-      window.speechSynthesis.speak(synthUtterance);
+      window.speechSynthesis.speak(siriUtterance);
     } catch(err) {
       console.warn("Speech synthesis audio error:", err);
       isSpeakingSiri = false;
@@ -9181,17 +9184,22 @@ function startListeningLoop() {
       const filteredSentence = cleanWords.join(' ');
       updateSiriLiveUI(rawText, "Listening to your question...", "listening");
 
-      // Short 400ms interim stability timer
+      // 1.2s sentence accumulation silence timer
       if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
       speechSilenceTimer = setTimeout(() => {
         if (filteredSentence && filteredSentence.length > 2) {
           executeVoiceCommand(filteredSentence);
         }
-      }, 400);
+      }, 1200);
     };
 
     voiceCmdRecognition.onerror = (e) => {
       console.warn("Speech recognition error:", e);
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'audio-capture') {
+        updateSiriLiveUI(null, "Microphone permission is muted. You can type any question below!", "error");
+        const typeInput = document.getElementById('siri-type-input');
+        if (typeInput) typeInput.focus();
+      }
     };
 
     voiceCmdRecognition.onend = () => {
@@ -10076,4 +10084,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T03:02:30Z -->
+<!-- Build Force Timestamp: 2026-08-27T03:45:00Z -->
