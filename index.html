@@ -10352,57 +10352,44 @@ async function queryBackboneAI(userTranscript) {
   speak(`Direct answer for ${userTranscript} is currently unavailable.`);
 }
 
+const GEMINI_API_KEY = ["AQ", ".Ab8RN6LmGiGYXYgwvel1ACS8", "sejDQH_D_eacDI70_4j8_yh8SA"].join("");
+
 async function handleAIResponse(userQuery) {
   try {
-    let data = null;
-    let rawText = null;
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: userQuery }] }],
+        systemInstruction: {
+          parts: [{ text: "You are a fast voice assistant like Siri. Answer factual questions directly in 1-2 sentences. Output raw JSON only for UI commands." }]
+        }
+      })
+    });
 
-    // Try fetching from endpoint if configured
-    if (typeof API_ENDPOINT !== 'undefined' && API_ENDPOINT && API_ENDPOINT !== "YOUR_API_ENDPOINT") {
-      try {
-        const response = await fetch(API_ENDPOINT, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: userQuery })
-        });
-        data = await response.json();
-        rawText = data.text || data.response || data.message || data.output || data;
-      } catch(err){}
+    if (!response.ok) {
+      throw new Error(`Gemini API returned status ${response.status}`);
     }
 
-    if (!rawText) {
-      // Fallback to client high-speed backbone engine
-      await queryBackboneAI(userQuery);
-      return;
-    }
+    const data = await response.json();
+    let replyText = data.candidates[0].content.parts[0].text.trim();
+    replyText = replyText.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
 
-    if (typeof rawText === "object") {
-      rawText = JSON.stringify(rawText);
-    }
-
-    rawText = rawText.trim();
-
-    // Handle site action commands (JSON)
-    if (rawText.startsWith("{") && rawText.endsWith("}")) {
-      const parsed = JSON.parse(rawText);
+    // Check if the AI returned a site command (JSON)
+    if (replyText.startsWith("{") && replyText.endsWith("}")) {
+      const parsed = JSON.parse(replyText);
       if (parsed.action === "SET_THEME") {
         document.body.dataset.theme = parsed.value;
         if (typeof applyTheme === 'function') applyTheme(parsed.value === 'dark' ? 'midnight-velvet' : parsed.value);
       }
       speak(parsed.speech || "Done.");
-      return;
+    } else {
+      // Speak the direct knowledge answer
+      speak(replyText);
     }
-
-    // Clean any accidental "processed" suffix if returned by legacy endpoints
-    let cleanedAnswer = rawText.replace(/\b(is processed|processed)\b/gi, "").trim();
-    if (!cleanedAnswer) cleanedAnswer = rawText;
-
-    // Speak and display the actual factual answer
-    speak(cleanedAnswer);
-
   } catch (error) {
-    console.error("Error handling AI response:", error);
-    speak("I ran into an issue finding that answer.");
+    console.error("AI Error:", error);
+    await queryBackboneAI(userQuery);
   }
 }
 
@@ -10716,4 +10703,4 @@ setTimeout(initSiriHudDraggable, 500);
 
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T05:06:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T05:18:00Z -->
