@@ -10598,9 +10598,11 @@ function speak(text) {
 }
 
 // Make Siri HUD Draggable across screen
-(function makeSiriHudDraggable() {
+function initSiriHudDraggable() {
   const hud = document.getElementById("siri-hud");
   if (!hud) return;
+  if (hud.dataset.draggableInited) return;
+  hud.dataset.draggableInited = "true";
 
   let isDragging = false;
   let hasMoved = false;
@@ -10676,7 +10678,15 @@ function speak(text) {
       }
     }, true);
   }
-})();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initSiriHudDraggable);
+} else {
+  initSiriHudDraggable();
+}
+window.addEventListener('load', initSiriHudDraggable);
+setTimeout(initSiriHudDraggable, 500);
 </script>
 <!-- Siri Assistant Floating HUD -->
 <div id="siri-hud" class="siri-hud">
@@ -10694,4 +10704,4 @@ function speak(text) {
 
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T04:52:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T05:02:00Z -->
