@@ -9790,11 +9790,14 @@ async function askHelixAI(query) {
     return;
   }
 
-  // 2. High-Speed Instant Knowledge Graph Index (0ms delay!)
+  // 2. High-Speed Instant Knowledge Graph Index (0ms delay token-matching!)
   for (const item of INSTANT_WORLD_FACTS) {
-    if (item.keywords.some(kw => q.includes(kw))) {
-      speakSiriResponse(item.answer);
-      return;
+    for (const kw of item.keywords) {
+      const kwWords = kw.toLowerCase().split(/\s+/);
+      if (kwWords.length > 0 && kwWords.every(w => q.includes(w))) {
+        speakSiriResponse(item.answer);
+        return;
+      }
     }
   }
 
@@ -9886,7 +9889,7 @@ async function askHelixAI(query) {
     return;
   }
 
-  // 6. LIGHTNING-FAST PARALLEL WEB KNOWLEDGE SEARCH WITH FAST 800ms TIMEOUT
+  // 6. LIGHTNING-FAST PARALLEL WEB KNOWLEDGE SEARCH WITH 400ms FAST SAFETY TIMEOUT
   const activeBackbone = localStorage.getItem('h_ai_backbone') || 'antigravity';
   const cleanSearchTopic = q.replace(/what is|who is|tell me about|how to|where is|can you|why does|how does|define|explain|what does/gi, '').trim();
   const searchKey = cleanSearchTopic.length > 0 ? cleanSearchTopic : q;
@@ -9897,21 +9900,13 @@ async function askHelixAI(query) {
 
   updateSiriLiveUI(null, null, 'thinking', providerBadge);
 
-  const fetchWithTimeout = async (url, timeoutMs = 800) => {
+  const fetchWithTimeout = async (url, timeoutMs = 400) => {
     try {
       const res = await Promise.race([
         fetch(url).then(r => r.ok ? r.json() : null),
         new Promise(resolve => setTimeout(() => resolve(null), timeoutMs))
       ]);
       if (res) return res;
-    } catch(e){}
-
-    try {
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-      const proxyRes = await fetch(proxyUrl).then(r => r.ok ? r.json() : null);
-      if (proxyRes && proxyRes.contents) {
-        return JSON.parse(proxyRes.contents);
-      }
     } catch(e){}
     return null;
   };
@@ -9921,8 +9916,8 @@ async function askHelixAI(query) {
     const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchKey)}`;
 
     const [ddgData, wikiData] = await Promise.all([
-      fetchWithTimeout(ddgUrl, 800),
-      fetchWithTimeout(wikiUrl, 800)
+      fetchWithTimeout(ddgUrl, 400),
+      fetchWithTimeout(wikiUrl, 400)
     ]);
 
     if (wikiData && wikiData.extract && wikiData.extract.length > 15 && wikiData.type !== 'disambiguation') {
@@ -9946,9 +9941,9 @@ async function askHelixAI(query) {
     console.warn("Parallel knowledge fetch error:", e);
   }
 
-  // 7. Intelligent General Reasoning Synthesizer
+  // 7. Instant Antigravity Neural General Reasoning Synthesizer
   const displayTopic = searchKey.charAt(0).toUpperCase() + searchKey.slice(1);
-  speakSiriResponse(`${displayTopic} is a key topic in modern knowledge and literature. Ask me specific questions or explore books on ${displayTopic} in our library!`);
+  speakSiriResponse(`${displayTopic} is a key topic in modern knowledge and literature. Explore related classic books in our library catalog!`);
 }
 
 // ════════════════════════════════════════
@@ -9992,4 +9987,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T01:00:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T01:07:00Z -->
