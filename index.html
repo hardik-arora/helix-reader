@@ -2908,15 +2908,7 @@
     </div>
   </div>
 
-  <!-- Global Siri AI & Settings Buttons -->
-  <div style="display: flex; align-items: center; gap: 0.4rem; margin-left: 0.5rem;">
-    <button class="nav-btn" id="nav-siri-ai" onclick="toggleVoiceCommands()" title="Activate Helix Siri AI Assistant">
-      ⚡ Helix Siri
-    </button>
-    <button class="nav-btn" id="nav-settings" onclick="openSiteSettingsModal()" title="Global Site Settings & Commands Manager" style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border-radius: 50%;">
-      ⚙️
-    </button>
-  </div>
+
 
   <!-- User Authentication Profile drop down -->
   <div id="nav-auth-section" style="display: flex; align-items: center; gap: 0.5rem; margin-left: 0.5rem;">
@@ -3321,9 +3313,7 @@
       <button class="reader-btn" onclick="toggleAudioBar()" title="Listen Aloud (TTS)">
         <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
       </button>
-      <button class="reader-btn" id="btn-voice-cmd" onclick="toggleVoiceCommands()" title="Hands-Free Voice Controls">
-        🎙️
-      </button>
+
       <button class="reader-btn" onclick="toggleFontConfig()" title="Reader Sizing & Fonts">
         <svg viewBox="0 0 24 24"><path d="M9 4v3h5v12h3V7h5V4H9zm-6 6v3h3v6h3v-6h3v-3H3z"/></svg>
       </button>
@@ -3879,47 +3869,7 @@
   </div>
 </div>
 
-<!-- Helix Siri AI Live Voice Conversation Glass Card -->
-<div id="siri-live-card" style="display:none; position:fixed; bottom:85px; right:24px; z-index:9999; width:380px; max-width:92vw; background:var(--surface); border:1.5px solid var(--accent); border-radius:16px; box-shadow:0 20px 40px rgba(0,0,0,0.4); padding:1rem; flex-direction:column; gap:0.75rem; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);">
-  <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:0.5rem;">
-    <div style="display:flex; align-items:center; gap:0.5rem;">
-      <div class="siri-orb" style="width:18px; height:18px;"></div>
-      <span style="font-size:0.85rem; font-weight:800; color:var(--accent); letter-spacing:0.4px;">HELIX SIRI AI CONVERSATION</span>
-    </div>
-    <button onclick="toggleVoiceCommands()" style="background:none; border:none; color:var(--text2); cursor:pointer; font-size:1.1rem; padding:0 0.2rem;" title="Close Siri">✕</button>
-  </div>
 
-  <!-- Live Spoken Question Box -->
-  <div id="siri-user-question-box" style="display:none; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:0.6rem 0.8rem;">
-    <div style="font-size:0.7rem; font-weight:800; color:var(--text2); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:0.2rem;">
-      🗣️ YOUR SPOKEN QUESTION:
-    </div>
-    <div id="siri-user-question-text" style="font-size:0.9rem; font-weight:600; color:var(--text); line-height:1.4;">
-      Listening...
-    </div>
-  </div>
-
-  <!-- Live Siri AI Response Box -->
-  <div id="siri-ai-response-box" style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:0.75rem; display:flex; flex-direction:column; gap:0.35rem;">
-    <div style="display:flex; align-items:center; justify-content:space-between;">
-      <span style="font-size:0.7rem; font-weight:800; color:var(--accent); text-transform:uppercase; letter-spacing:0.6px;" id="siri-ai-engine-badge">
-        ⚡ ANTIGRAVITY AI ENGINE
-      </span>
-      <span id="siri-status-indicator" style="font-size:0.75rem; color:#10b981; font-weight:700; display:flex; align-items:center; gap:0.3rem;">
-        🟢 Listening...
-      </span>
-    </div>
-    <div id="siri-ai-response-text" style="font-size:0.9rem; color:var(--text); line-height:1.45; font-weight:500;">
-      Ask any question out loud (e.g. "What is gravity?", "Define omnipresent", "Who was Albert Einstein?").
-    </div>
-  </div>
-</div>
-
-<!-- Helix Siri AI Voice Assistant Floating Widget -->
-<div id="siri-voice-orb" class="siri-orb-container" style="display:none;" onclick="toggleVoiceCommands()" title="Helix Siri AI Assistant">
-  <div class="siri-orb"></div>
-  <div class="siri-badge" id="siri-orb-text">⚡ Helix AI Listening...</div>
-</div>
 
 <!-- Academic Citations Modal -->
 <div id="citation-modal" class="mobile-theme-overlay" onclick="closeCitationModal()" style="display:none;">
@@ -10050,4 +10000,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T01:42:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T01:56:00Z -->
