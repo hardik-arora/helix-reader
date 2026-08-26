@@ -9079,58 +9079,56 @@ function speakSiriResponse(text) {
   // Update Live UI Card
   updateSiriLiveUI(null, text, 'speaking');
 
+  isSpeakingSiri = true;
+
+  // Safety fallback: Reset speaking flag after 3 seconds max so mic is guaranteed ready
+  if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
+  setTimeout(() => {
+    if (isSpeakingSiri) {
+      isSpeakingSiri = false;
+      updateSiriLiveUI(null, null, 'listening');
+    }
+  }, 3500);
+
   if (allowAudio && window.speechSynthesis) {
     try {
       window.speechSynthesis.cancel();
       
-      // Temporarily pause recognition while speaking to prevent microphone loop
-      if (voiceCmdRecognition && isVoiceCmdActive) {
-        isSpeakingSiri = true;
-        try { voiceCmdRecognition.stop(); } catch(e){}
+      const synthUtterance = new SpeechSynthesisUtterance(text);
+      const siriVoice = getBestSiriVoice();
+      if (siriVoice) synthUtterance.voice = siriVoice;
+      synthUtterance.rate = 0.98;
+      synthUtterance.pitch = 1.0;
+      synthUtterance.volume = 1.0;
+      
+      synthUtterance.onend = () => {
+        isSpeakingSiri = false;
+        updateSiriLiveUI(null, null, 'listening');
+      };
+
+      synthUtterance.onerror = () => {
+        isSpeakingSiri = false;
+        updateSiriLiveUI(null, null, 'listening');
+      };
+
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
       }
-
-      setTimeout(() => {
-        const synthUtterance = new SpeechSynthesisUtterance(text);
-        const siriVoice = getBestSiriVoice();
-        if (siriVoice) synthUtterance.voice = siriVoice;
-        synthUtterance.rate = 0.98;
-        synthUtterance.pitch = 1.0;
-        synthUtterance.volume = 1.0;
-        
-        synthUtterance.onend = () => {
-          isSpeakingSiri = false;
-          updateSiriLiveUI(null, null, 'listening');
-          if (isVoiceCmdActive) {
-            startListeningLoop();
-          }
-        };
-
-        synthUtterance.onerror = () => {
-          isSpeakingSiri = false;
-          updateSiriLiveUI(null, null, 'listening');
-          if (isVoiceCmdActive) {
-            startListeningLoop();
-          }
-        };
-
-        if (window.speechSynthesis.paused) {
-          window.speechSynthesis.resume();
-        }
-        window.speechSynthesis.speak(synthUtterance);
-      }, 80);
+      window.speechSynthesis.speak(synthUtterance);
     } catch(err) {
       console.warn("Speech synthesis audio error:", err);
       isSpeakingSiri = false;
       updateSiriLiveUI(null, null, 'listening');
     }
   } else {
+    isSpeakingSiri = false;
     updateSiriLiveUI(null, null, 'listening');
   }
 }
 
 function startListeningLoop() {
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRec || isSpeakingSiri) return;
+  if (!SpeechRec) return;
 
   try {
     if (voiceCmdRecognition) {
@@ -9158,6 +9156,8 @@ function startListeningLoop() {
     };
 
     voiceCmdRecognition.onresult = (event) => {
+      if (isSpeakingSiri) return; // Ignore input while Siri is speaking out loud
+
       let interimTranscript = '';
       let finalTranscript = '';
 
@@ -9176,7 +9176,7 @@ function startListeningLoop() {
         updateSiriLiveUI(liveText, "Listening...", "listening");
       }
 
-      // Instant 350ms Speech Silence Detector: triggers executeVoiceCommand in 0.35s after user pauses!
+      // Fast 300ms Speech Silence Detector: triggers executeVoiceCommand 0.3s after user pauses!
       if (liveText) {
         if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
         speechSilenceTimer = setTimeout(() => {
@@ -9185,7 +9185,7 @@ function startListeningLoop() {
             lastSpokenCommand = '';
             executeVoiceCommand(commandToExecute);
           }
-        }, 350);
+        }, 300);
       }
     };
 
@@ -9194,12 +9194,12 @@ function startListeningLoop() {
     };
 
     voiceCmdRecognition.onend = () => {
-      if (isVoiceCmdActive && !isSpeakingSiri) {
+      if (isVoiceCmdActive) {
         setTimeout(() => {
-          if (isVoiceCmdActive && !isSpeakingSiri) {
+          if (isVoiceCmdActive) {
             try { voiceCmdRecognition.start(); } catch(e){}
           }
-        }, 300);
+        }, 200);
       }
     };
 
@@ -9997,4 +9997,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T01:12:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T01:16:00Z -->
