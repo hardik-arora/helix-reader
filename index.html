@@ -3879,6 +3879,42 @@
   </div>
 </div>
 
+<!-- Helix Siri AI Live Voice Conversation Glass Card -->
+<div id="siri-live-card" style="display:none; position:fixed; bottom:85px; right:24px; z-index:9999; width:380px; max-width:92vw; background:var(--surface); border:1.5px solid var(--accent); border-radius:16px; box-shadow:0 20px 40px rgba(0,0,0,0.4); padding:1rem; flex-direction:column; gap:0.75rem; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);">
+  <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:0.5rem;">
+    <div style="display:flex; align-items:center; gap:0.5rem;">
+      <div class="siri-orb" style="width:18px; height:18px;"></div>
+      <span style="font-size:0.85rem; font-weight:800; color:var(--accent); letter-spacing:0.4px;">HELIX SIRI AI CONVERSATION</span>
+    </div>
+    <button onclick="toggleVoiceCommands()" style="background:none; border:none; color:var(--text2); cursor:pointer; font-size:1.1rem; padding:0 0.2rem;" title="Close Siri">✕</button>
+  </div>
+
+  <!-- Live Spoken Question Box -->
+  <div id="siri-user-question-box" style="display:none; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:0.6rem 0.8rem;">
+    <div style="font-size:0.7rem; font-weight:800; color:var(--text2); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:0.2rem;">
+      🗣️ YOUR SPOKEN QUESTION:
+    </div>
+    <div id="siri-user-question-text" style="font-size:0.9rem; font-weight:600; color:var(--text); line-height:1.4;">
+      Listening...
+    </div>
+  </div>
+
+  <!-- Live Siri AI Response Box -->
+  <div id="siri-ai-response-box" style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:0.75rem; display:flex; flex-direction:column; gap:0.35rem;">
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <span style="font-size:0.7rem; font-weight:800; color:var(--accent); text-transform:uppercase; letter-spacing:0.6px;" id="siri-ai-engine-badge">
+        ⚡ ANTIGRAVITY AI ENGINE
+      </span>
+      <span id="siri-status-indicator" style="font-size:0.75rem; color:#10b981; font-weight:700; display:flex; align-items:center; gap:0.3rem;">
+        🟢 Listening...
+      </span>
+    </div>
+    <div id="siri-ai-response-text" style="font-size:0.9rem; color:var(--text); line-height:1.45; font-weight:500;">
+      Ask any question out loud (e.g. "What is gravity?", "Define omnipresent", "Who was Albert Einstein?").
+    </div>
+  </div>
+</div>
+
 <!-- Helix Siri AI Voice Assistant Floating Widget -->
 <div id="siri-voice-orb" class="siri-orb-container" style="display:none;" onclick="toggleVoiceCommands()" title="Helix Siri AI Assistant">
   <div class="siri-orb"></div>
@@ -8991,57 +9027,240 @@ function saveSiteSettings() {
 // ════════════════════════════════════════
 // MODULE 6: SIRI AI VOICE ASSISTANT
 // ════════════════════════════════════════
-let voiceCmdRecognition = null;
-let isVoiceCmdActive = false;
+let isSpeakingSiri = false;
 
-function openSiteSettingsModal() {
-  const modal = document.getElementById('site-settings-modal');
-  if (!modal) return;
-  loadCustomVoiceCommands();
-  switchSettingsTab('general');
-  modal.style.display = 'flex';
-}
+function updateSiriLiveUI(question, answer, status, engine) {
+  const card = document.getElementById('siri-live-card');
+  const qBox = document.getElementById('siri-user-question-box');
+  const qText = document.getElementById('siri-user-question-text');
+  const aText = document.getElementById('siri-ai-response-text');
+  const statusEl = document.getElementById('siri-status-indicator');
+  const engineBadge = document.getElementById('siri-ai-engine-badge');
 
-function closeSiteSettingsModal() {
-  const modal = document.getElementById('site-settings-modal');
-  if (modal) modal.style.display = 'none';
-}
-
-function switchSettingsTab(tab) {
-  document.querySelectorAll('#site-settings-modal .persona-tab-btn').forEach(btn => btn.classList.remove('active'));
-  const activeTab = document.getElementById(`set-tab-${tab}`);
-  if (activeTab) activeTab.classList.add('active');
-
-  document.getElementById('set-content-general').style.display = tab === 'general' ? 'flex' : 'none';
-  document.getElementById('set-content-siri').style.display = tab === 'siri' ? 'flex' : 'none';
-  document.getElementById('set-content-commands').style.display = tab === 'commands' ? 'flex' : 'none';
-}
-
-function loadCustomVoiceCommands() {
-  try {
-    const saved = localStorage.getItem('h_custom_commands');
-    customVoiceCommands = saved ? JSON.parse(saved) : [
-      { id: 'c1', trigger: 'go dark', action: 'theme_dark' },
-      { id: 'c2', trigger: 'read out loud', action: 'start_read' }
-    ];
-  } catch(e) {
-    customVoiceCommands = [];
-  }
-  renderCustomCommandsList();
-}
-
-function saveSiteSettings() {
-  const gender = document.getElementById('set-voice-gender').value;
-  const vol = document.getElementById('set-soundscape-vol').value;
-  const siriAudio = document.getElementById('set-siri-audio-toggle').checked;
-
-  try {
-    localStorage.setItem('h_voice_gender', gender);
-    localStorage.setItem('h_soundscape_vol', vol);
-    localStorage.setItem('h_siri_audio_feedback', siriAudio);
-  } catch(e){}
+  if (card) card.style.display = 'flex';
   
-  showNotification('⚙️ Settings saved successfully!');
+  if (question) {
+    if (qBox) qBox.style.display = 'block';
+    if (qText) qText.textContent = `"${question}"`;
+  }
+  
+  if (answer) {
+    if (aText) aText.textContent = answer;
+  }
+
+  if (status && statusEl) {
+    if (status === 'listening') {
+      statusEl.innerHTML = `<span style="color:#10b981;">🟢 Listening...</span>`;
+    } else if (status === 'thinking') {
+      statusEl.innerHTML = `<span style="color:#f59e0b;">⚡ Thinking...</span>`;
+    } else if (status === 'speaking') {
+      statusEl.innerHTML = `<span style="color:#3b82f6;">🔊 Speaking...</span>`;
+    }
+  }
+
+  if (engine && engineBadge) {
+    engineBadge.textContent = engine;
+  }
+}
+
+function speakSiriResponse(text) {
+  if (!text) return;
+  const siriAudioToggle = document.getElementById('set-siri-audio-toggle');
+  const allowAudio = !siriAudioToggle || siriAudioToggle.checked;
+
+  showNotification(`⚡ Helix AI: "${text}"`);
+  
+  const orb = document.getElementById('siri-voice-orb');
+  const orbText = document.getElementById('siri-orb-text');
+  if (orb) orb.style.display = 'flex';
+  if (orbText) orbText.textContent = text;
+
+  // Update Live UI Card
+  updateSiriLiveUI(null, text, 'speaking');
+
+  if (allowAudio && window.speechSynthesis) {
+    try {
+      window.speechSynthesis.cancel();
+      
+      // Temporarily pause recognition while speaking to prevent microphone loop
+      if (voiceCmdRecognition && isVoiceCmdActive) {
+        isSpeakingSiri = true;
+        try { voiceCmdRecognition.stop(); } catch(e){}
+      }
+
+      setTimeout(() => {
+        const synthUtterance = new SpeechSynthesisUtterance(text);
+        const siriVoice = getBestSiriVoice();
+        if (siriVoice) synthUtterance.voice = siriVoice;
+        synthUtterance.rate = 0.98;
+        synthUtterance.pitch = 1.0;
+        synthUtterance.volume = 1.0;
+        
+        synthUtterance.onend = () => {
+          isSpeakingSiri = false;
+          updateSiriLiveUI(null, null, 'listening');
+          if (isVoiceCmdActive) {
+            startListeningLoop();
+          }
+        };
+
+        synthUtterance.onerror = () => {
+          isSpeakingSiri = false;
+          updateSiriLiveUI(null, null, 'listening');
+          if (isVoiceCmdActive) {
+            startListeningLoop();
+          }
+        };
+
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+        window.speechSynthesis.speak(synthUtterance);
+      }, 80);
+    } catch(err) {
+      console.warn("Speech synthesis audio error:", err);
+      isSpeakingSiri = false;
+      updateSiriLiveUI(null, null, 'listening');
+    }
+  } else {
+    updateSiriLiveUI(null, null, 'listening');
+  }
+}
+
+function startListeningLoop() {
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRec || isSpeakingSiri) return;
+
+  try {
+    if (voiceCmdRecognition) {
+      try { voiceCmdRecognition.stop(); } catch(e){}
+    }
+    voiceCmdRecognition = new SpeechRec();
+    voiceCmdRecognition.continuous = true;
+    voiceCmdRecognition.interimResults = false;
+    voiceCmdRecognition.lang = 'en-US';
+
+    voiceCmdRecognition.onstart = () => {
+      isVoiceCmdActive = true;
+      const navBtn = document.getElementById('nav-siri-ai');
+      const readerBtn = document.getElementById('btn-voice-cmd');
+      const orb = document.getElementById('siri-voice-orb');
+      const orbText = document.getElementById('siri-orb-text');
+
+      if (navBtn) navBtn.classList.add('active');
+      if (readerBtn) readerBtn.classList.add('active');
+      if (orb) orb.style.display = 'flex';
+      if (orbText && !orbText.textContent.includes('Helix AI:')) {
+        orbText.textContent = "⚡ Siri AI Listening...";
+      }
+      updateSiriLiveUI(null, null, 'listening');
+    };
+
+    voiceCmdRecognition.onresult = (event) => {
+      const lastResult = event.results[event.results.length - 1];
+      if (lastResult.isFinal) {
+        const command = lastResult[0].transcript.toLowerCase().trim();
+        executeVoiceCommand(command);
+      }
+    };
+
+    voiceCmdRecognition.onerror = (e) => {
+      console.warn("Speech recognition error:", e);
+    };
+
+    voiceCmdRecognition.onend = () => {
+      // If voice mode is still active and Siri isn't currently speaking, restart recognition loop!
+      if (isVoiceCmdActive && !isSpeakingSiri) {
+        setTimeout(() => {
+          if (isVoiceCmdActive && !isSpeakingSiri) {
+            try { voiceCmdRecognition.start(); } catch(e){}
+          }
+        }, 300);
+      }
+    };
+
+    voiceCmdRecognition.start();
+  } catch(e) {
+    console.warn("Speech recognition start failed:", e);
+  }
+}
+
+function toggleVoiceCommands() {
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRec) {
+    showNotification('❌ Voice Recognition is not supported in this browser.');
+    return;
+  }
+
+  const orb = document.getElementById('siri-voice-orb');
+  const card = document.getElementById('siri-live-card');
+  const navBtn = document.getElementById('nav-siri-ai');
+  const readerBtn = document.getElementById('btn-voice-cmd');
+
+  if (isVoiceCmdActive) {
+    isVoiceCmdActive = false;
+    isSpeakingSiri = false;
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    if (voiceCmdRecognition) {
+      try { voiceCmdRecognition.stop(); } catch(e){}
+    }
+    if (navBtn) navBtn.classList.remove('active');
+    if (readerBtn) readerBtn.classList.remove('active');
+    if (orb) orb.style.display = 'none';
+    if (card) card.style.display = 'none';
+    showNotification('🎙️ Siri AI Voice Assistant deactivated');
+    return;
+  }
+
+  isVoiceCmdActive = true;
+  updateSiriLiveUI(null, "Speak any question out loud (e.g. \"What is gravity?\", \"Define omnipresent\").", "listening");
+  showNotification('🎙️ Siri AI Voice Assistant active & listening...');
+  startListeningLoop();
+}
+
+function findBookFromSpeech(cmd) {
+  const allBooks = [...MASTER_BOOKS, ...(typeof DYNAMIC_SEARCH_CACHE !== 'undefined' ? DYNAMIC_SEARCH_CACHE : []), ...((state && state.customBooks) ? state.customBooks : [])];
+  
+  const cleanCmd = cmd.toLowerCase().replace(/[^\w\s]/g, ' ').trim();
+  const cmdWords = cleanCmd.split(/\s+/).filter(w => w.length > 2);
+
+  for (const b of allBooks) {
+    const rawTitle = b.title.toLowerCase();
+    const normTitle = rawTitle.replace(/^the\s+/i, '').replace(/^a\s+/i, '').trim();
+    const rawAuthor = b.author.toLowerCase();
+    
+    if (cleanCmd.includes(rawTitle) || cleanCmd.includes(normTitle) || cleanCmd.includes(rawAuthor)) {
+      return b;
+    }
+  }
+  return null;
+}
+
+function executeVoiceCommand(cmd) {
+  console.log(`Siri AI Command Received: ${cmd}`);
+
+  // Display user's spoken question on screen immediately!
+  updateSiriLiveUI(cmd, "Processing your question...", "thinking");
+
+  // 1. Check Custom Commands Registry first
+  for (const custom of customVoiceCommands) {
+    if (cmd.includes(custom.trigger.toLowerCase())) {
+      runCustomAction(custom.action);
+      return;
+    }
+  }
+
+  if (cmd.includes('scroll down')) { runCustomAction('scroll_down'); }
+  else if (cmd.includes('scroll up')) { runCustomAction('scroll_up'); }
+  else if (cmd.includes('read') || cmd.includes('play')) { runCustomAction('start_read'); }
+  else if (cmd.includes('pause') || cmd.includes('stop')) { runCustomAction('pause_read'); }
+  else if (cmd.includes('dark mode')) { runCustomAction('theme_dark'); }
+  else if (cmd.includes('bionic')) { runCustomAction('bionic_mode'); }
+  else if (cmd.includes('ruler')) { runCustomAction('focus_ruler'); }
+  else {
+    // Default: AI Query
+    speakSiriResponse(`I heard: "${cmd}". Please ask a question about the book or system commands.`);
+  }
 }
 
 function addCustomVoiceCommand(e) {
@@ -9207,8 +9426,6 @@ function getBestSiriVoice() {
 if (window.speechSynthesis) {
   window.speechSynthesis.onvoiceschanged = () => { getBestSiriVoice(); };
 }
-
-let isSpeakingSiri = false;
 
 function speakSiriResponse(text) {
   if (!text) return;
@@ -9893,4 +10110,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T00:13:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T00:18:00Z -->
