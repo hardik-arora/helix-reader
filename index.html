@@ -3882,15 +3882,6 @@
   <div class="siri-badge" id="siri-orb-text">⚡ Helix AI Listening...</div>
 </div>
 
-<!-- Siri AI Spoken Response Card -->
-<div id="siri-answer-card" style="display:none; position:fixed; bottom:5.5rem; right:2rem; z-index:10002; background:var(--bg2); border:1.5px solid var(--accent); border-radius:16px; padding:1rem 1.25rem; max-width:380px; width:90vw; box-shadow:0 12px 36px var(--shadow), 0 0 20px var(--accent-glow); backdrop-filter:blur(16px); animation:slideUpFade 0.25s ease-out;">
-  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem; border-bottom:1px solid var(--border); padding-bottom:0.4rem;">
-    <span style="font-size:0.7rem; font-weight:900; letter-spacing:1px; color:var(--accent); text-transform:uppercase;">🍎 HELIX SIRI RESPONSE</span>
-    <button onclick="closeSiriAnswerCard()" style="background:none; border:none; color:var(--text3); font-size:1rem; cursor:pointer; font-weight:bold;">✕</button>
-  </div>
-  <div id="siri-answer-card-text" style="font-size:0.9rem; font-weight:600; color:var(--text); line-height:1.45;"></div>
-</div>
-
 <!-- Global Site Settings & Commands Manager Modal -->
 <div id="site-settings-modal" class="mobile-theme-overlay" onclick="closeSiteSettingsModal()">
   <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width: 580px; width: 92%; max-height: 90vh; display: flex; flex-direction: column;">
@@ -9116,129 +9107,29 @@ if (window.speechSynthesis) {
   window.speechSynthesis.onvoiceschanged = () => { getBestSiriVoice(); };
 }
 
-// Apple Siri Synthesized Dual Chime Tone
-function playSiriChime() {
-  try {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume();
-    }
-    
-    // Tone 1: C5 (523.25 Hz)
-    const osc1 = audioCtx.createOscillator();
-    const gain1 = audioCtx.createGain();
-    osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-    gain1.gain.setValueAtTime(0.15, audioCtx.currentTime);
-    gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
-    osc1.connect(gain1);
-    gain1.connect(audioCtx.destination);
-    osc1.start(audioCtx.currentTime);
-    osc1.stop(audioCtx.currentTime + 0.18);
-
-    // Tone 2: E5 (659.25 Hz)
-    const osc2 = audioCtx.createOscillator();
-    const gain2 = audioCtx.createGain();
-    osc2.type = 'sine';
-    osc2.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.09);
-    gain2.gain.setValueAtTime(0.2, audioCtx.currentTime + 0.09);
-    gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
-    osc2.connect(gain2);
-    gain2.connect(audioCtx.destination);
-    osc2.start(audioCtx.currentTime + 0.09);
-    osc2.stop(audioCtx.currentTime + 0.35);
-  } catch(e) {
-    console.warn("Siri chime error:", e);
-  }
-}
-
-let siriAnswerCardTimeout = null;
-
-function closeSiriAnswerCard() {
-  const card = document.getElementById('siri-answer-card');
-  if (card) card.style.display = 'none';
-}
-
 function speakSiriResponse(text) {
   const siriAudioToggle = document.getElementById('set-siri-audio-toggle');
   const allowAudio = !siriAudioToggle || siriAudioToggle.checked;
 
   showNotification(`⚡ Helix AI: "${text}"`);
-  
-  // 1. Update Siri Orb
   const orb = document.getElementById('siri-voice-orb');
   const orbText = document.getElementById('siri-orb-text');
   if (orb) orb.style.display = 'flex';
   if (orbText) orbText.textContent = text;
-
-  // 2. Display Apple Siri Answer Card on Screen
-  const answerCard = document.getElementById('siri-answer-card');
-  const answerCardText = document.getElementById('siri-answer-card-text');
-  if (answerCard && answerCardText) {
-    answerCardText.textContent = text;
-    answerCard.style.display = 'block';
-    
-    if (siriAnswerCardTimeout) clearTimeout(siriAnswerCardTimeout);
-    siriAnswerCardTimeout = setTimeout(() => {
-      answerCard.style.display = 'none';
-    }, 8000);
-  }
-
-  // Auto-hide orb 4s after response
-  setTimeout(() => {
-    if (!isVoiceCmdActive && orb) orb.style.display = 'none';
-  }, 4000);
-
-  // 3. Spoken Audio Synthesis
+  
   if (allowAudio && window.speechSynthesis) {
-    setTimeout(() => {
-      try {
-        window.speechSynthesis.cancel();
-        const synthUtterance = new SpeechSynthesisUtterance(text);
-        
-        const siriVoice = getBestSiriVoice();
-        if (siriVoice) {
-          synthUtterance.voice = siriVoice;
-        }
-        
-        synthUtterance.rate = 0.98;
-        synthUtterance.pitch = 1.0;
-        synthUtterance.volume = 1.0;
-        
-        window.speechSynthesis.speak(synthUtterance);
-      } catch(err) {
-        console.warn("Speech synthesis failed:", err);
-      }
-    }, 120);
-  }
-}
-
-let siriListenTimeout = null;
-
-function stopVoiceCommands(silent = false) {
-  if (siriListenTimeout) clearTimeout(siriListenTimeout);
-  if (voiceCmdRecognition) {
-    try { voiceCmdRecognition.stop(); } catch(e){}
-    voiceCmdRecognition = null;
-  }
-  isVoiceCmdActive = false;
-
-  const orb = document.getElementById('siri-voice-orb');
-  const navBtn = document.getElementById('nav-siri-ai');
-  const readerBtn = document.getElementById('btn-voice-cmd');
-
-  if (navBtn) navBtn.classList.remove('listening', 'active');
-  if (readerBtn) readerBtn.classList.remove('listening', 'active');
-
-  if (orb) {
-    orb.classList.remove('listening');
-    setTimeout(() => {
-      if (!isVoiceCmdActive && orb) orb.style.display = 'none';
-    }, 2800);
-  }
-
-  if (!silent) {
-    showNotification('🎙️ Siri finished listening.');
+    window.speechSynthesis.cancel();
+    const synthUtterance = new SpeechSynthesisUtterance(text);
+    
+    const siriVoice = getBestSiriVoice();
+    if (siriVoice) {
+      synthUtterance.voice = siriVoice;
+    }
+    
+    synthUtterance.rate = 0.96;
+    synthUtterance.pitch = 1.0;
+    
+    window.speechSynthesis.speak(synthUtterance);
   }
 }
 
@@ -9249,88 +9140,55 @@ function toggleVoiceCommands() {
     return;
   }
 
-  if (isVoiceCmdActive) {
-    stopVoiceCommands();
-    return;
-  }
-
-  // Play iconic Apple Siri activation chime!
-  playSiriChime();
-
   const orb = document.getElementById('siri-voice-orb');
-  const orbText = document.getElementById('siri-orb-text');
   const navBtn = document.getElementById('nav-siri-ai');
   const readerBtn = document.getElementById('btn-voice-cmd');
 
+  if (isVoiceCmdActive) {
+    if (voiceCmdRecognition) {
+      try { voiceCmdRecognition.stop(); } catch(e){}
+    }
+    isVoiceCmdActive = false;
+    if (navBtn) navBtn.classList.remove('active');
+    if (readerBtn) readerBtn.classList.remove('active');
+    if (orb) orb.style.display = 'none';
+    showNotification('🎙️ Siri AI Voice Assistant deactivated');
+    return;
+  }
+
   voiceCmdRecognition = new SpeechRec();
-  voiceCmdRecognition.continuous = false; // Apple Siri tap-to-talk mode
-  voiceCmdRecognition.interimResults = true;
+  voiceCmdRecognition.continuous = true;
+  voiceCmdRecognition.interimResults = false;
   voiceCmdRecognition.lang = 'en-US';
 
   voiceCmdRecognition.onstart = () => {
     isVoiceCmdActive = true;
-    if (navBtn) navBtn.classList.add('listening', 'active');
-    if (readerBtn) readerBtn.classList.add('listening', 'active');
-    if (orb) {
-      orb.style.display = 'flex';
-      orb.classList.add('listening');
-    }
-    if (orbText) orbText.textContent = 'Listening... (Say "Hey Helix")';
-    
-    if (siriListenTimeout) clearTimeout(siriListenTimeout);
-    siriListenTimeout = setTimeout(() => {
-      if (isVoiceCmdActive) {
-        speakSiriResponse("I didn't hear anything.");
-        stopVoiceCommands(true);
-      }
-    }, 6000);
+    if (navBtn) navBtn.classList.add('active');
+    if (readerBtn) readerBtn.classList.add('active');
+    if (orb) orb.style.display = 'flex';
+    speakSiriResponse("Helix AI listening. How can I help you?");
   };
 
   voiceCmdRecognition.onresult = (event) => {
-    if (siriListenTimeout) clearTimeout(siriListenTimeout);
-
-    let transcript = '';
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      transcript += event.results[i][0].transcript;
-    }
-
-    const cleanText = transcript.toLowerCase().trim();
-    if (orbText) orbText.textContent = `"${transcript}"`;
-
-    // "Hey Helix" / "Helix" wake-word processing
-    let targetCommand = cleanText;
-    if (cleanText.includes('hey helix') || cleanText.includes('helix') || cleanText.includes('hey siri')) {
-      playSiriChime();
-      targetCommand = cleanText.replace(/hey\s*helix/g, '').replace(/helix/g, '').replace(/hey\s*siri/g, '').trim();
-    }
-
     const lastResult = event.results[event.results.length - 1];
     if (lastResult.isFinal) {
-      // Stop microphone listening immediately
-      stopVoiceCommands(true);
-      
-      // Execute command & speak response
-      const finalCmd = targetCommand.length > 0 ? targetCommand : cleanText;
-      executeVoiceCommand(finalCmd);
+      const command = lastResult[0].transcript.toLowerCase().trim();
+      executeVoiceCommand(command);
     }
   };
 
   voiceCmdRecognition.onerror = (e) => {
     console.warn("Speech recognition error:", e);
-    stopVoiceCommands(true);
-  };
-
-  voiceCmdRecognition.onend = () => {
-    if (isVoiceCmdActive) {
-      stopVoiceCommands(true);
-    }
+    isVoiceCmdActive = false;
+    if (navBtn) navBtn.classList.remove('active');
+    if (readerBtn) readerBtn.classList.remove('active');
+    if (orb) orb.style.display = 'none';
   };
 
   try {
     voiceCmdRecognition.start();
   } catch(e) {
     console.warn("Speech start failed:", e);
-    stopVoiceCommands(true);
   }
 }
 
@@ -9902,4 +9760,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-26T23:53:00Z -->
+<!-- Build Force Timestamp: 2026-08-26T23:57:00Z -->
