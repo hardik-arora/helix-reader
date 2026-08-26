@@ -9056,27 +9056,27 @@ function updateSiriLiveUI(question, answer, status, engine) {
     card.style.visibility = 'visible';
   }
   
-  if (question) {
+  if (question !== null && question !== undefined && question !== '') {
     if (qBox) qBox.style.display = 'block';
     if (qText) qText.textContent = `"${question}"`;
   }
   
-  if (answer) {
+  if (answer !== null && answer !== undefined && answer !== '') {
     if (aText) aText.textContent = answer;
   }
 
   if (status && statusEl) {
     if (status === 'listening') {
-      statusEl.innerHTML = `<span style="color:#10b981;font-weight:700;">🟢 Siri Listening...</span>`;
+      statusEl.innerHTML = `<span style="color:#34d399;font-weight:700;">🟢 Siri Listening...</span>`;
     } else if (status === 'thinking') {
-      statusEl.innerHTML = `<span style="color:#f59e0b;font-weight:700;">⚡ Antigravity AI Thinking...</span>`;
+      statusEl.innerHTML = `<span style="color:#fbbf24;font-weight:700;">⚡ Antigravity AI Thinking...</span>`;
     } else if (status === 'speaking') {
-      statusEl.innerHTML = `<span style="color:#a855f7;font-weight:700;">🔊 Siri Speaking...</span>`;
+      statusEl.innerHTML = `<span style="color:#c084fc;font-weight:700;">🔊 Siri Speaking...</span>`;
     }
   }
 
-  if (engineBadge) {
-    engineBadge.textContent = engine || '⚡ ANTIGRAVITY BACKBONE AI';
+  if (engineBadge && engine) {
+    engineBadge.textContent = engine;
   }
 }
 
@@ -9158,8 +9158,6 @@ function startListeningLoop() {
     };
 
     voiceCmdRecognition.onresult = (event) => {
-      if (isSpeakingSiri) return; // Ignore input while Siri is speaking out loud
-
       let interimTranscript = '';
       let finalTranscript = '';
 
@@ -9178,21 +9176,24 @@ function startListeningLoop() {
       const cleanWords = rawText.toLowerCase().split(/\s+/).filter(w => w.length > 1 && !['um', 'uh', 'a', 'm', 'shh', 'oh', 'ts', 't'].includes(w));
       if (cleanWords.length === 0) return; // Ignore background noise!
 
+      // New spoken input overrides previous Siri speech!
+      isSpeakingSiri = false;
+
       const filteredSentence = cleanWords.join(' ');
       if (filteredSentence !== lastSpokenCommand) {
         lastSpokenCommand = filteredSentence;
         updateSiriLiveUI(rawText, "Listening to your question...", "listening");
       }
 
-      // VOICE STABILITY WINDOW (400ms): Ensures steady speech pause before triggering execution
+      // VOICE STABILITY WINDOW (350ms): Ensures steady speech pause before triggering execution
       if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
       speechSilenceTimer = setTimeout(() => {
-        if (lastSpokenCommand.trim() && !isSpeakingSiri) {
+        if (lastSpokenCommand.trim()) {
           const commandToExecute = lastSpokenCommand.toLowerCase().trim();
           lastSpokenCommand = '';
           executeVoiceCommand(commandToExecute);
         }
-      }, 400);
+      }, 350);
     };
 
     voiceCmdRecognition.onerror = (e) => {
@@ -9264,12 +9265,19 @@ function findBookFromSpeech(cmd) {
 }
 
 function executeVoiceCommand(cmd) {
-  if (!cmd || isSpeakingSiri) return;
+  if (!cmd) return;
+  
+  // FORCE RESET speaking lock on new user question so Siri is NEVER stuck or locked!
+  isSpeakingSiri = false;
+  if (window.speechSynthesis) {
+    try { window.speechSynthesis.cancel(); } catch(e){}
+  }
+
   if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
   console.log(`Siri AI Command Received: ${cmd}`);
 
-  // Display user's spoken question on screen immediately in Siri Live Card!
-  updateSiriLiveUI(cmd, "Processing in Antigravity AI Backbone...", "thinking");
+  // Display user's spoken question on screen immediately in Siri Live Card HUD!
+  updateSiriLiveUI(cmd, "⚡ Processing query in Antigravity AI Backbone...", "thinking");
 
   // 1. Check Custom Commands Registry first
   for (const custom of customVoiceCommands) {
@@ -9288,7 +9296,7 @@ function executeVoiceCommand(cmd) {
   if (cmd === 'bionic mode') { runCustomAction('bionic_mode'); return; }
   if (cmd === 'focus ruler' || cmd === 'toggle ruler') { runCustomAction('focus_ruler'); return; }
 
-  // 3. DIRECT ROUTE ALL QUESTIONS, DOUBTS, SCIENCE, HISTORY, AND GENERAL KNOWLEDGE TO ANTIGRAVITY AI BACKBONE!
+  // 3. DIRECT ROUTE ALL QUESTIONS TO ANTIGRAVITY AI BACKBONE!
   askHelixAI(cmd);
 }
 
@@ -10022,4 +10030,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T02:18:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T02:24:00Z -->
