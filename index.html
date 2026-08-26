@@ -2910,7 +2910,12 @@
 
 
 
-  <!-- User Authentication Profile drop down -->
+  <!-- Helix Siri AI Navbar Button -->
+  <div style="display: flex; align-items: center; gap: 0.4rem; margin-left: 0.5rem;">
+    <button class="nav-btn" id="nav-siri-ai" onclick="toggleVoiceCommands()" title="Activate Helix Siri AI Assistant">
+      ⚡ Helix Siri
+    </button>
+  </div>
   <div id="nav-auth-section" style="display: flex; align-items: center; gap: 0.5rem; margin-left: 0.5rem;">
     <button class="nav-btn" id="nav-auth" onclick="navigate('auth')">Sign In</button>
   </div>
@@ -3871,7 +3876,48 @@
 
 
 
-<!-- Academic Citations Modal -->
+<!-- HELIX SIRI APPLE-GRADE AI VOICE ASSISTANT GLASS CARD -->
+<div id="helix-siri-drawer" style="display:none; position:fixed; bottom:90px; right:24px; z-index:999999; width:440px; max-width:92vw; background:rgba(18,20,28,0.95); border:2px solid transparent; background-image:linear-gradient(rgba(18,20,28,0.95), rgba(18,20,28,0.95)), linear-gradient(135deg, #00f2fe, #4facfe, #7000ff, #ff007f); background-origin:border-box; background-clip:content-box, border-box; border-radius:22px; box-shadow:0 24px 60px rgba(0,0,0,0.6), 0 0 35px rgba(112,0,255,0.35); padding:1.25rem; flex-direction:column; gap:1rem; backdrop-filter:blur(25px); -webkit-backdrop-filter:blur(25px); transition:all 0.3s ease;">
+  
+  <!-- Header Bar -->
+  <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.12); padding-bottom:0.75rem;">
+    <div style="display:flex; align-items:center; gap:0.65rem;">
+      <div class="siri-orb" style="width:24px; height:24px; background:linear-gradient(135deg, #00f2fe, #7000ff, #ff007f); border-radius:50%; animation:siriSpin 3s linear infinite;"></div>
+      <div>
+        <div style="font-size:0.92rem; font-weight:800; color:#ffffff; letter-spacing:0.5px;">⚡ Helix Siri AI</div>
+        <div style="font-size:0.7rem; font-weight:600; color:#a1a1aa;">Powered by Antigravity Backbone AI</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:0.5rem;">
+      <span id="siri-status-badge" style="font-size:0.75rem; font-weight:700; color:#10b981; background:rgba(16,185,129,0.15); padding:0.25rem 0.65rem; border-radius:12px; border:1px solid rgba(16,185,129,0.3);">
+        🟢 Siri Listening...
+      </span>
+      <button onclick="toggleVoiceCommands()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15); color:#ffffff; cursor:pointer; font-size:1.1rem; padding:0.25rem 0.6rem; border-radius:8px; font-weight:700;" title="Close Siri">✕</button>
+    </div>
+  </div>
+
+  <!-- Live Spoken Question Box -->
+  <div id="siri-user-question-box" style="display:none; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:0.75rem 0.9rem;">
+    <div style="font-size:0.7rem; font-weight:800; color:#60a5fa; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:0.25rem; display:flex; align-items:center; gap:0.3rem;">
+      🗣️ YOUR SPOKEN QUESTION:
+    </div>
+    <div id="siri-user-question-text" style="font-size:0.95rem; font-weight:600; color:#ffffff; line-height:1.45;">
+      Listening...
+    </div>
+  </div>
+
+  <!-- Live Siri AI Response Box -->
+  <div id="siri-ai-response-box" style="background:rgba(255,255,255,0.04); border:1px solid rgba(112,0,255,0.3); border-radius:14px; padding:0.9rem; display:flex; flex-direction:column; gap:0.5rem;">
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <span style="font-size:0.72rem; font-weight:800; color:#c084fc; text-transform:uppercase; letter-spacing:0.6px;" id="siri-ai-engine-badge">
+        ⚡ ANTIGRAVITY BACKBONE AI
+      </span>
+    </div>
+    <div id="siri-ai-response-text" style="font-size:0.95rem; color:#e4e4e7; line-height:1.5; font-weight:500;">
+      Speak any question out loud (e.g. "What is 50 plus 25?", "What is gravity?", "Who was Albert Einstein?").
+    </div>
+  </div>
+</div>
 <div id="citation-modal" class="mobile-theme-overlay" onclick="closeCitationModal()" style="display:none;">
   <div class="oauth-modal-card" onclick="event.stopPropagation()" style="max-width: 540px; width: 92%;">
     <div class="oauth-modal-header" style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:0.75rem;margin-bottom:1rem;">
@@ -8981,11 +9027,11 @@ let speechSilenceTimer = null;
 let lastSpokenCommand = '';
 
 function updateSiriLiveUI(question, answer, status, engine) {
-  const card = document.getElementById('siri-live-card');
+  const card = document.getElementById('helix-siri-drawer') || document.getElementById('siri-live-card');
   const qBox = document.getElementById('siri-user-question-box');
   const qText = document.getElementById('siri-user-question-text');
   const aText = document.getElementById('siri-ai-response-text');
-  const statusEl = document.getElementById('siri-status-indicator');
+  const statusEl = document.getElementById('siri-status-badge') || document.getElementById('siri-status-indicator');
   const engineBadge = document.getElementById('siri-ai-engine-badge');
 
   if (card) {
@@ -9005,16 +9051,16 @@ function updateSiriLiveUI(question, answer, status, engine) {
 
   if (status && statusEl) {
     if (status === 'listening') {
-      statusEl.innerHTML = `<span style="color:#10b981;font-weight:700;">🟢 Listening to Voice...</span>`;
+      statusEl.innerHTML = `<span style="color:#10b981;font-weight:700;">🟢 Siri Listening...</span>`;
     } else if (status === 'thinking') {
       statusEl.innerHTML = `<span style="color:#f59e0b;font-weight:700;">⚡ Antigravity AI Thinking...</span>`;
     } else if (status === 'speaking') {
-      statusEl.innerHTML = `<span style="color:#6366f1;font-weight:700;">🔊 Siri Answering Out Loud...</span>`;
+      statusEl.innerHTML = `<span style="color:#a855f7;font-weight:700;">🔊 Siri Speaking...</span>`;
     }
   }
 
   if (engineBadge) {
-    engineBadge.textContent = engine || '⚡ ANTIGRAVITY AI BACKBONE';
+    engineBadge.textContent = engine || '⚡ ANTIGRAVITY BACKBONE AI';
   }
 }
 
@@ -9035,7 +9081,7 @@ function speakSiriResponse(text) {
 
   isSpeakingSiri = true;
 
-  // Safety fallback: Reset speaking flag after 3 seconds max so mic is guaranteed ready
+  // Safety fallback: Reset speaking flag after 3.5 seconds max so mic is guaranteed ready
   if (speechSilenceTimer) clearTimeout(speechSilenceTimer);
   setTimeout(() => {
     if (isSpeakingSiri) {
@@ -9096,16 +9142,7 @@ function startListeningLoop() {
     voiceCmdRecognition.onstart = () => {
       isVoiceCmdActive = true;
       const navBtn = document.getElementById('nav-siri-ai');
-      const readerBtn = document.getElementById('btn-voice-cmd');
-      const orb = document.getElementById('siri-voice-orb');
-      const orbText = document.getElementById('siri-orb-text');
-
       if (navBtn) navBtn.classList.add('active');
-      if (readerBtn) readerBtn.classList.add('active');
-      if (orb) orb.style.display = 'flex';
-      if (orbText && !orbText.textContent.includes('Helix AI:')) {
-        orbText.textContent = "⚡ Siri AI Listening...";
-      }
       updateSiriLiveUI(null, "Listening to your spoken question...", 'listening');
     };
 
@@ -9174,10 +9211,8 @@ function toggleVoiceCommands() {
     return;
   }
 
-  const orb = document.getElementById('siri-voice-orb');
-  const card = document.getElementById('siri-live-card');
+  const drawer = document.getElementById('helix-siri-drawer') || document.getElementById('siri-live-card');
   const navBtn = document.getElementById('nav-siri-ai');
-  const readerBtn = document.getElementById('btn-voice-cmd');
 
   if (isVoiceCmdActive) {
     isVoiceCmdActive = false;
@@ -9188,16 +9223,14 @@ function toggleVoiceCommands() {
       try { voiceCmdRecognition.stop(); } catch(e){}
     }
     if (navBtn) navBtn.classList.remove('active');
-    if (readerBtn) readerBtn.classList.remove('active');
-    if (orb) orb.style.display = 'none';
-    if (card) card.style.display = 'none';
-    showNotification('🎙️ Siri AI Voice Assistant deactivated');
+    if (drawer) drawer.style.display = 'none';
+    showNotification('🎙️ Helix Siri AI Voice Assistant deactivated');
     return;
   }
 
   isVoiceCmdActive = true;
-  updateSiriLiveUI(null, "Speak any question out loud (e.g. \"What is gravity?\", \"Define omnipresent\").", "listening");
-  showNotification('🎙️ Siri AI Voice Assistant active & listening...');
+  updateSiriLiveUI(null, "Speak any question out loud (e.g. \"What is gravity?\", \"What is 50 plus 25?\").", "listening");
+  showNotification('🎙️ Helix Siri AI Voice Assistant active & listening...');
   startListeningLoop();
 }
 
@@ -10000,4 +10033,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T01:56:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T02:03:00Z -->
