@@ -10216,8 +10216,67 @@ async function queryBackboneAI(userTranscript) {
   speak(`${userTranscript} processed.`);
 }
 
+async function handleAIResponse(userQuery) {
+  try {
+    // Step A: Check local instant triggers first (< 5ms)
+    const localMatch = handleInstantCommands(userQuery);
+    if (localMatch) {
+      speak(localMatch);
+      return;
+    }
+
+    // Step B: Send to fast backbone API (or client action resolver fallback)
+    let rawText = null;
+    const cleanQ = userQuery.toLowerCase().trim();
+
+    if (cleanQ.includes('dark mode') || cleanQ.includes('midnight')) {
+      rawText = JSON.stringify({ action: "SET_THEME", value: "dark", speech: "Switched to dark mode." });
+    } else if (cleanQ.includes('old money')) {
+      rawText = JSON.stringify({ action: "SET_THEME", value: "old-money", speech: "Applied Old Money theme." });
+    } else if (cleanQ.includes('cyberpunk')) {
+      rawText = JSON.stringify({ action: "SET_THEME", value: "cyberpunk", speech: "Applied Cyberpunk theme." });
+    }
+
+    if (!rawText) {
+      // Execute queryBackboneAI flow
+      await queryBackboneAI(userQuery);
+      return;
+    }
+
+    const qBox = document.getElementById('copilot-query-box');
+    const qText = document.getElementById('copilot-query-text');
+    const jsonBox = document.getElementById('copilot-json-box');
+    const jsonText = document.getElementById('copilot-json-text');
+    if (qBox) qBox.style.display = 'block';
+    if (qText) qText.textContent = `"${userQuery}"`;
+
+    // Check if the response is a JSON action command
+    if (typeof rawText === "string" && rawText.trim().startsWith("{")) {
+      const parsed = JSON.parse(rawText);
+      if (jsonBox && jsonText) {
+        jsonBox.style.display = 'block';
+        jsonText.textContent = JSON.stringify(parsed, null, 2);
+      }
+      
+      // Handle site actions
+      if (parsed.action === "SET_THEME") {
+        document.body.dataset.theme = parsed.value;
+        if (typeof applyTheme === 'function') applyTheme(parsed.value === 'dark' ? 'midnight-velvet' : parsed.value);
+      }
+      
+      speak(parsed.speech);
+    } else {
+      if (jsonBox) jsonBox.style.display = 'none';
+      // Direct general knowledge answer
+      speak(typeof rawText === "string" ? rawText : JSON.stringify(rawText));
+    }
+  } catch (error) {
+    console.error("Error handling AI response:", error);
+  }
+}
+
 function processAssistantInput(query) {
-  queryBackboneAI(query);
+  handleAIResponse(query);
 }
 
 function executeAppAction(tool, params) {
@@ -10355,4 +10414,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T04:29:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T04:35:00Z -->
