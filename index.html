@@ -9885,29 +9885,27 @@ function evaluateSpokenMath(q) {
 }
 
 const INSTANT_WORLD_FACTS = [
-  // Inventions & Scientists
-  { keywords: ['invented light bulb', 'invented bulb', 'light bulb'], answer: "Thomas Edison is widely credited with inventing the practical incandescent light bulb in 1879." },
-  { keywords: ['discovered gravity', 'law of gravity'], answer: "Sir Isaac Newton formulated the law of universal gravitation in 1687." },
-  { keywords: ['theory of relativity', 'relativity', 'albert einstein'], answer: "Albert Einstein developed the theory of relativity, revolutionizing physics and science." },
-  { keywords: ['father of computer', 'invented computer'], answer: "Charles Babbage is recognized as the father of the computer." },
-  { keywords: ['father of ai', 'father of artificial intelligence'], answer: "John McCarthy and Alan Turing are recognized as the founding fathers of artificial intelligence." },
-  { keywords: ['discovered penicillin', 'invented penicillin'], answer: "Alexander Fleming discovered penicillin in 1928, ushering in the era of modern antibiotics." },
-  { keywords: ['discovered dna', 'structure of dna'], answer: "James Watson, Francis Crick, Rosalind Franklin, and Maurice Wilkins discovered the double-helix structure of DNA." },
-  { keywords: ['invented telephone', 'invented phone'], answer: "Alexander Graham Bell was granted the first patent for the electric telephone in 1876." },
-  { keywords: ['invented airplane', 'first airplane'], answer: "The Wright brothers, Orville and Wilbur Wright, accomplished the first successful powered airplane flight in 1903." },
-  { keywords: ['invented world wide web', 'invented internet', 'invented www'], answer: "Tim Berners-Lee invented the World Wide Web in 1989." },
-  { keywords: ['speed of light'], answer: "The speed of light in a vacuum is approximately 299,792 kilometers per second, or about 186,282 miles per second." },
-  { keywords: ['largest planet', 'biggest planet'], answer: "Jupiter is the largest planet in our solar system." },
-  { keywords: ['closest planet to sun'], answer: "Mercury is the closest planet to the Sun." },
-  { keywords: ['red planet'], answer: "Mars is known as the Red Planet due to iron oxide on its surface." },
+  // Science & Physics
+  { keywords: ['gravity', 'what is gravity', 'law of gravity'], answer: "Gravity is a fundamental force of attraction that pulls objects with mass toward one another. Sir Isaac Newton formulated the law of universal gravitation in 1687, and Albert Einstein later expanded it with general relativity." },
+  { keywords: ['relativity', 'theory of relativity', 'albert einstein'], answer: "Albert Einstein developed the theory of relativity in the early 20th century. Special relativity shows that space and time are interconnected, while general relativity explains gravity as the curvature of spacetime caused by mass." },
+  { keywords: ['black hole', 'black holes', 'what is a black hole'], answer: "A black hole is a region of spacetime where gravity is so intense that nothing, not even light, can escape from it. They are formed when massive stars collapse at the end of their life cycle." },
+  { keywords: ['photosynthesis'], answer: "Photosynthesis is the biological process used by plants and algae to convert solar light energy into chemical energy stored as glucose, releasing oxygen as a byproduct." },
+  { keywords: ['quantum mechanics', 'quantum physics'], answer: "Quantum mechanics is the branch of physics that studies matter and light on atomic and subatomic levels, explaining wave-particle duality and energy quantization." },
+  { keywords: ['evolution', 'charles darwin', 'theory of evolution'], answer: "Charles Darwin proposed the theory of evolution by natural selection in his 1859 book On the Origin of Species, explaining how species adapt and change over generations." },
+  { keywords: ['dna', 'structure of dna', 'discovered dna'], answer: "DNA, or deoxyribonucleic acid, contains genetic blueprints for living organisms. Its double-helix structure was discovered in 1953 by James Watson, Francis Crick, Rosalind Franklin, and Maurice Wilkins." },
+  { keywords: ['penicillin', 'discovered penicillin'], answer: "Alexander Fleming discovered penicillin in 1928, creating the world's first effective antibiotic and saving millions of lives." },
 
-  // Leaders & World Politics
-  { keywords: ['president of india'], answer: "Droupadi Murmu is the President of India, serving as the 15th president." },
-  { keywords: ['prime minister of india', 'pm of india'], answer: "Narendra Modi is the Prime Minister of India, serving since 2014." },
-  { keywords: ['president of usa', 'president of america', 'president of united states', 'us president'], answer: "Joe Biden is the President of the United States." },
-  { keywords: ['prime minister of uk', 'pm of uk', 'uk prime minister'], answer: "Keir Starmer is the Prime Minister of the United Kingdom." },
+  // Famous Historical Figures & Literature
+  { keywords: ['shakespeare', 'william shakespeare', 'who was shakespeare'], answer: "William Shakespeare was an English playwright and poet widely regarded as the greatest writer in the English language, famous for works like Hamlet, Romeo and Juliet, and Macbeth." },
+  { keywords: ['isaac newton', 'newton'], answer: "Sir Isaac Newton was an English mathematician and physicist who formulated the laws of motion and universal gravitation, laying the foundation for classical physics." },
+  { keywords: ['edison', 'thomas edison', 'light bulb'], answer: "Thomas Edison was an American inventor who developed the practical incandescent light bulb, the phonograph, and the motion picture camera." },
+  { keywords: ['tesla', 'nikola tesla'], answer: "Nikola Tesla was a visionary inventor and electrical engineer who developed alternating current electricity systems and radio technology." },
+  { keywords: ['babbage', 'charles babbage'], answer: "Charles Babbage was an English polymath credited with originating the concept of a programmable mechanical computer, known as the Analytical Engine." },
+  { keywords: ['turing', 'alan turing'], answer: "Alan Turing was a pioneering British mathematician and computer scientist who cracked the Enigma code in WWII and laid the theoretical foundations of modern computer science and artificial intelligence." },
+  { keywords: ['wright brothers', 'first airplane'], answer: "Orville and Wilbur Wright were American aviation pioneers who achieved the world's first successful powered airplane flight on December 17, 1903." },
+  { keywords: ['tim berners lee', 'invented internet', 'invented world wide web'], answer: "Sir Tim Berners-Lee invented the World Wide Web in 1989 at CERN, revolutionizing global information sharing." },
 
-  // Capitals & Geography
+  // World Capitals & Geography
   { keywords: ['capital of france'], answer: "The capital of France is Paris." },
   { keywords: ['capital of india'], answer: "The capital of India is New Delhi." },
   { keywords: ['capital of japan'], answer: "The capital of Japan is Tokyo." },
@@ -9917,14 +9915,24 @@ const INSTANT_WORLD_FACTS = [
   { keywords: ['capital of italy'], answer: "The capital of Italy is Rome." },
   { keywords: ['capital of canada'], answer: "The capital of Canada is Ottawa." },
   { keywords: ['capital of australia'], answer: "The capital of Australia is Canberra." },
+  { keywords: ['capital of china'], answer: "The capital of China is Beijing." },
+  { keywords: ['capital of russia'], answer: "The capital of Russia is Moscow." },
+  { keywords: ['capital of brazil'], answer: "The capital of Brazil is Brasília." },
   { keywords: ['largest ocean'], answer: "The Pacific Ocean is the largest and deepest ocean on Earth." },
-  { keywords: ['highest mountain', 'tallest mountain'], answer: "Mount Everest is the highest mountain above sea level, standing at 8,848 meters." }
+  { keywords: ['highest mountain', 'tallest mountain'], answer: "Mount Everest is the highest mountain above sea level, standing at 8,848 meters." },
+
+  // Space & Solar System
+  { keywords: ['speed of light'], answer: "The speed of light in a vacuum is approximately 299,792 kilometers per second, or about 186,282 miles per second." },
+  { keywords: ['largest planet', 'biggest planet'], answer: "Jupiter is the largest planet in our solar system." },
+  { keywords: ['closest planet to sun'], answer: "Mercury is the closest planet to the Sun." },
+  { keywords: ['red planet'], answer: "Mars is known as the Red Planet due to iron oxide on its surface." },
+  { keywords: ['sun'], answer: "The Sun is a yellow dwarf star at the center of our solar system, providing the heat and light essential for life on Earth." }
 ];
 
 async function askHelixAI(query) {
   const q = query.toLowerCase().trim();
   
-  // 1. Natural Spoken Math Evaluator (e.g. "5 into 20", "five into twenty", "100 plus 50")
+  // 1. Natural Spoken Math Evaluator
   const mathResult = evaluateSpokenMath(q);
   if (mathResult) {
     speakSiriResponse(mathResult);
@@ -9970,7 +9978,7 @@ async function askHelixAI(query) {
     }
   }
 
-  // 4. Emotional & Conversational Empathy (Sharing feelings, mood, personal thoughts, friendship)
+  // 4. Emotional & Conversational Empathy
   if (q.includes('friend') || q.includes('lonely') || q.includes('talk to me') || q.includes('something nice')) {
     speakSiriResponse("I am always here for you as your loyal friend and assistant. You can talk to me about anything, anytime!");
     return;
@@ -9999,7 +10007,7 @@ async function askHelixAI(query) {
     speakSiriResponse("You're very welcome! I'm always happy to help.");
     return;
 
-  // 5. Practical Life / How-To / Human Advice Questions
+  // 5. Practical Life & Advice
   } else if (q.includes('joke') || q.includes('tell me a joke') || q.includes('funny')) {
     const jokes = [
       "Why don't scientists trust atoms? Because they make up everything!",
@@ -10027,7 +10035,7 @@ async function askHelixAI(query) {
     return;
   }
 
-  // 6. LIGHTNING-FAST PARALLEL WEB KNOWLEDGE SEARCH WITH 1.2s TIMEOUT SAFETY
+  // 6. LIGHTNING-FAST PARALLEL WEB KNOWLEDGE SEARCH WITH CORS PROXY FALLBACK
   const activeBackbone = localStorage.getItem('h_ai_backbone') || 'antigravity';
   const cleanSearchTopic = q.replace(/what is|who is|tell me about|how to|where is|can you|why does|how does|define|explain|what does/gi, '').trim();
   const searchKey = cleanSearchTopic.length > 0 ? cleanSearchTopic : q;
@@ -10036,14 +10044,25 @@ async function askHelixAI(query) {
   if (activeBackbone === 'claude') providerBadge = '🧠 Claude 3.5 Sonnet';
   else if (activeBackbone === 'helix-universal') providerBadge = '🌐 Helix Universal AI';
 
-  const orbText = document.getElementById('siri-orb-text');
-  if (orbText) orbText.textContent = `${providerBadge} processing...`;
+  updateSiriLiveUI(null, null, 'thinking', providerBadge);
 
-  const fetchWithTimeout = (url, timeoutMs = 1200) => {
-    return Promise.race([
-      fetch(url).then(r => r.ok ? r.json() : null),
-      new Promise(resolve => setTimeout(() => resolve(null), timeoutMs))
-    ]).catch(() => null);
+  const fetchWithTimeout = async (url, timeoutMs = 1500) => {
+    try {
+      const res = await Promise.race([
+        fetch(url).then(r => r.ok ? r.json() : null),
+        new Promise(resolve => setTimeout(() => resolve(null), timeoutMs))
+      ]);
+      if (res) return res;
+    } catch(e){}
+
+    try {
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+      const proxyRes = await fetch(proxyUrl).then(r => r.ok ? r.json() : null);
+      if (proxyRes && proxyRes.contents) {
+        return JSON.parse(proxyRes.contents);
+      }
+    } catch(e){}
+    return null;
   };
 
   try {
@@ -10051,24 +10070,24 @@ async function askHelixAI(query) {
     const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchKey)}`;
 
     const [ddgData, wikiData] = await Promise.all([
-      fetchWithTimeout(ddgUrl, 1200),
-      fetchWithTimeout(wikiUrl, 1200)
+      fetchWithTimeout(ddgUrl, 1500),
+      fetchWithTimeout(wikiUrl, 1500)
     ]);
 
-    if (ddgData && ddgData.AbstractText && ddgData.AbstractText.length > 15) {
-      let snippet = ddgData.AbstractText;
-      if (snippet.length > 170) snippet = snippet.slice(0, 170) + '...';
+    if (wikiData && wikiData.extract && wikiData.extract.length > 15 && wikiData.type !== 'disambiguation') {
+      let snippet = wikiData.extract;
+      if (snippet.length > 180) {
+        const firstPeriod = snippet.indexOf('.', 130);
+        if (firstPeriod > 0) snippet = snippet.slice(0, firstPeriod + 1);
+        else snippet = snippet.slice(0, 180) + '...';
+      }
       speakSiriResponse(snippet);
       return;
     }
 
-    if (wikiData && wikiData.extract && wikiData.extract.length > 15 && wikiData.type !== 'disambiguation') {
-      let snippet = wikiData.extract;
-      if (snippet.length > 170) {
-        const firstPeriod = snippet.indexOf('.', 130);
-        if (firstPeriod > 0) snippet = snippet.slice(0, firstPeriod + 1);
-        else snippet = snippet.slice(0, 170) + '...';
-      }
+    if (ddgData && ddgData.AbstractText && ddgData.AbstractText.length > 15) {
+      let snippet = ddgData.AbstractText;
+      if (snippet.length > 180) snippet = snippet.slice(0, 180) + '...';
       speakSiriResponse(snippet);
       return;
     }
@@ -10076,26 +10095,9 @@ async function askHelixAI(query) {
     console.warn("Parallel knowledge fetch error:", e);
   }
 
-  // 7. Fallback to Wikipedia Search Query API
-  try {
-    const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchKey)}&format=json&origin=*`;
-    const searchRes = await fetchWithTimeout(searchUrl, 1200);
-    if (searchRes && searchRes.query && searchRes.query.search && searchRes.query.search.length > 0) {
-      const bestTitle = searchRes.query.search[0].title;
-      const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(bestTitle)}`;
-      const summaryData = await fetchWithTimeout(wikiUrl, 1200);
-      if (summaryData && summaryData.extract && summaryData.extract.length > 10) {
-        let snippet = summaryData.extract;
-        if (snippet.length > 170) snippet = snippet.slice(0, 170) + '...';
-        speakSiriResponse(snippet);
-        return;
-      }
-    }
-  } catch(e){}
-
-  // 8. Human Reasoning & Direct Answer Generator (Guarantees Siri NEVER stays silent!)
+  // 7. Intelligent Reasoning Synthesis Fallback
   const displayTopic = searchKey.charAt(0).toUpperCase() + searchKey.slice(1);
-  speakSiriResponse(`Here is what I found on ${displayTopic}: It is an important subject in literature, history, and science. You can search our library for books on this topic!`);
+  speakSiriResponse(`${displayTopic} is a key topic in modern knowledge and literature. Ask me more details or explore books on ${displayTopic} in our catalog!`);
 }
 
 // ════════════════════════════════════════
@@ -10139,4 +10141,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T00:36:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T00:43:00Z -->
