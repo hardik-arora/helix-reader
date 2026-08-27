@@ -10357,31 +10357,42 @@ const API_KEY = ["AQ", ".Ab8RN6LmGiGYXYgwvel1ACS8", "sejDQH_D_eacDI70_4j8_yh8SA"
 
 async function handleAIResponse(userQuery) {
   try {
-    // This calls Google's actual backbone AI directly
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
-    
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: userQuery }] }],
-        systemInstruction: {
-          parts: [{ 
-            text: "You are a voice assistant like Siri. Answer factual questions directly in 1 sentence. If the user asks to change site theme or speed or navigate, output JSON like: {\"action\": \"SET_THEME\", \"value\": \"dark\", \"speech\": \"Done.\"}" 
-          }]
-        }
-      })
-    });
+    const endpointsToTry = [
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+    ];
 
-    const data = await response.json();
-    
-    if (data.error) {
-      console.error("API Key / Quota Error:", data.error.message);
-      await queryBackboneAI(userQuery);
-      return;
+    let response = null;
+    let data = null;
+
+    for (const endpointUrl of endpointsToTry) {
+      try {
+        const res = await fetch(`${endpointUrl}?key=${API_KEY}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: userQuery }] }],
+            systemInstruction: {
+              parts: [{ 
+                text: "You are a voice assistant like Siri. Answer factual questions directly in 1 sentence. If the user asks to change site theme or speed or navigate, output JSON like: {\"action\": \"SET_THEME\", \"value\": \"dark\", \"speech\": \"Done.\"}" 
+              }]
+            }
+          })
+        });
+
+        if (res.ok) {
+          const resData = await res.json();
+          if (resData.candidates && resData.candidates[0] && resData.candidates[0].content) {
+            response = res;
+            data = resData;
+            break;
+          }
+        }
+      } catch (err) {}
     }
 
-    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+    if (!data) {
       await queryBackboneAI(userQuery);
       return;
     }
@@ -10718,4 +10729,4 @@ setTimeout(initSiriHudDraggable, 500);
 
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T05:30:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T05:32:00Z -->
