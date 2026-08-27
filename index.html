@@ -4004,49 +4004,49 @@
 
 
 <!-- HIGH-SPEED CLIENT WEB ASSISTANT SHEET -->
-<div id="helix-copilot-drawer" style="display:none; position:fixed; bottom:90px; right:24px; z-index:999999; width:450px; max-width:92vw; background:rgba(15,23,42,0.95); border:1.5px solid rgba(99,102,241,0.4); border-radius:24px; box-shadow:0 30px 70px rgba(0,0,0,0.7), 0 0 40px rgba(99,102,241,0.25); padding:1.25rem; flex-direction:column; gap:0.85rem; backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px);">
+<div id="helix-copilot-drawer" style="display:none; position:fixed; bottom:90px; right:24px; z-index:999999; width:450px; max-width:92vw; background:var(--surface2, rgba(15,23,42,0.95)); border:1.5px solid var(--border2, rgba(99,102,241,0.4)); border-radius:24px; box-shadow:0 30px 70px rgba(0,0,0,0.7), 0 0 40px var(--accent-glow, rgba(99,102,241,0.25)); padding:1.25rem; flex-direction:column; gap:0.85rem; backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px); transition:background 0.3s ease, border-color 0.3s ease;">
   
   <!-- Header -->
-  <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.6rem;">
+  <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border, rgba(255,255,255,0.1)); padding-bottom:0.6rem;">
     <div style="display:flex; align-items:center; gap:0.5rem;">
-      <span style="font-size:1.1rem;">⚡</span>
+      <span style="font-size:1.1rem; color:var(--accent);">⚡</span>
       <div>
-        <div style="font-size:0.92rem; font-weight:800; color:#ffffff; display:flex; align-items:center; gap:0.4rem;">
-          Helix AI Assistant <span style="font-size:0.65rem; background:linear-gradient(135deg, #6366f1, #a855f7); color:#fff; padding:0.15rem 0.45rem; border-radius:10px; font-weight:700;">HIGH-SPEED</span>
+        <div style="font-size:0.92rem; font-weight:800; color:var(--text, #ffffff); display:flex; align-items:center; gap:0.4rem;">
+          Helix AI Assistant <span style="font-size:0.65rem; background:linear-gradient(135deg, var(--accent, #6366f1), var(--accent2, #a855f7)); color:var(--text, #fff); padding:0.15rem 0.45rem; border-radius:10px; font-weight:700;">HIGH-SPEED</span>
         </div>
-        <div style="font-size:0.7rem; font-weight:600; color:#94a3b8;">Action-First Intelligence Engine</div>
+        <div style="font-size:0.7rem; font-weight:600; color:var(--text3, #94a3b8);">Action-First Intelligence Engine</div>
       </div>
     </div>
-    <button onclick="toggleHelixAIAssistant()" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#ffffff; cursor:pointer; font-size:1.1rem; padding:0.2rem 0.5rem; border-radius:8px; font-weight:700;">✕</button>
+    <button onclick="toggleHelixAIAssistant()" style="background:var(--surface, rgba(255,255,255,0.08)); border:1px solid var(--border, rgba(255,255,255,0.15)); color:var(--text, #ffffff); cursor:pointer; font-size:1.1rem; padding:0.2rem 0.5rem; border-radius:8px; font-weight:700;">✕</button>
   </div>
 
   <!-- User Query Display -->
-  <div id="copilot-query-box" style="display:none; background:rgba(30,41,59,0.7); border-left:3.5px solid #6366f1; border-radius:10px; padding:0.6rem 0.8rem;">
-    <div style="font-size:0.65rem; font-weight:800; color:#818cf8; text-transform:uppercase; letter-spacing:0.6px;">INPUT QUERY:</div>
-    <div id="copilot-query-text" style="font-size:0.9rem; font-weight:600; color:#f8fafc;"></div>
+  <div id="copilot-query-box" style="display:none; background:var(--surface, rgba(30,41,59,0.7)); border-left:3.5px solid var(--accent, #6366f1); border-radius:10px; padding:0.6rem 0.8rem;">
+    <div style="font-size:0.65rem; font-weight:800; color:var(--accent, #818cf8); text-transform:uppercase; letter-spacing:0.6px;">INPUT QUERY:</div>
+    <div id="copilot-query-text" style="font-size:0.9rem; font-weight:600; color:var(--text, #f8fafc);"></div>
   </div>
 
   <!-- AI Response Display Box -->
-  <div id="copilot-response-box" style="background:rgba(15,23,42,0.85); border:1px solid rgba(168,85,247,0.35); border-radius:14px; padding:0.85rem; display:flex; flex-direction:column; gap:0.5rem;">
-    <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:0.4rem;">
-      <span style="font-size:0.7rem; font-weight:800; color:#c084fc; text-transform:uppercase; letter-spacing:0.5px;" id="copilot-engine-badge">⚡ AI BACKBONE ENGINE</span>
+  <div id="copilot-response-box" style="background:var(--surface, rgba(15,23,42,0.85)); border:1px solid var(--border2, rgba(168,85,247,0.35)); border-radius:14px; padding:0.85rem; display:flex; flex-direction:column; gap:0.5rem;">
+    <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border, rgba(255,255,255,0.06)); padding-bottom:0.4rem;">
+      <span style="font-size:0.7rem; font-weight:800; color:var(--accent2, #c084fc); text-transform:uppercase; letter-spacing:0.5px;" id="copilot-engine-badge">⚡ AI BACKBONE ENGINE</span>
     </div>
-    <div id="copilot-response-text" style="font-size:0.88rem; color:#f1f5f9; line-height:1.5; font-weight:500;">
+    <div id="copilot-response-text" style="font-size:0.88rem; color:var(--text, #f1f5f9); line-height:1.5; font-weight:500;">
       Ask a general knowledge question or command a site action (e.g. "navigate to settings", "open library", "dark mode", "what is gravity?").
     </div>
   </div>
 
   <!-- Structured JSON Execution Object Viewer -->
-  <div id="copilot-json-box" style="display:none; background:rgba(15,23,42,0.95); border:1px solid rgba(52,211,153,0.4); border-radius:12px; padding:0.65rem; font-family:monospace; font-size:0.72rem; color:#34d399; overflow-x:auto;">
-    <div style="font-size:0.65rem; font-weight:800; color:#a7f3d0; margin-bottom:0.25rem;">STRUCTURED JSON ACTION:</div>
+  <div id="copilot-json-box" style="display:none; background:var(--surface, rgba(15,23,42,0.95)); border:1px solid var(--accent, rgba(52,211,153,0.4)); border-radius:12px; padding:0.65rem; font-family:monospace; font-size:0.72rem; color:var(--accent, #34d399); overflow-x:auto;">
+    <div style="font-size:0.65rem; font-weight:800; color:var(--text3, #a7f3d0); margin-bottom:0.25rem;">STRUCTURED JSON ACTION:</div>
     <pre id="copilot-json-text" style="margin:0; white-space:pre-wrap; word-break:break-all;"></pre>
   </div>
 
   <!-- Text Query & Voice Microphone Input Line -->
-  <form onsubmit="event.preventDefault(); const inEl=document.getElementById('copilot-input'); if(inEl && inEl.value.trim()){ processAssistantInput(inEl.value.trim()); inEl.value=''; }" style="display:flex; align-items:center; gap:0.4rem; background:rgba(30,41,59,0.8); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:0.3rem 0.5rem;">
-    <input type="text" id="copilot-input" placeholder="Type or tap 🎙️ to speak..." style="flex:1; background:none; border:none; color:#ffffff; font-size:0.82rem; outline:none; padding:0.25rem;" />
-    <button type="button" id="copilot-mic-btn" onclick="toggleCopilotVoiceInput()" title="Speak Voice Command" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#ffffff; font-weight:700; font-size:0.85rem; padding:0.3rem 0.55rem; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center;">🎙️</button>
-    <button type="submit" style="background:linear-gradient(135deg, #6366f1, #a855f7); border:none; color:#ffffff; font-weight:700; font-size:0.78rem; padding:0.3rem 0.65rem; border-radius:8px; cursor:pointer;">Ask / Run</button>
+  <form onsubmit="event.preventDefault(); const inEl=document.getElementById('copilot-input'); if(inEl && inEl.value.trim()){ processAssistantInput(inEl.value.trim()); inEl.value=''; }" style="display:flex; align-items:center; gap:0.4rem; background:var(--surface, rgba(30,41,59,0.8)); border:1px solid var(--border, rgba(255,255,255,0.12)); border-radius:12px; padding:0.3rem 0.5rem;">
+    <input type="text" id="copilot-input" placeholder="Type or tap 🎙️ to speak..." style="flex:1; background:none; border:none; color:var(--text, #ffffff); font-size:0.82rem; outline:none; padding:0.25rem;" />
+    <button type="button" id="copilot-mic-btn" onclick="toggleCopilotVoiceInput()" title="Speak Voice Command" style="background:var(--surface2, rgba(255,255,255,0.1)); border:1px solid var(--border, rgba(255,255,255,0.2)); color:var(--text, #ffffff); font-weight:700; font-size:0.85rem; padding:0.3rem 0.55rem; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center;">🎙️</button>
+    <button type="submit" style="background:linear-gradient(135deg, var(--accent, #6366f1), var(--accent2, #a855f7)); border:none; color:var(--text, #ffffff); font-weight:700; font-size:0.78rem; padding:0.3rem 0.65rem; border-radius:8px; cursor:pointer;">Ask / Run</button>
   </form>
 </div>
 
@@ -10751,4 +10751,4 @@ setTimeout(initSiriHudDraggable, 500);
 
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T06:10:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T06:13:00Z -->
