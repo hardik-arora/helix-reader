@@ -2640,6 +2640,25 @@
       margin: 0 auto;
       animation: spin 0.8s linear infinite;
     }
+/* Navbar AI Copilot Button - Linked to Active Theme */
+#nav-helix-ai {
+  background: linear-gradient(135deg, var(--accent, #6366f1), var(--accent2, #a855f7)) !important;
+  color: var(--text, #ffffff) !important;
+  border: 1px solid var(--border2, rgba(255, 255, 255, 0.25)) !important;
+  box-shadow: 0 4px 15px var(--accent-glow, rgba(99, 102, 241, 0.4)) !important;
+  font-weight: 700 !important;
+  gap: 0.4rem !important;
+  display: flex !important;
+  align-items: center !important;
+  transition: all 0.3s ease !important;
+}
+
+#nav-helix-ai:hover {
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 6px 20px var(--accent-glow, rgba(99, 102, 241, 0.6)) !important;
+  filter: brightness(1.1);
+}
+
 /* Siri HUD Container - Linked to Theme */
 .siri-hud {
   position: fixed;
@@ -3019,7 +3038,7 @@
 
 
   <div style="display: flex; align-items: center; gap: 0.4rem; margin-left: 0.5rem;">
-    <button class="nav-btn" id="nav-helix-ai" onclick="toggleHelixAIAssistant()" title="Activate High-Speed Web Assistant" style="background: linear-gradient(135deg, #6366f1, #a855f7); color: #ffffff; border: none; font-weight: 700; gap: 0.4rem; display: flex; align-items: center;">
+    <button class="nav-btn" id="nav-helix-ai" onclick="toggleHelixAIAssistant()" title="Activate High-Speed Web Assistant">
       ⚡ AI Copilot
     </button>
   </div>
@@ -10732,4 +10751,4 @@ setTimeout(initSiriHudDraggable, 500);
 
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-08-27T05:46:00Z -->
+<!-- Build Force Timestamp: 2026-08-27T06:10:00Z -->
