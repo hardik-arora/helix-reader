@@ -10357,71 +10357,9 @@ async function queryBackboneAI(userTranscript) {
   speak(`Direct answer for ${userTranscript} is currently unavailable.`);
 }
 
-// Gemini Backbone API Key
-const API_KEY = ["AQ", ".Ab8RN6LmGiGYXYgwvel1ACS8", "sejDQH_D_eacDI70_4j8_yh8SA"].join(""); 
-
+// Ultra-Fast Zero-Latency AI Engine Router
 async function handleAIResponse(userQuery) {
-  try {
-    const endpointsToTry = [
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent",
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
-    ];
-
-    let response = null;
-    let data = null;
-
-    for (const endpointUrl of endpointsToTry) {
-      try {
-        const res = await fetch(`${endpointUrl}?key=${API_KEY}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ role: "user", parts: [{ text: userQuery }] }],
-            systemInstruction: {
-              parts: [{ 
-                text: "You are a voice assistant like Siri. Answer factual questions directly in 1 sentence. If the user asks to change site theme or speed or navigate, output JSON like: {\"action\": \"SET_THEME\", \"value\": \"dark\", \"speech\": \"Done.\"}" 
-              }]
-            }
-          })
-        });
-
-        if (res.ok) {
-          const resData = await res.json();
-          if (resData.candidates && resData.candidates[0] && resData.candidates[0].content) {
-            response = res;
-            data = resData;
-            break;
-          }
-        }
-      } catch (err) {}
-    }
-
-    if (!data) {
-      await queryBackboneAI(userQuery);
-      return;
-    }
-
-    let reply = data.candidates[0].content.parts[0].text.trim();
-    reply = reply.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
-
-    // Check if the AI returned a site command
-    if (reply.startsWith("{") && reply.endsWith("}")) {
-      const parsed = JSON.parse(reply);
-      if (parsed.action === "SET_THEME") {
-        document.body.dataset.theme = parsed.value;
-        if (typeof applyTheme === 'function') applyTheme(parsed.value === 'dark' ? 'midnight-velvet' : parsed.value);
-      }
-      speak(parsed.speech || "Action completed.");
-    } else {
-      // Direct speech for knowledge answers
-      speak(reply);
-    }
-
-  } catch (err) {
-    console.error("Network / Execution Error:", err);
-    await queryBackboneAI(userQuery);
-  }
+  await queryBackboneAI(userQuery);
 }
 
 function processAssistantInput(query) {
@@ -10561,13 +10499,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Speech Recognition Initialization
+// High-Speed Voice Recognition Engine
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
 if (SpeechRecognition) {
   try {
     recognition = new SpeechRecognition();
     recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
     recognition.lang = 'en-US';
   } catch(e){}
 }
@@ -10592,18 +10532,42 @@ if (orbBtn) {
   });
 }
 
-// Process Voice Input
+// Process Voice Input Instantly
 if (recognition) {
+  let hasHandledFinal = false;
+
+  recognition.onstart = () => {
+    hasHandledFinal = false;
+  };
+
   recognition.onresult = async (event) => {
     const hudEl = document.getElementById("siri-hud");
     const uCap = document.getElementById("siri-user-text");
     const aCap = document.getElementById("siri-ai-text");
-    if (hudEl) hudEl.classList.remove("listening");
-    const transcript = event.results[0][0].transcript;
-    if (uCap) uCap.textContent = `"${transcript}"`;
-    if (aCap) aCap.textContent = "Thinking...";
     
-    await handleAIResponse(transcript);
+    let interimText = '';
+    let finalText = '';
+
+    for (let i = event.resultIndex; i < event.results.length; ++i) {
+      if (event.results[i].isFinal) {
+        finalText += event.results[i][0].transcript;
+      } else {
+        interimText += event.results[i][0].transcript;
+      }
+    }
+
+    const currentTranscript = (finalText || interimText).trim();
+    if (uCap && currentTranscript) {
+      uCap.textContent = `"${currentTranscript}"`;
+    }
+
+    if (finalText.trim() && !hasHandledFinal) {
+      hasHandledFinal = true;
+      if (hudEl) hudEl.classList.remove("listening");
+      if (aCap) aCap.textContent = "⚡ Executing...";
+      try { recognition.stop(); } catch(e){}
+      await handleAIResponse(finalText.trim());
+    }
   };
 
   recognition.onerror = () => {
@@ -10734,4 +10698,4 @@ setTimeout(initSiriHudDraggable, 500);
 
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-09-03T00:41:00Z -->
+<!-- Build Force Timestamp: 2026-09-03T23:44:00Z -->
