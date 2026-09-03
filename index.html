@@ -2333,8 +2333,8 @@
       .detail-quick-stats { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 768px) {
-      nav { padding: 0 1rem; justify-content: space-between; gap: 1rem; }
-      .nav-logo { font-size: 1.3rem; margin-right: 0; flex-shrink: 0; }
+      nav { padding: 0 0.5rem; justify-content: space-between; gap: 0.4rem; }
+      .nav-logo { font-size: 1.15rem; margin-right: 0; flex-shrink: 0; }
       .nav-search { display: none; }
       .nav-links {
         flex-grow: 1;
@@ -2347,8 +2347,20 @@
         padding: 0.2rem 0;
       }
       .nav-links::-webkit-scrollbar { display: none; }
-      .nav-btn { flex-shrink: 0; padding: 0.5rem 0.8rem; }
-      .theme-dropdown-wrap { flex-shrink: 0; }
+      .nav-btn { flex-shrink: 0; padding: 0.4rem 0.6rem; font-size: 0.8rem; }
+      .theme-dropdown-wrap { flex-shrink: 0 !important; display: flex !important; align-items: center; }
+      #nav-helix-ai {
+        padding: 0.35rem 0.6rem !important;
+        font-size: 0.76rem !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+      }
+      #helix-copilot-drawer {
+        width: 96vw !important;
+        right: 2vw !important;
+        bottom: 80px !important;
+        max-height: 75vh !important;
+      }
       
       .hero { padding: 3rem 1rem; }
       .dashboard-panel { grid-template-columns: 1fr 1fr; padding: 1rem; margin-top: -1.5rem; gap: 1rem; }
@@ -2387,7 +2399,7 @@
       background: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      z-index: 1000;
+      z-index: 10000000;
       display: none;
       align-items: flex-end;
       justify-content: center;
@@ -5756,6 +5768,12 @@ function toggleThemeDropdown(e) {
   const profileDropdown = document.getElementById('profile-dropdown');
   if (profileDropdown) profileDropdown.classList.remove('show');
   
+  // Close AI copilot drawer if open on mobile so sliding theme cards are 100% visible
+  const copilotDrawer = document.getElementById('helix-copilot-drawer');
+  if (copilotDrawer && window.innerWidth <= 768) {
+    copilotDrawer.style.display = 'none';
+  }
+
   if (window.innerWidth <= 768) {
     const overlay = document.getElementById('mobile-theme-overlay');
     if (overlay) {
@@ -10698,4 +10716,4 @@ setTimeout(initSiriHudDraggable, 500);
 
 </body>
 </html>
-<!-- Build Force Timestamp: 2026-09-03T23:44:00Z -->
+<!-- Build Force Timestamp: 2026-09-03T23:50:00Z -->
